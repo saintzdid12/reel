@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/saintzdid12/reel/releases/latest"><img src="https://img.shields.io/github/v/release/saintzdid12/reel?label=Download%20for%20Windows&style=for-the-badge&color=5865f2" alt="Download for Windows"></a>
+  <a href="https://github.com/saintzdid12/reel/releases/latest"><img src="https://img.shields.io/github/v/release/saintzdid12/reel?label=Download%20for%20Windows%20%26%20Mac&style=for-the-badge&color=5865f2" alt="Download for Windows and Mac"></a>
 </p>
 
 <p align="center">
@@ -48,7 +48,7 @@
 </p>
 
 ## With friends
-- Sign in with Discord or a Reel username, and your library syncs across every PC
+- Sign in with Discord or a Reel username, and your library syncs across every computer — Windows and Mac
 - Add friends, see what they're watching and rating, and how well your tastes match
 - **Watch parties** — share a code or link, everyone stays in sync, with chat, reactions and host controls
 - Your own profile with your favorites, diary, reviews and stats, plus notifications for friend requests and parties
@@ -70,13 +70,22 @@ Turn it on in Settings and connect your own IPTV subscription — **Game Day** s
 </p>
 
 ## Install
+
+### Windows
 1. Download **Reel-Setup.exe** from the [latest release](https://github.com/saintzdid12/reel/releases/latest) (or the [download page](https://saintzdid12.github.io/reel)).
 2. Windows may say *"Windows protected your PC"* the first time — click **More info → Run anyway**.
-3. **One-step setup:** connect your Real-Debrid token, or your own Torrentio link (click *Install* on Torrentio’s page and it opens in Reel — works with AllDebrid, Premiumize, TorBox and more). Movie info is built in, so there’s no TMDB key to set up.
+3. Reel **updates itself** from then on — a green *Update ready · Restart* button appears when a new version is in.
 
-After that, Reel **updates itself** — new versions download in the background and install with one click.
+### Mac
+1. Download **Reel-…-mac-arm64.dmg** (Apple Silicon — any Mac from late 2020 on) or **Reel-…-mac-x64.dmg** (older Intel Macs) from the [latest release](https://github.com/saintzdid12/reel/releases/latest).
+2. Open it and drag **Reel** into **Applications**.
+3. The first time you open it, macOS may say it can't check the app. Open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**. You only do this once.
+4. When there's a new version, Reel shows a *Download* button — open it and drag the new Reel into Applications again.
 
-**Needs:** Windows 10 or 11 · a debrid account ([Real-Debrid](https://real-debrid.com), or any service Torrentio supports)
+### Setup (both)
+**One step:** connect your Real-Debrid token, or your own Torrentio link (click *Install* on Torrentio's page and it opens in Reel — works with AllDebrid, Premiumize, TorBox and more). Movie info is built in, so there's no TMDB key to set up.
+
+**Needs:** Windows 10/11 or macOS 11+ · a debrid account ([Real-Debrid](https://real-debrid.com), or any service Torrentio supports)
 
 ## Privacy
 - Your Real-Debrid token or Torrentio link stays on your PC, encrypted.

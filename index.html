@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Reel</title>
-<meta name="description" content="Reel — track, rate and watch movies and shows, with friends.">
+<meta name="description" content="Reel — track, rate and watch movies and shows, with friends. For Windows and Mac.">
 <link rel="icon" href="icon.png">
 <style>
   :root { --bg: #050505; --fg: #fff; --dim: rgba(255,255,255,.62); --edge: rgba(255,255,255,.1); }
@@ -15,14 +15,21 @@
   .logo { width: 88px; height: 88px; border-radius: 22px; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
   h1 { margin: 18px 0 6px; font-size: 44px; letter-spacing: -.03em; }
   p.lead { margin: 0 auto 28px; color: var(--dim); max-width: 440px; }
+  .dls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
   .btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 26px; border-radius: 999px; background: #fff; color: #000; font-weight: 700; text-decoration: none; }
   .btn:hover { background: #e9e9ef; }
+  .btn.alt { background: rgba(255,255,255,.1); color: #fff; }
+  .btn.alt:hover { background: rgba(255,255,255,.16); }
+  .btn[hidden], .mac-arch[hidden] { display: none; }
   .ver { margin-top: 10px; font-size: 13px; color: var(--dim); }
+  .mac-arch { margin-top: 4px; font-size: 13px; color: var(--dim); }
+  .mac-arch a { color: #fff; }
   ul { list-style: none; padding: 0; margin: 36px 0 0; display: grid; gap: 10px; text-align: left; }
   li { padding: 14px 18px; border-radius: 16px; background: rgba(255,255,255,.04); border: 1px solid var(--edge); }
   li b { display: block; }
   li span { color: var(--dim); font-size: 14px; }
-  .fine { margin-top: 28px; font-size: 12.5px; color: var(--dim); }
+  .fine { margin-top: 28px; font-size: 12.5px; color: var(--dim); line-height: 1.6; }
+  .fine b { color: #fff; }
 </style>
 </head>
 <body>
@@ -30,21 +37,37 @@
   <img class="logo" src="icon.png" alt="">
   <h1>Reel</h1>
   <p class="lead">Track, rate and watch movies and shows — with recommendations that learn your taste, a clean macOS-style app, and friends.</p>
-  <a class="btn" id="dl" href="https://github.com/saintzdid12/reel/releases/latest">Download for Windows</a>
+  <div class="dls">
+    <a class="btn" id="dl-win" href="https://github.com/saintzdid12/reel/releases/latest">Download for Windows</a>
+    <a class="btn alt" id="dl-mac" href="https://github.com/saintzdid12/reel/releases/latest" hidden>Download for Mac</a>
+  </div>
   <div class="ver" id="ver">Windows 10 and 11</div>
+  <div class="mac-arch" id="mac-arch" hidden>Older Intel Mac? <a id="dl-mac-intel" href="https://github.com/saintzdid12/reel/releases/latest">Get the Intel version</a></div>
   <ul>
-    <li><b>One-step setup</b><span>Connect Real-Debrid or your own Torrentio link. Movie info is built in, and Reel updates itself.</span></li>
-    <li><b>Your library everywhere</b><span>Sign in with Discord or a Reel username and your ratings, diary and lists sync across every PC.</span></li>
+    <li><b>One-step setup</b><span>Connect Real-Debrid or your own Torrentio link. Movie info is built in.</span></li>
+    <li><b>Your library everywhere</b><span>Sign in with Discord or a Reel username and your ratings, diary and lists sync across every computer.</span></li>
     <li><b>Watch together</b><span>Start a watch party, share the code, and everyone stays in sync — with chat and reactions.</span></li>
     <li><b>Friends</b><span>See what friends are watching and rating, their favorites and reviews, and how well your tastes match.</span></li>
   </ul>
-  <div class="fine">Windows may say “Windows protected your PC” the first time — click <b>More info → Run anyway</b>. Reel updates itself after that.</div>
+  <div class="fine">
+    <b>Windows:</b> if it says “Windows protected your PC”, click <b>More info → Run anyway</b>. Reel updates itself after that.<br>
+    <b>Mac:</b> open the download and drag Reel into Applications. The first time, macOS may say it can’t check the app — open <b>System Settings → Privacy &amp; Security</b>, scroll down and click <b>Open Anyway</b>.
+  </div>
 </main>
 <script>
-  // Point the button straight at the newest installer.
+  // Point the buttons straight at the newest downloads, and put the right one first for this computer.
   fetch('https://api.github.com/repos/saintzdid12/reel/releases/latest').then(r => r.json()).then(rel => {
-    const a = (rel.assets || []).find(x => /Setup.*\.exe$/i.test(x.name));
-    if (a) { document.getElementById('dl').href = a.browser_download_url; document.getElementById('ver').textContent = `Version ${String(rel.tag_name || '').replace(/^v/, '')} · Windows 10 and 11`; }
+    const find = (re) => (rel.assets || []).find(x => re.test(x.name));
+    const win = find(/Setup.*\.exe$/i), arm = find(/mac-arm64\.dmg$/i), intel = find(/mac-x64\.dmg$/i);
+    const v = String(rel.tag_name || '').replace(/^v/, '');
+    if (win) document.getElementById('dl-win').href = win.browser_download_url;
+    if (arm || intel) {
+      const mac = document.getElementById('dl-mac');
+      mac.href = (arm || intel).browser_download_url; mac.hidden = false;
+      if (arm && intel) { document.getElementById('dl-mac-intel').href = intel.browser_download_url; document.getElementById('mac-arch').hidden = false; }
+      if (/Mac/i.test(navigator.platform || navigator.userAgent)) { document.querySelector('.dls').prepend(mac); mac.classList.remove('alt'); document.getElementById('dl-win').classList.add('alt'); }
+    }
+    document.getElementById('ver').textContent = `Version ${v} · Windows 10 and 11${arm || intel ? ' · macOS 11 or newer' : ''}`;
   }).catch(() => {});
 </script>
 </body>
