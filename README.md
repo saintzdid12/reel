@@ -13,42 +13,57 @@
 </p>
 
 <p align="center">
-  <img src="screenshots/watch-party.webp" alt="A Reel watch party lobby" width="900">
+  <img src="screenshots/home.webp" alt="Reel — Home" width="960">
 </p>
 
-## What it does
-
-**Find something to watch**
-- **For You** picks built from your ratings, likes, favorites and rewatches — and they get better the more you use it
-- **Mood Match**, **Seen It** (swipe through titles you've seen), **This or That**, and **Rank** your all-time favorites
+## Find something to watch
+- **For You** picks built from your ratings, likes, favorites and rewatches — they get better the more you use Reel
+- **Tonight's pick**, **Mood Match**, **Seen It**, **This or That** and **Rank** your all-time favorites
 - Search, genres, studios, trending and top 10s
 
-**Keep track, like Letterboxd**
-- Ratings, likes, a watch diary, reviews, lists and a watchlist
-- Import your whole Letterboxd history in one go
-- **Taste Profile** — your ratings spread, how you compare to everyone else, your hot takes and watching habits
-
-**Watch**
-- Streams through Torrentio + Real-Debrid, with 4K/HDR, 5.1 audio, subtitles and automatic next episode
-- Picks up where you left off, on any of your PCs
-
-**With friends**
-- Sign in with Discord — your library syncs across every PC
-- Add friends, see what they're watching and rating, and how well your tastes match
-- **Watch parties**: share a code, everyone stays in sync, with chat, reactions and host controls
-- Your Discord profile shows what you're watching, with a button for friends to join
-
 <p align="center">
-  <img src="screenshots/taste-profile.webp" alt="Taste Profile" width="900">
+  <img src="screenshots/for-you.webp" alt="For You" width="960">
 </p>
 
+## Keep track, like Letterboxd
+- Ratings, likes, a watch diary, reviews, lists and a watchlist
+- Import your whole Letterboxd history in one go
+- **Taste Profile** — your ratings spread, where you differ from the crowd, your five-star club and watching habits
+
 <p align="center">
-  <img src="screenshots/discord-status.png" alt="Watching in Reel on Discord" width="420">
+  <img src="screenshots/taste-profile.webp" alt="Taste Profile" width="960">
+</p>
+
+## Watch
+- Streams through Torrentio + Real-Debrid, in up to 4K HDR with 7.1 audio, subtitles and automatic next episode
+- Picks up where you left off — on any of your PCs
+
+<p align="center">
+  <img src="screenshots/player.webp" alt="The player" width="960">
+</p>
+
+## With friends
+- Sign in with Discord and your library syncs across every PC
+- Add friends, see what they're watching and rating, and how well your tastes match
+- **Watch parties** — share a code or link, everyone stays in sync, with chat, reactions and host controls
+- Your Discord profile shows what you're watching
+
+<p align="center">
+  <img src="screenshots/watch-party.webp" alt="A watch party lobby" width="960">
+</p>
+<p align="center">
+  <img src="screenshots/discord-status.png" alt="Watching in Reel on Discord" width="460">
+</p>
+
+## Live TV (optional)
+Turn it on in Settings and connect your own IPTV subscription — **Game Day** shows every live game with scores and picks the right channel for you.
+
+<p align="center">
+  <img src="screenshots/live-tv.webp" alt="Game Day" width="960">
 </p>
 
 ## Install
-
-1. Download **Reel-Setup.exe** from the [latest release](https://github.com/saintzdid12/reel/releases/latest) (or from the [download page](https://saintzdid12.github.io/reel)).
+1. Download **Reel-Setup.exe** from the [latest release](https://github.com/saintzdid12/reel/releases/latest) (or the [download page](https://saintzdid12.github.io/reel)).
 2. Windows may say *"Windows protected your PC"* the first time — click **More info → Run anyway**.
 3. Reel walks you through setup: a free TMDB key and your Real-Debrid account.
 
@@ -57,7 +72,6 @@ After that, Reel **updates itself** — new versions download in the background 
 **Needs:** Windows 10 or 11 · a [Real-Debrid](https://real-debrid.com) account · a free [TMDB](https://www.themoviedb.org/settings/api) API key
 
 ## Privacy
-
 - Your API keys and Real-Debrid login stay on your PC, encrypted.
 - A Reel account is optional. If you sign in, only your library (ratings, diary, lists, watchlist) and profile are synced — never your keys or what you stream.
 - Friends only see what you choose to share, and any title can be hidden from them.
