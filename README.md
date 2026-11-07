@@ -39,7 +39,7 @@
 </p>
 
 ## Watch
-- Streams through Torrentio + Real-Debrid, in up to 4K HDR with 7.1 audio, subtitles and automatic next episode
+- Streams through Torrentio + Real-Debrid (or any debrid — or none, straight from torrents), in up to 4K HDR with 7.1 audio, subtitles and automatic next episode
 - Picks up where you left off — on any of your PCs
 - **Replaces Stremio on your PC** — Torrentio’s Install button and other Stremio links open in Reel
 
@@ -85,7 +85,7 @@ Turn it on in Settings and connect your own IPTV subscription — **Game Day** s
 ### Setup (both)
 **One step:** connect your Real-Debrid token, or your own Torrentio link (click *Install* on Torrentio's page and it opens in Reel — works with AllDebrid, Premiumize, TorBox and more). Movie info is built in, so there's no TMDB key to set up.
 
-**Needs:** Windows 10/11 or macOS 11+ · a debrid account ([Real-Debrid](https://real-debrid.com), or any service Torrentio supports)
+**Needs:** Windows 10/11 or macOS 11+ · ideally a debrid account ([Real-Debrid](https://real-debrid.com), or any service Torrentio supports) — or just a plain Torrentio link: Reel streams the torrents itself, a bit slower to start
 
 ## Privacy
 - Your Real-Debrid token or Torrentio link stays on your PC, encrypted.
