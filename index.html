@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reel</title>
+<meta name="description" content="Reel — track, rate and watch movies and shows, with friends.">
+<link rel="icon" href="icon.png">
+<style>
+  :root { --bg: #050505; --fg: #fff; --dim: rgba(255,255,255,.62); --edge: rgba(255,255,255,.1); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.55 Inter, "Segoe UI", system-ui, sans-serif; }
+  body { min-height: 100vh; display: grid; place-items: center; padding: 32px 16px; background: radial-gradient(70% 60% at 50% 0%, rgba(88,101,242,.18), transparent 70%), var(--bg); }
+  main { width: 100%; max-width: 560px; text-align: center; }
+  .logo { width: 88px; height: 88px; border-radius: 22px; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
+  h1 { margin: 18px 0 6px; font-size: 44px; letter-spacing: -.03em; }
+  p.lead { margin: 0 auto 28px; color: var(--dim); max-width: 440px; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 26px; border-radius: 999px; background: #fff; color: #000; font-weight: 700; text-decoration: none; }
+  .btn:hover { background: #e9e9ef; }
+  .ver { margin-top: 10px; font-size: 13px; color: var(--dim); }
+  ul { list-style: none; padding: 0; margin: 36px 0 0; display: grid; gap: 10px; text-align: left; }
+  li { padding: 14px 18px; border-radius: 16px; background: rgba(255,255,255,.04); border: 1px solid var(--edge); }
+  li b { display: block; }
+  li span { color: var(--dim); font-size: 14px; }
+  .fine { margin-top: 28px; font-size: 12.5px; color: var(--dim); }
+</style>
+</head>
+<body>
+<main>
+  <img class="logo" src="icon.png" alt="">
+  <h1>Reel</h1>
+  <p class="lead">Track, rate and watch movies and shows — with recommendations that learn your taste, a clean macOS-style app, and friends.</p>
+  <a class="btn" id="dl" href="https://github.com/saintzdid12/reel/releases/latest">Download for Windows</a>
+  <div class="ver" id="ver">Windows 10 and 11</div>
+  <ul>
+    <li><b>Your library everywhere</b><span>Sign in with Discord and your ratings, diary and lists sync across every PC.</span></li>
+    <li><b>Watch together</b><span>Start a watch party, share the code, and everyone stays in sync — with chat and reactions.</span></li>
+    <li><b>Friends</b><span>See what friends are watching and rating, and how well your tastes match.</span></li>
+  </ul>
+  <div class="fine">Windows may say “Windows protected your PC” the first time — click <b>More info → Run anyway</b>. Reel updates itself after that.</div>
+</main>
+<script>
+  // Point the button straight at the newest installer.
+  fetch('https://api.github.com/repos/saintzdid12/reel/releases/latest').then(r => r.json()).then(rel => {
+    const a = (rel.assets || []).find(x => /Setup.*\.exe$/i.test(x.name));
+    if (a) { document.getElementById('dl').href = a.browser_download_url; document.getElementById('ver').textContent = `Version ${String(rel.tag_name || '').replace(/^v/, '')} · Windows 10 and 11`; }
+  }).catch(() => {});
+</script>
+</body>
+</html>
