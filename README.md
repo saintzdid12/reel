@@ -13,6 +13,10 @@
 </p>
 
 <p align="center">
+  <b>Reel 1.0 is here</b> — one-step setup, Reel accounts, watch parties and friends. <a href="https://github.com/saintzdid12/reel/releases/latest">See what’s new →</a>
+</p>
+
+<p align="center">
   <img src="screenshots/home.webp" alt="Reel — Home" width="960">
 </p>
 
@@ -37,15 +41,18 @@
 ## Watch
 - Streams through Torrentio + Real-Debrid, in up to 4K HDR with 7.1 audio, subtitles and automatic next episode
 - Picks up where you left off — on any of your PCs
+- **Replaces Stremio on your PC** — Torrentio’s Install button and other Stremio links open in Reel
 
 <p align="center">
   <img src="screenshots/player.webp" alt="The player" width="960">
 </p>
 
 ## With friends
-- Sign in with Discord and your library syncs across every PC
+- Sign in with Discord or a Reel username, and your library syncs across every PC
 - Add friends, see what they're watching and rating, and how well your tastes match
 - **Watch parties** — share a code or link, everyone stays in sync, with chat, reactions and host controls
+- Your own profile with your favorites, diary, reviews and stats, plus notifications for friend requests and parties
+- Host controls, a lobby with a countdown, and shows that continue to the next episode together
 - Your Discord profile shows what you're watching
 
 <p align="center">
@@ -65,17 +72,17 @@ Turn it on in Settings and connect your own IPTV subscription — **Game Day** s
 ## Install
 1. Download **Reel-Setup.exe** from the [latest release](https://github.com/saintzdid12/reel/releases/latest) (or the [download page](https://saintzdid12.github.io/reel)).
 2. Windows may say *"Windows protected your PC"* the first time — click **More info → Run anyway**.
-3. Reel walks you through setup: a free TMDB key and your Real-Debrid account.
+3. **One-step setup:** connect your Real-Debrid token, or your own Torrentio link (click *Install* on Torrentio’s page and it opens in Reel — works with AllDebrid, Premiumize, TorBox and more). Movie info is built in, so there’s no TMDB key to set up.
 
 After that, Reel **updates itself** — new versions download in the background and install with one click.
 
-**Needs:** Windows 10 or 11 · a [Real-Debrid](https://real-debrid.com) account · a free [TMDB](https://www.themoviedb.org/settings/api) API key
+**Needs:** Windows 10 or 11 · a debrid account ([Real-Debrid](https://real-debrid.com), or any service Torrentio supports)
 
 ## Privacy
-- Your API keys and Real-Debrid login stay on your PC, encrypted.
+- Your Real-Debrid token or Torrentio link stays on your PC, encrypted.
 - A Reel account is optional. If you sign in, only your library (ratings, diary, lists, watchlist) and profile are synced — never your keys or what you stream.
 - Friends only see what you choose to share, and any title can be hidden from them.
 
 ---
 
-<sub>Reel doesn't host or provide any content. It plays streams from services you have your own account with.</sub>
+<sub>This product uses the TMDB API but is not endorsed or certified by TMDB. Reel doesn't host or provide any content. It plays streams from services you have your own account with.</sub>
