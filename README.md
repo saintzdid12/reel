@@ -1,0 +1,67 @@
+<p align="center">
+  <img src="icon.png" width="96" alt="Reel">
+</p>
+
+<h1 align="center">Reel</h1>
+
+<p align="center">
+  <b>Track, rate and watch movies and shows — with recommendations that learn your taste, a clean macOS-style app, and your friends.</b>
+</p>
+
+<p align="center">
+  <a href="https://github.com/saintzdid12/reel/releases/latest"><img src="https://img.shields.io/github/v/release/saintzdid12/reel?label=Download%20for%20Windows&style=for-the-badge&color=5865f2" alt="Download for Windows"></a>
+</p>
+
+<p align="center">
+  <img src="screenshots/watch-party.webp" alt="A Reel watch party lobby" width="900">
+</p>
+
+## What it does
+
+**Find something to watch**
+- **For You** picks built from your ratings, likes, favorites and rewatches — and they get better the more you use it
+- **Mood Match**, **Seen It** (swipe through titles you've seen), **This or That**, and **Rank** your all-time favorites
+- Search, genres, studios, trending and top 10s
+
+**Keep track, like Letterboxd**
+- Ratings, likes, a watch diary, reviews, lists and a watchlist
+- Import your whole Letterboxd history in one go
+- **Taste Profile** — your ratings spread, how you compare to everyone else, your hot takes and watching habits
+
+**Watch**
+- Streams through Torrentio + Real-Debrid, with 4K/HDR, 5.1 audio, subtitles and automatic next episode
+- Picks up where you left off, on any of your PCs
+
+**With friends**
+- Sign in with Discord — your library syncs across every PC
+- Add friends, see what they're watching and rating, and how well your tastes match
+- **Watch parties**: share a code, everyone stays in sync, with chat, reactions and host controls
+- Your Discord profile shows what you're watching, with a button for friends to join
+
+<p align="center">
+  <img src="screenshots/taste-profile.webp" alt="Taste Profile" width="900">
+</p>
+
+<p align="center">
+  <img src="screenshots/discord-status.png" alt="Watching in Reel on Discord" width="420">
+</p>
+
+## Install
+
+1. Download **Reel-Setup.exe** from the [latest release](https://github.com/saintzdid12/reel/releases/latest) (or from the [download page](https://saintzdid12.github.io/reel)).
+2. Windows may say *"Windows protected your PC"* the first time — click **More info → Run anyway**.
+3. Reel walks you through setup: a free TMDB key and your Real-Debrid account.
+
+After that, Reel **updates itself** — new versions download in the background and install with one click.
+
+**Needs:** Windows 10 or 11 · a [Real-Debrid](https://real-debrid.com) account · a free [TMDB](https://www.themoviedb.org/settings/api) API key
+
+## Privacy
+
+- Your API keys and Real-Debrid login stay on your PC, encrypted.
+- A Reel account is optional. If you sign in, only your library (ratings, diary, lists, watchlist) and profile are synced — never your keys or what you stream.
+- Friends only see what you choose to share, and any title can be hidden from them.
+
+---
+
+<sub>Reel doesn't host or provide any content. It plays streams from services you have your own account with.</sub>
