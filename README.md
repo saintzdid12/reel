@@ -31,7 +31,7 @@
 
 ## Keep track, like Letterboxd
 - Ratings, likes, a watch diary, reviews, lists and a watchlist
-- Import your whole Letterboxd history in one go, and re-sync with one click: *Import my latest export* picks up your newest export from Downloads and adds only what's new
+- Import your whole Letterboxd history in one go, and **Re-sync from Letterboxd** any time: export your data there, pick the file, and Reel adds only what's new
 - Careful title matching (it checks the title, not just the year), and **Wrong movie?** on any title moves your rating, diary and review to the right one
 - **Taste Profile** — your ratings spread, where you differ from the crowd, your five-star club and watching habits
 
