@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <b>New in Reel 1.2</b> — pick your debrid service from a list (Real-Debrid, TorBox, AllDebrid and more), watch parties that wait for whoever is loading, and a top bar that fits laptops. <a href="https://github.com/saintzdid12/reel/releases/latest">See what’s new →</a>
+  <b>Reel 1.2 is out</b> · <a href="https://github.com/saintzdid12/reel/releases/latest">See what’s new →</a>
 </p>
 
 <p align="center">
