@@ -45,9 +45,9 @@
   <div class="mac-arch" id="mac-arch" hidden>Older Intel Mac? <a id="dl-mac-intel" href="https://github.com/saintzdid12/reel/releases/latest">Get the Intel version</a></div>
   <ul>
     <li><b>One-step setup</b><span>Pick your debrid service — Real-Debrid, TorBox, AllDebrid and more — and paste its API key. Movie info is built in.</span></li>
-    <li><b>Your library everywhere</b><span>Sign in with Discord or a Reel username and your ratings, diary and lists sync across every computer.</span></li>
+    <li><b>Your library everywhere</b><span>Sign in with Discord or a Reel username and your ratings, diary, lists and debrid key follow you to every computer.</span></li>
     <li><b>Watch together</b><span>Start a watch party, share the code, and everyone stays in sync — and the party waits if someone is still loading.</span></li>
-    <li><b>Friends</b><span>See what friends are watching and rating, their favorites and reviews, and how well your tastes match.</span></li>
+    <li><b>Friends</b><span>See what friends are watching and rating, the shows they’re on, their favorites and reviews, and how well your tastes match.</span></li>
   </ul>
   <div class="fine">
     <b>Windows:</b> if it says “Windows protected your PC”, click <b>More info → Run anyway</b>. Reel updates itself after that.<br>
@@ -59,7 +59,8 @@
   fetch('https://api.github.com/repos/saintzdid12/reel/releases/latest').then(r => r.json()).then(rel => {
     const find = (re) => (rel.assets || []).find(x => re.test(x.name));
     const win = find(/Setup.*\.exe$/i), arm = find(/mac-arm64\.dmg$/i), intel = find(/mac-x64\.dmg$/i);
-    const v = String(rel.tag_name || '').replace(/^v/, '');
+    // The release's name (e.g. "Reel 1.2") rather than its exact build number.
+    const v = /^Reel\s+\d/.test(rel.name || '') ? rel.name.replace(/^Reel\s+/, '') : String(rel.tag_name || '').replace(/^v/, '');
     if (win) document.getElementById('dl-win').href = win.browser_download_url;
     if (arm || intel) {
       const mac = document.getElementById('dl-mac');

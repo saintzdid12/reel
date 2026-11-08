@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/saintzdid12/reel/releases/latest"><img src="https://img.shields.io/github/v/release/saintzdid12/reel?label=Download%20for%20Windows%20%26%20Mac&style=for-the-badge&color=5865f2" alt="Download for Windows and Mac"></a>
+  <a href="https://github.com/saintzdid12/reel/releases/latest"><img src="https://img.shields.io/github/v/release/saintzdid12/reel?display_name=release&label=Download%20for%20Windows%20%26%20Mac&style=for-the-badge&color=5865f2" alt="Download for Windows and Mac"></a>
 </p>
 
 <p align="center">
@@ -31,7 +31,8 @@
 
 ## Keep track, like Letterboxd
 - Ratings, likes, a watch diary, reviews, lists and a watchlist
-- Import your whole Letterboxd history in one go
+- Import your whole Letterboxd history in one go, and re-sync with one click: *Import my latest export* picks up your newest export from Downloads and adds only what's new
+- Careful title matching (it checks the title, not just the year), and **Wrong movie?** on any title moves your rating, diary and review to the right one
 - **Taste Profile** — your ratings spread, where you differ from the crowd, your five-star club and watching habits
 
 <p align="center">
@@ -42,7 +43,7 @@
 - Plays from **your own debrid account** — Real-Debrid, TorBox, AllDebrid, Premiumize, Debrid-Link, EasyDebrid or Offcloud
 - HD by default, up to 4K HDR with 7.1 audio, subtitles and automatic next episode
 - Works on any PC: video a laptop can't show is converted on the fly
-- Picks up where you left off — on any of your PCs
+- Picks up where you left off, on any of your PCs. Sign in on a new one and your debrid key comes with you, so you can start watching right away
 
 <p align="center">
   <img src="screenshots/player.webp" alt="The player" width="960">
@@ -51,9 +52,10 @@
 ## With friends
 - Sign in with Discord or a Reel username, and your library syncs across every computer — Windows and Mac
 - Add friends, see what they're watching and rating, and how well your tastes match
-- **Watch parties** — share a code or link, everyone stays in sync, with chat, reactions and host controls. If someone's video is still loading, the party waits for them and starts again together
-- Your own profile with your favorites, diary, reviews and stats, plus notifications for friend requests and parties
-- Host controls, a lobby with a countdown, and shows that continue to the next episode together
+- **Watch parties**: share a code or link and everyone stays in sync, with chat, reactions and host controls. If someone's video is still loading, the party waits for them (you can see who) and starts again together. If the host leaves or drops out, the next person takes over automatically
+- Profiles with favorites, films and **TV shows** (including where you are, like *S2 · E5*), reviews and stats
+- Notifications for friend requests and parties wait quietly in the bell. Nothing pops up
+- A lobby with a countdown, and shows that continue to the next episode together
 - Your Discord profile shows what you're watching
 
 <p align="center">
@@ -89,9 +91,9 @@ Turn it on in Settings and connect your own IPTV subscription — **Game Day** s
 **Needs:** Windows 10/11 or macOS 11+ · a debrid account — [Real-Debrid](https://real-debrid.com), [TorBox](https://torbox.app), [AllDebrid](https://alldebrid.com), [Premiumize](https://www.premiumize.me), [Debrid-Link](https://debrid-link.com), EasyDebrid or [Offcloud](https://offcloud.com)
 
 ## Privacy
-- Your debrid API key stays on your PC, encrypted.
+- Your debrid API key is stored encrypted on your PC. If you sign in, it's also saved privately to your Reel account so it follows you to your other computers; only you can read it.
 - Reel plays only from your own debrid account. It never downloads, seeds or shares torrents on your computer.
-- A Reel account is optional. If you sign in, only your library (ratings, diary, lists, watchlist) and profile are synced — never your keys or what you stream.
+- A Reel account is optional. If you sign in, your library (ratings, diary, lists, watchlist, where you left off), settings, profile and debrid key are synced. Live TV logins stay on your PC, and what you stream is never recorded.
 - Friends only see what you choose to share, and any title can be hidden from them.
 
 ---
