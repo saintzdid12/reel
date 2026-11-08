@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <b>Reel 1.0 is here</b> — one-step setup, Reel accounts, watch parties and friends. <a href="https://github.com/saintzdid12/reel/releases/latest">See what’s new →</a>
+  <b>New in Reel 1.2</b> — pick your debrid service from a list (Real-Debrid, TorBox, AllDebrid and more), watch parties that wait for whoever is loading, and a top bar that fits laptops. <a href="https://github.com/saintzdid12/reel/releases/latest">See what’s new →</a>
 </p>
 
 <p align="center">
@@ -39,9 +39,10 @@
 </p>
 
 ## Watch
-- Streams through Torrentio + Real-Debrid (or any debrid — or none, straight from torrents), in up to 4K HDR with 7.1 audio, subtitles and automatic next episode
+- Plays from **your own debrid account** — Real-Debrid, TorBox, AllDebrid, Premiumize, Debrid-Link, EasyDebrid or Offcloud
+- HD by default, up to 4K HDR with 7.1 audio, subtitles and automatic next episode
+- Works on any PC: video a laptop can't show is converted on the fly
 - Picks up where you left off — on any of your PCs
-- **Replaces Stremio on your PC** — Torrentio’s Install button and other Stremio links open in Reel
 
 <p align="center">
   <img src="screenshots/player.webp" alt="The player" width="960">
@@ -50,7 +51,7 @@
 ## With friends
 - Sign in with Discord or a Reel username, and your library syncs across every computer — Windows and Mac
 - Add friends, see what they're watching and rating, and how well your tastes match
-- **Watch parties** — share a code or link, everyone stays in sync, with chat, reactions and host controls
+- **Watch parties** — share a code or link, everyone stays in sync, with chat, reactions and host controls. If someone's video is still loading, the party waits for them and starts again together
 - Your own profile with your favorites, diary, reviews and stats, plus notifications for friend requests and parties
 - Host controls, a lobby with a countdown, and shows that continue to the next episode together
 - Your Discord profile shows what you're watching
@@ -72,9 +73,9 @@ Turn it on in Settings and connect your own IPTV subscription — **Game Day** s
 ## Install
 
 ### Windows
-1. Download **Reel-Setup.exe** from the [latest release](https://github.com/saintzdid12/reel/releases/latest) (or the [download page](https://saintzdid12.github.io/reel)).
+1. Download **Reel-Setup-….exe** from the [latest release](https://github.com/saintzdid12/reel/releases/latest) (or the [download page](https://saintzdid12.github.io/reel)).
 2. Windows may say *"Windows protected your PC"* the first time — click **More info → Run anyway**.
-3. Reel **updates itself** from then on — a green *Update ready · Restart* button appears when a new version is in.
+3. Reel **updates itself** from then on — a button under the top-right icons shows the download, then *Update ready · Restart*. Restarting shows the installer's progress and Reel reopens by itself.
 
 ### Mac
 1. Download **Reel-…-mac-arm64.dmg** (Apple Silicon — any Mac from late 2020 on) or **Reel-…-mac-x64.dmg** (older Intel Macs) from the [latest release](https://github.com/saintzdid12/reel/releases/latest).
@@ -83,12 +84,13 @@ Turn it on in Settings and connect your own IPTV subscription — **Game Day** s
 4. When there's a new version, Reel shows a *Download* button — open it and drag the new Reel into Applications again.
 
 ### Setup (both)
-**One step:** connect your Real-Debrid token, or your own Torrentio link (click *Install* on Torrentio's page and it opens in Reel — works with AllDebrid, Premiumize, TorBox and more). Movie info is built in, so there's no TMDB key to set up.
+**One step:** pick your debrid service from the list and paste its API key (there's a *Find your API key* link for each one), then choose HD or 4K. Movie info is built in, so there's no TMDB key to set up.
 
-**Needs:** Windows 10/11 or macOS 11+ · ideally a debrid account ([Real-Debrid](https://real-debrid.com), or any service Torrentio supports) — or just a plain Torrentio link: Reel streams the torrents itself, a bit slower to start
+**Needs:** Windows 10/11 or macOS 11+ · a debrid account — [Real-Debrid](https://real-debrid.com), [TorBox](https://torbox.app), [AllDebrid](https://alldebrid.com), [Premiumize](https://www.premiumize.me), [Debrid-Link](https://debrid-link.com), EasyDebrid or [Offcloud](https://offcloud.com)
 
 ## Privacy
-- Your Real-Debrid token or Torrentio link stays on your PC, encrypted.
+- Your debrid API key stays on your PC, encrypted.
+- Reel plays only from your own debrid account. It never downloads, seeds or shares torrents on your computer.
 - A Reel account is optional. If you sign in, only your library (ratings, diary, lists, watchlist) and profile are synced — never your keys or what you stream.
 - Friends only see what you choose to share, and any title can be hidden from them.
 
