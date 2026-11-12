@@ -5,11 +5,11 @@
 <h1 align="center">Reel</h1>
 
 <p align="center">
-  <b>Track, rate and watch movies and shows — with recommendations that learn your taste, a clean macOS-style app, and your friends.</b>
+  <b>Track, rate and watch movies and shows — with recommendations that learn your taste, a clean macOS-style app, and your friends. On Windows, Mac and Fire TV.</b>
 </p>
 
 <p align="center">
-  <a href="https://github.com/saintzdid12/reel/releases/latest"><img src="https://img.shields.io/github/v/release/saintzdid12/reel?display_name=release&label=Download%20for%20Windows%20%26%20Mac&style=for-the-badge&color=5865f2" alt="Download for Windows and Mac"></a>
+  <a href="https://github.com/saintzdid12/reel/releases/latest"><img src="https://img.shields.io/github/v/release/saintzdid12/reel?display_name=release&label=Download%20for%20Windows%2C%20Mac%20%26%20Fire%20TV&style=for-the-badge&color=5865f2" alt="Download for Windows, Mac and Fire TV"></a>
 </p>
 
 <p align="center">
@@ -85,7 +85,15 @@ Turn it on in Settings and connect your own IPTV subscription — **Game Day** s
 3. The first time you open it, macOS may say it can't check the app. Open **System Settings → Privacy & Security**, scroll down and click **Open Anyway**. You only do this once.
 4. When there's a new version, Reel shows a *Download* button — open it and drag the new Reel into Applications again.
 
-### Setup (both)
+### Fire TV and Android TV
+1. On a Fire TV, install the free **Downloader** app from the Amazon Appstore, open it and enter:
+   `https://github.com/saintzdid12/reel/releases/latest/download/Reel-TV.apk`
+   (On an Android TV, open the same link with any downloader or file manager.)
+2. If the TV asks, allow Downloader to install apps, then choose **Install**.
+3. Open Reel and sign in: type the code the TV shows into **Settings → Account → Link a TV** on your computer, or use your Reel username and password. Your library and debrid service come with your account.
+4. Reel for TV **updates itself**: when a new version is out it asks once, downloads it and opens the installer.
+
+### Setup (computer)
 **One step:** pick your debrid service from the list and paste its API key (there's a *Find your API key* link for each one), then choose HD or 4K. Movie info is built in, so there's no TMDB key to set up.
 
 **Needs:** Windows 10/11 or macOS 11+ · a debrid account — [Real-Debrid](https://real-debrid.com), [TorBox](https://torbox.app), [AllDebrid](https://alldebrid.com), [Premiumize](https://www.premiumize.me), [Debrid-Link](https://debrid-link.com), EasyDebrid or [Offcloud](https://offcloud.com)
