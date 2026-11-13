@@ -1,0 +1,154 @@
+/* Reel on the web — phones first. Reel's own screens, with computer-only parts hidden, the TV's simple Settings
+   and sign-in screens, and a phone layout: bottom tab bar, smaller banner, thumb-sized cards, safe areas. */
+body.web { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; }
+
+/* Computer-only bits */
+body.web #drag, body.web .mac-lights, body.web .upd-btn, body.web .import-block, body.web .lb-how,
+body.web .search-bar .seg, body.web .vibe-chips, body.web .discord-btn, body.web .pipbtn { display: none !important; }
+/* Accounts are made on the computer; the web signs in */
+body.web .setup-card .acct-choices .su, body.web .setup-card .acct-why { display: none !important; }
+body.web .setup-card .acct-choices::after { content: "Sign in with your Reel username, or link this browser from Reel on your computer."; display: block; margin-top: 14px; font-size: 14px; color: var(--text-3); text-align: center; }
+
+/* Settings (the simple one, shared with the TV) */
+body.web .tvs { max-width: 720px; margin: 0 auto; padding: 96px 20px 120px; }
+.tvs-list { display: flex; flex-direction: column; gap: 8px; }
+.tvs-h { margin: 22px 4px 4px; font-size: 14px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); }
+.tvs-row, .tvs-info { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 62px; padding: 0 24px; border-radius: 16px; font-size: 18px; text-align: left; }
+.tvs-row { background: rgba(255,255,255,.07); color: #fff; width: 100%; }
+.tvs-row b, .tvs-info b { font-weight: 600; color: var(--text-2); }
+.tvs-row.off b { color: var(--text-3); }
+.tvs-info { padding: 0 24px; color: var(--text-2); }
+.tvs-info b { color: #fff; }
+.tvs-info i { font-style: normal; color: var(--text-3); font-weight: 500; margin-left: 6px; }
+.tvs-note { color: var(--text-3); font-size: 15px; line-height: 1.5; margin: 14px 4px 0; }
+.tv-confirm { text-align: center; padding: 10px 6px; }
+.tv-confirm .btns { justify-content: center; margin-top: 18px; }
+.tvs-row:active { background: rgba(255,255,255,.14); }
+
+/* Sign in (shared with the TV) */
+body.web .modal-back.tv-auth-back .sheet { width: min(1080px, 92vw); max-width: none; padding: 44px 48px 34px; border-radius: 30px; background: rgba(20,20,24,.98); border: 1px solid rgba(255,255,255,.08); }
+.tv-auth .ta-head { display: flex; align-items: center; gap: 18px; }
+.tv-auth .ta-head img { width: 58px; height: 58px; border-radius: 14px; }
+.tv-auth .ta-head h2 { margin: 0; font-size: 30px; font-weight: 700; letter-spacing: -.03em; }
+.tv-auth .ta-head p { margin: 4px 0 0; color: var(--text-2); font-size: 16px; }
+.tv-auth .ta-cols { display: grid; grid-template-columns: 1fr auto 1fr; gap: 26px; margin-top: 30px; align-items: stretch; }
+.tv-auth .ta-card { display: flex; flex-direction: column; gap: 14px; padding: 28px; border-radius: 22px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07); }
+.tv-auth .ta-label { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; color: var(--text-2); }
+.tv-auth .ta-label svg { width: 20px; height: 20px; color: #fff; }
+.tv-auth .ta-code { display: grid; place-items: center; min-height: 100px; font-size: 54px; font-weight: 800; letter-spacing: .16em; padding-left: .16em; font-variant-numeric: tabular-nums; border-radius: 16px; background: rgba(255,255,255,.06); }
+.tv-auth ol { margin: 4px 0 0; padding-left: 20px; color: var(--text-2); font-size: 15.5px; line-height: 1.85; }
+.tv-auth ol b { color: #fff; font-weight: 600; }
+.tv-auth .ta-wait { display: flex; align-items: center; gap: 10px; margin-top: auto; padding-top: 6px; font-size: 14px; color: var(--text-3); }
+.tv-auth .ta-or { display: flex; flex-direction: column; align-items: center; gap: 12px; color: var(--text-3); font-size: 13px; font-weight: 600; }
+.tv-auth .ta-or::before, .tv-auth .ta-or::after { content: ""; flex: 1; width: 1px; background: rgba(255,255,255,.1); }
+.tv-auth .ta-field { display: flex; flex-direction: column; gap: 7px; }
+.tv-auth .ta-field span { font-size: 13.5px; font-weight: 600; color: var(--text-2); }
+.tv-auth .ta-field .input { height: 54px; font-size: 17px; padding: 0 18px; border-radius: 14px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); }
+.tv-auth .ta-err { min-height: 18px; color: #ff8a80; font-size: 14px; }
+.tv-auth .ta-go { height: 54px; font-size: 17px; font-weight: 700; border-radius: 15px; justify-content: center; }
+.tv-auth .ta-note { margin: 2px 0 0; text-align: center; font-size: 13.5px; color: var(--text-3); }
+.tv-auth .ta-cancel { display: flex; margin: 26px auto 0; padding: 0 30px; height: 46px; border-radius: 14px; background: rgba(255,255,255,.07); }
+.tv-cover { position: fixed; inset: 0; z-index: 3000; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; transition: opacity .3s ease-out; }
+.tv-cover.out { opacity: 0; }
+.tv-cover img { width: 72px; height: 72px; border-radius: 18px; margin-bottom: 8px; }
+.tv-cover b { font-size: 24px; }
+.tv-cover span { color: var(--text-2); font-size: 15px; margin-bottom: 10px; }
+
+/* First screen: one big Sign in button, the hint under it */
+body.web .setup-card .acct-choices { flex-direction: column; align-items: stretch; gap: 0; }
+body.web .setup-card .acct-choices .btn { height: 50px; font-size: 16px; border-radius: 14px; justify-content: center; }
+body.web.phone .setup-card { width: calc(100vw - 32px); padding: 30px 24px 26px; border-radius: 26px; }
+body.web.phone .setup-card h1 { font-size: 30px; }
+
+/* Sign-in sheet on a phone: the two ways stacked, the code smaller */
+body.web.phone .modal-back.tv-auth-back .sheet { width: calc(100vw - 24px); padding: 24px 18px 20px; border-radius: 24px; max-height: calc(100dvh - 40px); overflow-y: auto; }
+body.web.phone .tv-auth .ta-cols { grid-template-columns: 1fr; gap: 14px; margin-top: 20px; }
+body.web.phone .tv-auth .ta-or { flex-direction: row; }
+body.web.phone .tv-auth .ta-or::before, body.web.phone .tv-auth .ta-or::after { width: auto; height: 1px; flex: 1; }
+body.web.phone .tv-auth .ta-head h2 { font-size: 24px; }
+body.web.phone .tv-auth .ta-head img { width: 46px; height: 46px; }
+body.web.phone .tv-auth .ta-card { padding: 20px; }
+body.web.phone .tv-auth .ta-code { font-size: 40px; min-height: 76px; }
+body.web.phone .tv-auth .ta-pass { order: -1; }   /* typing your username is the easy way on a phone */
+body.web.phone .tv-auth .ta-or { order: 0; }
+body.web.phone .tv-auth .ta-link { order: 1; }
+
+/* ===================== Phone layout ===================== */
+body.web.phone { --gutter: 16px; --safe-b: env(safe-area-inset-bottom, 0px); --safe-t: env(safe-area-inset-top, 0px); }
+/* Top: just the round buttons, on the right, over a soft fade */
+body.web.phone #nav { height: auto; padding: calc(8px + var(--safe-t)) 12px 10px; display: flex; justify-content: flex-end; }
+body.web.phone #nav::before { opacity: 1 !important; background: linear-gradient(180deg, rgba(0,0,0,.6), rgba(0,0,0,0)) !important; inset: 0 0 -24px 0 !important; }
+body.web.phone .nav-back { display: none !important; }
+body.web.phone .nav-cluster { padding: 3px; gap: 2px; background: rgba(28,28,32,.55); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); }
+body.web.phone .nav-cluster .clock { display: none; }
+body.web.phone .icon-btn { width: 36px; height: 36px; }
+/* Bottom tab bar: icon + label, like a phone app */
+body.web.phone #tabs {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 70; margin: 0; border-radius: 0; gap: 0;
+  display: grid; grid-template-columns: repeat(5, 1fr); padding: 6px 4px calc(6px + var(--safe-b));
+  background: rgba(14,14,16,.88); backdrop-filter: blur(24px) saturate(170%); -webkit-backdrop-filter: blur(24px) saturate(170%);
+  border: 0; border-top: 1px solid rgba(255,255,255,.08); box-shadow: none; pointer-events: auto;
+}
+body.web.phone #tabs .indicator { display: none; }
+body.web.phone #tabs button { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0 2px; border-radius: 12px; font-size: 10.5px; font-weight: 600; color: rgba(255,255,255,.55); background: none !important; }
+body.web.phone #tabs button.active { color: #fff; }
+body.web.phone #tabs button::before { content: ""; width: 24px; height: 24px; background: currentColor; -webkit-mask: var(--ico) center/contain no-repeat; mask: var(--ico) center/contain no-repeat; }
+body.web.phone #tabs [data-go=home] { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3 2.5 11h2.7v9.5h5.3v-6h3v6h5.3V11h2.7z'/%3E%3C/svg%3E"); }
+body.web.phone #tabs [data-go=movies] { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zm1 2v2h2V6zm12 0v2h2V6zM5 10v4h2v-4zm12 0v4h2v-4zM5 16v2h2v-2zm12 0v2h2v-2zM9 6v12h6V6z'/%3E%3C/svg%3E"); }
+body.web.phone #tabs [data-go=tv] { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 6.5A1.5 1.5 0 0 1 4.5 5h15A1.5 1.5 0 0 1 21 6.5v10a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 16.5zM8 19.5h8V21H8zM8.6 2.2l3.4 2.6 3.4-2.6.9 1.2L13 6h-2L7.7 3.4z'/%3E%3C/svg%3E"); }
+body.web.phone #tabs [data-go=discover] { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2l2.2 6.3L21 9l-5.2 4.1L17.5 20 12 16.3 6.5 20l1.7-6.9L3 9l6.8-.7z'/%3E%3C/svg%3E"); }
+body.web.phone #tabs [data-go=library] { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 3h3v18H4zm5 0h3v18H9zm5.2.8 2.9-.8 4.7 17.4-2.9.8z'/%3E%3C/svg%3E"); }
+/* Room for the tab bar at the bottom of every page */
+body.web.phone #view { padding-bottom: calc(76px + var(--safe-b)); box-sizing: border-box; }
+body.web.phone .toast, body.web.phone #toasts { bottom: calc(84px + var(--safe-b)) !important; }
+
+/* Banner: shorter, buttons on one row */
+body.web.phone .hero { height: 64vh; min-height: 420px; margin-bottom: -36px; }
+body.web.phone .hero-content { left: var(--gutter); right: var(--gutter); bottom: 56px; max-width: none; }
+body.web.phone .hero-logo { max-width: 230px; max-height: 90px; margin-bottom: 10px; }
+body.web.phone .hero-title { font-size: 32px; }
+body.web.phone .hero-eyebrow { font-size: 11.5px; margin-bottom: 10px; }
+body.web.phone .hero-meta { font-size: 12.5px; }
+body.web.phone .hero-overview { display: none; }
+body.web.phone .hero .btns { flex-wrap: nowrap; gap: 8px; }
+body.web.phone .hero .btns .btn { height: 42px; padding: 0 18px; font-size: 14.5px; }
+body.web.phone .hero .btns .btn.round { width: 42px; padding: 0; }
+body.web.phone .hero-dots { right: var(--gutter); bottom: 64px; }
+
+/* Rows and cards: a peek of the next card so it's obvious you can swipe */
+body.web.phone .row { margin-bottom: 14px; }
+body.web.phone .row h2, body.web.phone .row-title { font-size: 19px; }
+body.web.phone .row h2 small { display: none; }
+body.web.phone .shelf { gap: 10px; padding-top: 8px; padding-bottom: 14px; scroll-snap-type: x mandatory; scroll-padding: var(--gutter); }
+body.web.phone .card.land .art, body.web.phone .card.land.big .art { width: 68vw; border-radius: 12px; }
+body.web.phone .card.land .sub, body.web.phone .card .why, body.web.phone .card.land.big .sub, body.web.phone .card.land.big .why { width: 68vw; font-size: 12px; }
+body.web.phone .card.poster .art, body.web.phone .card.poster .cap, body.web.phone .card.poster .sub { width: 31vw; }
+body.web.phone .card.poster .art { border-radius: 10px; }
+body.web.phone .card .cap { font-size: 12.5px; }
+body.web.phone .card.ranked .rank-num { font-size: 84px; margin-right: -10px; }
+body.web.phone .card .art .title-on { font-size: 15px; left: 12px; right: 12px; bottom: 10px; }
+body.web.phone .card .art .title-on img { max-height: 36px; }
+body.web.phone .card .fb, body.web.phone .card .more, body.web.phone .sh-arrow { display: none !important; }
+body.web.phone .grid { grid-template-columns: repeat(3, 1fr) !important; gap: 10px !important; }
+body.web.phone .grid .card.poster .art, body.web.phone .grid .card.poster .cap, body.web.phone .grid .card.poster .sub { width: 100%; }
+body.web.phone .page { padding-left: var(--gutter); padding-right: var(--gutter); }
+body.web.phone .page.flush { padding-left: 0; padding-right: 0; }
+body.web.phone .page-title { font-size: 30px; margin-top: calc(56px + var(--safe-t)); }
+body.web.phone .hero-dots { display: none !important; }
+body.web.phone #tabs { width: 100% !important; max-width: none !important; justify-self: stretch !important; box-sizing: border-box; }
+
+/* Player on a phone: no volume slider (phones have buttons), bigger touch targets, skip bubble */
+body.web.phone .player .p-vol { display: none !important; }
+body.web.phone .player .p-top { top: calc(14px + var(--safe-t)); left: 14px; right: 14px; }
+body.web.phone .player .p-bottom { left: 16px; right: 16px; bottom: calc(14px + var(--safe-b)); }
+body.web.phone .player .p-info .t { font-size: 19px; }
+body.web.phone .player .scrub { height: 32px; }
+body.web.phone .player .pbtn { width: 44px; height: 44px; }
+body.web.phone .player .pbtn.ring.big { width: 76px; height: 76px; }
+body.web.phone .player .p-center { gap: 34px; }
+.web-skip { position: absolute; top: 50%; z-index: 5; transform: translateY(-50%); padding: 10px 16px; border-radius: 999px; background: rgba(28,28,32,.7); color: #fff; font-weight: 700; font-size: 15px; opacity: 0; pointer-events: none; }
+.web-skip.l { left: 12%; } .web-skip.r { right: 12%; }
+.web-skip.show { animation: webSkip .7s ease-out; }
+@keyframes webSkip { 0% { opacity: 0; transform: translateY(-50%) scale(.85); } 20% { opacity: 1; transform: translateY(-50%) scale(1); } 100% { opacity: 0; } }
+body.web.phone .grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+body.web.phone .grid .card, body.web.phone .grid .card .art, body.web.phone .grid .card .cap, body.web.phone .grid .card .sub { width: 100% !important; min-width: 0; }
