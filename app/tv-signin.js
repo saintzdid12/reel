@@ -7,6 +7,7 @@
   const ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // no 0/O or 1/I mix-ups
   const rand = (n, set) => Array.from(crypto.getRandomValues(new Uint8Array(n)), (b) => set[b % set.length]).join('');
   const ICO = {
+    discord: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.3 5.3A16.6 16.6 0 0 0 15.2 4l-.5 1a15.3 15.3 0 0 0-5.4 0L8.8 4a16.5 16.5 0 0 0-4.1 1.3C2.1 9.2 1.4 13 1.7 16.7a16.7 16.7 0 0 0 5 2.5l1.1-1.7c-.6-.2-1.2-.5-1.7-.9l.4-.3a11.9 11.9 0 0 0 11 0l.4.3c-.5.4-1.1.7-1.7.9l1.1 1.7a16.6 16.6 0 0 0 5-2.5c.4-4.3-.7-8.1-3-11.4zM8.7 14.4c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm6.6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z"/></svg>',
     link: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 14.5zM6 6v8h12V6zM3 18.5h18v1.5H3z"/></svg>',
     user: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9m0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5"/></svg>',
   };
@@ -53,12 +54,13 @@
         </section>
         <div class="ta-or"><span>or</span></div>
         <section class="ta-card ta-pass">
+          ${window.REEL_WEB ? '<button class="btn ta-discord">' + ICO.discord + '<span>Continue with Discord</span></button><div class="ta-mini-or"><span>or use your username</span></div>' : ''}
           <div class="ta-label">${ICO.user}<span>Use your username</span></div>
           <label class="ta-field"><span>Username</span><input class="input ta-u" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="yourname"></label>
           <label class="ta-field"><span>Password</span><input class="input ta-p" type="password" autocomplete="current-password" placeholder="••••••••"></label>
           <div class="ta-err"></div>
           <button class="btn primary ta-go">Sign in</button>
-          <p class="ta-note">Signed up with Discord? Use the code instead.</p>
+          ${window.REEL_WEB ? '' : '<p class="ta-note">Signed up with Discord? Use the code instead.</p>'}
         </section>
       </div>
       <button class="btn close ta-cancel">Cancel</button>
@@ -80,6 +82,8 @@
       } catch (e) { err.textContent = cleanErr(e); go.disabled = false; go.textContent = 'Sign in'; }
     };
     go.onclick = submit;
+    const dc = $('.ta-discord', wrap);
+    if (dc) dc.onclick = async () => { dc.disabled = true; $('span', dc).textContent = 'Opening Discord…'; try { await Cloud.signInDiscord(); } catch (e) { err.textContent = cleanErr(e); dc.disabled = false; $('span', dc).textContent = 'Continue with Discord'; } };
     // The TV keyboard's Enter: username → password → sign in.
     u.addEventListener('keydown', (e) => { if (e.key === 'Enter' && u.value.trim()) (window.tvFocus ? window.tvFocus.focus(p) : p.focus()); });
     p.addEventListener('keydown', (e) => { if (e.key === 'Enter' && p.value) submit(); });

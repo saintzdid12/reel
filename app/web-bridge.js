@@ -76,7 +76,8 @@
       url: s.url, cached: /\[[A-Z]{2,3}\+\]/.test(name), quality: q, sizeGB,
       seeders: parseInt((title.match(/👤\s*(\d+)/) || [])[1] || '0', 10),
       source: ((title.match(/⚙️\s*([^\n]+)/) || [])[1] || '').trim(), flags,
-      filename: (s.behaviorHints && s.behaviorHints.filename) || lines[0] || '',
+      release: lines[0] || '',
+    filename: (s.behaviorHints && s.behaviorHints.filename) || lines[0] || '',
       group: (s.behaviorHints && s.behaviorHints.bingeGroup) || '',
       langs: (lines.slice(1).find((l) => /[\u{1F1E6}-\u{1F1FF}]|multi/iu.test(l)) || '').trim(),
     };
@@ -176,4 +177,18 @@
   };
   // The browser/phone Back button: close what's open or go back a screen (see web.js).
   window.__reelWebEmit = emit;
+
+  // Back from Discord: the address carries ?code=… (or ?error=…). Tidy the address, then hand it to Reel's sign-in
+  // as soon as that's listening (the same path the computer app uses).
+  try {
+    const q = new URLSearchParams(location.search);
+    const code = q.get('code'), error = q.get('error_description') || q.get('error');
+    if (code || error) {
+      history.replaceState(null, '', location.pathname);
+      let n = 0;
+      const t = setInterval(() => {
+        if ((listeners.authCallback || []).length || ++n > 100) { clearInterval(t); emit('authCallback', { code, error }); }
+      }, 100);
+    }
+  } catch {}
 })();

@@ -60,19 +60,46 @@ const ICON = {
 const CAN_HEVC = ['hvc1.2.4.L153.B0', 'hvc1.1.6.L150.B0'].some(c => window.MediaSource && MediaSource.isTypeSupported(`video/mp4; codecs="${c}"`));
 
 // Target bitrates (Mbps) per resolution: inside the window = sharp picture without a bloated file.
-const BITRATE = { 2160: [14, 45], 1080: [6, 22], 720: [2.5, 8], 480: [1, 3] };
+const BITRATE = { 2160: [12, 45], 1080: [4, 22], 720: [2, 8], 480: [1, 3] };
 const SIZE_GB = { 2160: [12, 60], 1080: [3, 20], 720: [1, 5], 480: [0.5, 2] };
+
+// Where a release came from, read from its name. Proper sources first; theatre recordings (cam, telesync,
+// telecine, screener) are treated as cams even when they claim 1080p.
+const CAMLIKE = /\b(cam|hdcam|camrip|hqcam|hdts|ts|telesync|tele?cine|hdtc|tc|scr|screener|dvdscr|predvd|hdtcrip)\b/i;
+const SOURCE = [[/remux/i, 40], [/blu-?ray|bdrip|brrip|\bbd\b/i, 30], [/web-?dl|\b(amzn|nf|dsnp|atvp|hmax|pcok|pmtp|hulu|itunes)\b/i, 25],
+  [/web-?rip|\bweb\b/i, 18], [/hdtv/i, 5], [/hdrip/i, -15]];
+// Release groups known for clean encodes: a small nudge, never more than a better picture.
+const GOOD_GROUPS = /\b(framestor|ntb|flux|cmrg|sparks|amiable|geckos|tepes|blutonium|hone|playweb|edith|bhdstudio|ctrlhd|epsilon|hallowed|rarbg|yts|yify|psa|tigole|qxr|silence)\b/i;
+const YEAR_RE = /(?<!\d)(19[2-9]\d|20[0-4]\d)(?!\d)/g;
+
+// Torrentio sometimes lists a different film with the same name (The Odyssey 1997 for The Odyssey 2026).
+// A release whose name carries a year that isn't this film's (give or take one) is dropped.
+function sameFilm(x, meta) {
+  const year = parseInt(String(meta.year || '').slice(0, 4), 10);
+  if (meta.type !== 'movie' || !year) return true;
+  const own = new Set(String(meta.title || '').match(YEAR_RE) || []);
+  const ys = (`${x.release || ''} ${x.filename || ''}`.match(YEAR_RE) || []).filter((y) => !own.has(y)).map(Number);
+  return !ys.length || ys.some((y) => Math.abs(y - year) <= 1);
+}
 
 function rankStreams(list, runtimeMin, memKey) {
   const s = Store.settings;
-  // Stream memory: the exact file you played before (movies), or the same release line (next episodes).
+  // Stream memory. Next episodes stick to the same release line. For a film, the exact file you played only
+  // wins outright while you're partway through it (same file = same position and subtitle timing); otherwise
+  // it's just a small nudge, so a better release can take over.
   const mem = memKey && Store.data.streamPick[memKey];
+  const prog = memKey && memKey.startsWith('movie:') && Store.data.progress[memKey];
+  const midway = !!(prog && prog.pos > 60 && (!prog.dur || prog.pos < prog.dur * 0.92));
   const score = (x) => {
     let v = 0;
+    const text = `${x.release || ''} ${x.filename || ''}`;
+    if (CAMLIKE.test(text) && !x.flags.includes('CAM')) x.flags.push('CAM');
     if (mem && x.cached) {
-      if (mem.filename && x.filename === mem.filename) v += 5000;
+      if (mem.filename && x.filename === mem.filename) v += midway ? 5000 : 15;
       else if (mem.group && x.group && x.group === mem.group) v += 2500;
     }
+    for (const [re, pts] of SOURCE) if (re.test(text)) { v += pts; break; }
+    if (GOOD_GROUPS.test(text)) v += 12;
     if (x.cached) v += 1000;
     if (x.flags.includes('CAM')) v -= 3000;
     if (x.flags.includes('3D')) v -= 400;
@@ -87,13 +114,13 @@ function rankStreams(list, runtimeMin, memKey) {
       const [lo, hi] = runtimeMin ? BITRATE[q] : SIZE_GB[q];
       const val = runtimeMin ? (x.sizeGB * 8192) / (runtimeMin * 60) : x.sizeGB;
       if (val >= lo && val <= hi) v += 25;
-      else if (val < lo) v -= ((lo - val) / lo) * 40;
+      else if (val < lo) v -= ((lo - val) / lo) * 30;
       else v -= Math.min(30, ((val - hi) / hi) * 25);
     }
-    // Popularity comes after quality/format: well-seeded releases are common, well-encoded and quick for the
-    // debrid service to fetch. Log scale so it breaks ties without outranking a better picture.
-    v += Math.min(10, Math.log10(1 + x.seeders) * 4);
-    if (!x.cached && x.seeders < 3) v -= 8;
+    // Popularity counts for a lot: a release lots of people share is almost always a real, clean copy (and a
+    // big file with few sharers is often a bad one). Log scale: 10 -> 19, 100 -> 36, 1000+ -> 45.
+    v += Math.min(45, Math.log10(1 + x.seeders) * 18);
+    if (x.seeders < 3) v -= 10;
     return v;
   };
   return list.map(x => ({ ...x, score: score(x) })).sort((a, b) => b.score - a.score);
@@ -120,7 +147,8 @@ const Playback = {
     let raw;
     if (hit && Date.now() - hit.at < 15 * 60e3) raw = hit.raw;
     else { raw = await window.reel.streams(stype, sid); this.cache.set(sid, { raw, at: Date.now() }); }
-    const list = rankStreams(raw, meta.runtime || (meta.type === 'tv' ? 45 : 115), `${meta.type}:${meta.id}`);
+    const mine = raw.filter((x) => sameFilm(x, meta));
+    const list = rankStreams(mine.length ? mine : raw, meta.runtime || (meta.type === 'tv' ? 45 : 115), `${meta.type}:${meta.id}`);
     return { list, stype, sid, best: list.find(x => x.cached && !x.flags.includes('CAM')) };
   },
   remember(meta, x) {

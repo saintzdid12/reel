@@ -28,6 +28,16 @@
     };
   }
 
+  // ---- Discord sign-in: off to Discord in this tab, back to this page (bridge finishes it) ----
+  if (typeof Cloud !== 'undefined') {
+    Cloud.redirect = () => location.origin + location.pathname;
+    Cloud.signInDiscord = async function () {
+      const { data, error } = await this.sb.auth.signInWithOAuth({ provider: 'discord', options: { redirectTo: this.redirect(), skipBrowserRedirect: true } });
+      if (error) throw error;
+      location.href = data.url;
+    };
+  }
+
   // ---- no Live TV on the web ----
   if (typeof LiveTV !== 'undefined') { LiveTV.enabled = () => false; LiveTV.addNav = () => {}; try { LiveTV.removeNav(); } catch {} }
 

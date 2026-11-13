@@ -7,7 +7,7 @@ body.web #drag, body.web .mac-lights, body.web .upd-btn, body.web .import-block,
 body.web .search-bar .seg, body.web .vibe-chips, body.web .discord-btn, body.web .pipbtn { display: none !important; }
 /* Accounts are made on the computer; the web signs in */
 body.web .setup-card .acct-choices .su, body.web .setup-card .acct-why { display: none !important; }
-body.web .setup-card .acct-choices::after { content: "Sign in with your Reel username, or link this browser from Reel on your computer."; display: block; margin-top: 14px; font-size: 14px; color: var(--text-3); text-align: center; }
+body.web .setup-card .acct-choices::after { content: "Sign in with Discord or your Reel username, or link this browser from Reel on your computer."; display: block; margin-top: 14px; font-size: 14px; color: var(--text-3); text-align: center; }
 
 /* Settings (the simple one, shared with the TV) */
 body.web .tvs { max-width: 720px; margin: 0 auto; padding: 96px 20px 120px; }
@@ -56,7 +56,7 @@ body.web .modal-back.tv-auth-back .sheet { width: min(1080px, 92vw); max-width: 
 
 /* First screen: one big Sign in button, the hint under it */
 body.web .setup-card .acct-choices { flex-direction: column; align-items: stretch; gap: 0; }
-body.web .setup-card .acct-choices .btn { height: 50px; font-size: 16px; border-radius: 14px; justify-content: center; }
+body.web .setup-card .acct-choices .btn { flex: none; height: 50px; font-size: 16px; border-radius: 14px; justify-content: center; }
 body.web.phone .setup-card { width: calc(100vw - 32px); padding: 30px 24px 26px; border-radius: 26px; }
 body.web.phone .setup-card h1 { font-size: 30px; }
 
@@ -152,3 +152,10 @@ body.web.phone .player .p-center { gap: 34px; }
 @keyframes webSkip { 0% { opacity: 0; transform: translateY(-50%) scale(.85); } 20% { opacity: 1; transform: translateY(-50%) scale(1); } 100% { opacity: 0; } }
 body.web.phone .grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
 body.web.phone .grid .card, body.web.phone .grid .card .art, body.web.phone .grid .card .cap, body.web.phone .grid .card .sub { width: 100% !important; min-width: 0; }
+
+/* Discord on the web sign-in sheet */
+.tv-auth .ta-discord { height: 52px; justify-content: center; gap: 10px; border-radius: 15px; font-size: 16px; font-weight: 700; background: #5865f2 !important; color: #fff !important; border: 0; }
+.tv-auth .ta-discord svg { width: 22px; height: 22px; }
+.tv-auth .ta-discord:hover { background: #6d78f5 !important; }
+.tv-auth .ta-mini-or { display: flex; align-items: center; gap: 10px; color: var(--text-3); font-size: 12.5px; font-weight: 600; margin: 4px 0 2px; }
+.tv-auth .ta-mini-or::before, .tv-auth .ta-mini-or::after { content: ""; flex: 1; height: 1px; background: rgba(255,255,255,.1); }
