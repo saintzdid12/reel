@@ -23,11 +23,11 @@ const AccountUI = {
   linkTv() {
     const wrap = h(`<div class="tvl-sheet">
       <div class="tvl-ico"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 14.5zM6 6v8h12V6zM8 18.5h8V20H8z"/></svg></div>
-      <h3>Link a TV</h3>
-      <p class="muted">Open Reel on your Fire TV and choose <b>Sign in</b>. Type the code it shows:</p>
+      <h3>Link a device</h3>
+      <p class="muted">On your TV, phone or another browser, open Reel and choose <b>Sign in</b>. Type the code it shows:</p>
       <input class="input tvl-code" maxlength="6" placeholder="ABC123" autocomplete="off" spellcheck="false">
       <div class="acct-err"></div>
-      <div class="tvl-btns"><button class="btn ghost no">Cancel</button><button class="btn primary go">Link TV</button></div></div>`);
+      <div class="tvl-btns"><button class="btn ghost no">Cancel</button><button class="btn primary go">Link</button></div></div>`);
     const m = openModal(wrap);
     const inp = $('.tvl-code', wrap), err = $('.acct-err', wrap), go = $('.go', wrap);
     setTimeout(() => inp.focus(), 50);
@@ -42,8 +42,8 @@ const AccountUI = {
         let msg = data && data.error;
         if (error && !msg) { try { msg = (await error.context.json()).error; } catch { msg = 'Couldn’t reach Reel’s servers. Try again.'; } }
         if (msg) throw new Error(msg);
-        m.close(); toast('TV linked — it’s signing in now');
-      } catch (e) { err.textContent = cleanErr(e); go.disabled = false; go.textContent = 'Link TV'; }
+        m.close(); toast('Linked — it’s signing in now');
+      } catch (e) { err.textContent = cleanErr(e); go.disabled = false; go.textContent = 'Link'; }
     };
     go.onclick = run; inp.onkeydown = (e) => { if (e.key === 'Enter') run(); };
   },
@@ -149,7 +149,7 @@ const AccountUI = {
       const p = Cloud.profile || {};
       const el = h(`<div class="panel acct-panel in">
         <div class="acct-me">${Cloud.avatar(p, 56)}<div class="acct-names"><b>${esc(fname(p))}</b><span>@${esc(p.username || '')} · ${Cloud.kind === 'discord' ? 'Signed in with Discord' : 'Username & password'}</span></div>
-          ${Cloud.kind === 'password' ? '<button class="btn small ghost pwd">Change password</button>' : ''}<button class="btn small ghost edit">Edit profile</button><button class="btn small ghost tvlink">Link a TV</button></div>
+          ${Cloud.kind === 'password' ? '<button class="btn small ghost pwd">Change password</button>' : ''}<button class="btn small ghost edit">Edit profile</button><button class="btn small ghost tvlink">Link a device</button></div>
         <div class="acct-sync"><span class="sync-dot"></span><span class="sync-txt"></span><button class="btn small ghost now">${SYNC_SVG} Sync now</button></div>
         <label class="check"><input type="checkbox" class="sh-lib"> Friends can see my ratings, reviews and watchlist</label>
         <label class="check"><input type="checkbox" class="sh-act"> Friends can see what I’m watching and my activity</label>

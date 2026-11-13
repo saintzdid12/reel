@@ -18,6 +18,16 @@
     };
   }
 
+  // ---- signing out clears this browser (library, service, sync state), then back to the sign-in screen ----
+  if (typeof Cloud !== 'undefined' && Cloud.signOut) {
+    const signOut0 = Cloud.signOut.bind(Cloud);
+    Cloud.signOut = async function (...a) {
+      try { await signOut0(...a); } catch {}
+      await window.reel.wipe();
+      location.reload();
+    };
+  }
+
   // ---- no Live TV on the web ----
   if (typeof LiveTV !== 'undefined') { LiveTV.enabled = () => false; LiveTV.addNav = () => {}; try { LiveTV.removeNav(); } catch {} }
 

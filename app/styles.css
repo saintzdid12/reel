@@ -3850,16 +3850,16 @@ body.mac .tw .show-side { left: 96px; }
 .tv-info em { font-style: normal; color: #fff; font-variant-numeric: tabular-nums; text-align: right; }
 .tv-info p { margin: 9px 0 0; line-height: 1.45; color: rgba(255,255,255,.88); }
 
-/* Link a TV */
-/* Link a TV: one centered column — icon, title, the code box, then two equal buttons */
+/* Link a device */
+/* Link a device: one centered column — icon, title, the code box, then two equal buttons */
 .tvl-sheet { width: min(400px, 86vw); margin: 0 auto; padding: 6px 4px 2px; text-align: center; display: flex; flex-direction: column; align-items: center; }
 .tvl-sheet .tvl-ico { width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.1); margin-bottom: 14px; }
 .tvl-sheet .tvl-ico svg { width: 26px; height: 26px; }
 .tvl-sheet h3 { margin: 0 0 8px; font-size: 22px; letter-spacing: -.02em; }
 .tvl-sheet p { margin: 0 0 18px; line-height: 1.5; max-width: 330px; }
 .tvl-sheet .tvl-code { width: 100%; box-sizing: border-box; height: 60px; font-size: 28px; font-weight: 700; letter-spacing: .3em; text-indent: .3em; text-align: center; text-transform: uppercase; margin: 0; }
-.tvl-sheet .acct-err { min-height: 20px; margin: 8px 0 4px; }
-.tvl-sheet .tvl-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+.tvl-sheet .acct-err { min-height: 18px; margin: 10px 0 0 !important; font-size: 13px; }
+.tvl-sheet .tvl-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 14px; }
 .tvl-sheet .tvl-btns .btn { justify-content: center; height: 42px; }
 
 /* Watch party: "You're 6s behind · Catch up · ✕" — small, under the party bar, never in the way */

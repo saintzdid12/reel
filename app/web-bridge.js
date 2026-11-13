@@ -33,6 +33,12 @@
 
   // Which debrid service the account uses (the key itself stays on the server).
   const acct = () => { try { return JSON.parse(lget('reel:debrid') || 'null'); } catch { return null; } };
+  // Signed in = a saved session. Without one, nothing from a previous person is shown (shared phones, borrowed laptops).
+  const signedIn = () => { try { return Object.keys(localStorage).some((k) => k.startsWith('reel:auth:')); } catch { return false; } };
+  async function wipe() {
+    try { for (const k of Object.keys(localStorage)) if (k.startsWith('reel:') && k !== 'reel:device') localStorage.removeItem(k); } catch {}
+    await kvSet('reel-data', null); await kvSet('reel-sync', null);
+  }
 
   // ---- the server function ----
   async function server(body) {
@@ -90,11 +96,16 @@
   window.reel = {
     platform: 'web',
     web: true,
-    async loadData() { const t = await kvGet('reel-data'); try { return t ? JSON.parse(t) : null; } catch { return null; } },
+    async loadData() {
+      if (!signedIn()) { await wipe(); return null; }
+      const t = await kvGet('reel-data'); try { return t ? JSON.parse(t) : null; } catch { return null; }
+    },
+    wipe,
     async saveData(d) { await kvSet('reel-data', JSON.stringify(d)); return true; },
     async getSecrets() {
       const a = acct();
-      return { tmdbKey: K.tmdb, tmdbBuiltIn: true, hasRd: !!a, debrid: a ? a.debrid : '', hasAI: false, torrentioUrl: '' };
+      const ok = !!a && signedIn();
+      return { tmdbKey: K.tmdb, tmdbBuiltIn: true, hasRd: ok, debrid: ok ? a.debrid : '', hasAI: false, torrentioUrl: '' };
     },
     async setSecrets(patch) {
       // Only remember WHICH service the account uses; a key handed over here is not kept in the browser.

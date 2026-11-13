@@ -1,5 +1,5 @@
 // Reel TV — signing in. Two ways, side by side on one screen:
-//   • Link with a code: the TV shows a short code; type it into Reel on your computer (Settings → Account → Link a TV).
+//   • Link with a code: the TV shows a short code; type it into Reel on your computer (Settings → Account → Link a device).
 //   • Username & password: for Reel accounts made with a username (typed with the TV keyboard).
 // Either way, your library and debrid key come with the account.
 (() => {
@@ -48,7 +48,7 @@
         <section class="ta-card ta-link">
           <div class="ta-label">${ICO.link}<span>Link from your computer</span></div>
           <div class="ta-code"><span class="spinner sm"></span></div>
-          <ol><li>Open <b>Reel</b> on your computer</li><li>Go to <b>Settings → Account → Link a TV</b></li><li>Type this code</li></ol>
+          <ol><li>Open <b>Reel</b> on your computer</li><li>Go to <b>Settings → Account → Link a device</b></li><li>Type this code</li></ol>
           <div class="ta-wait"><span class="spinner sm"></span><span>Waiting for your computer…</span></div>
         </section>
         <div class="ta-or"><span>or</span></div>

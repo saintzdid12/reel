@@ -86,7 +86,7 @@ Turn it on in Settings and connect your own IPTV subscription — **Game Day** s
 4. When there's a new version, Reel shows a *Download* button — open it and drag the new Reel into Applications again.
 
 ### On your phone (or any browser)
-Open **https://saintzdid12.github.io/reel/app/** and sign in with your Reel username (or link it from Reel on your computer: **Settings → Account → Link a TV**). Add it to your home screen for a full-screen app: on iPhone, **Share → Add to Home Screen**; on Android, **⋮ → Install app**.
+Open **https://saintzdid12.github.io/reel/app/** and sign in with your Reel username (or link it from Reel on your computer: **Settings → Account → Link a device**). Add it to your home screen for a full-screen app: on iPhone, **Share → Add to Home Screen**; on Android, **⋮ → Install app**.
 Works best with **Real-Debrid**, which converts any movie to phone-friendly video on its own servers. With TorBox, only versions a browser can play directly are listed.
 
 ### Fire TV and Android TV
@@ -94,7 +94,7 @@ Works best with **Real-Debrid**, which converts any movie to phone-friendly vide
    `https://github.com/saintzdid12/reel/releases/latest/download/Reel-TV.apk`
    (On an Android TV, open the same link with any downloader or file manager.)
 2. If the TV asks, allow Downloader to install apps, then choose **Install**.
-3. Open Reel and sign in: type the code the TV shows into **Settings → Account → Link a TV** on your computer, or use your Reel username and password. Your library and debrid service come with your account.
+3. Open Reel and sign in: type the code the TV shows into **Settings → Account → Link a device** on your computer, or use your Reel username and password. Your library and debrid service come with your account.
 4. Reel for TV **updates itself**: when a new version is out it asks once, downloads it and opens the installer.
 
 ### Setup (computer)
