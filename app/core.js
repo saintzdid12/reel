@@ -356,7 +356,7 @@ const DiskCache = {
 const TMDB = {
   key: '',
   cache: new Map(),
-  img: (p, size = 'w500') => (p ? `https://image.tmdb.org/t/p/${size}${p}` : ''),
+  img: (p, size = 'w500') => (p ? (/^https?:\/\//.test(p) ? p : `https://image.tmdb.org/t/p/${size}${p}`) : ''),
   async get(path, params = {}) {
     if (!this.key) throw new Error('NO_TMDB');
     const url = new URL('https://api.themoviedb.org/3' + path);

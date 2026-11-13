@@ -449,6 +449,7 @@ Views.detail = async (root, { type, id, season }) => {
     streams.onclick = () => Playback.start(meta, tgt.ep, { manual: true });
     box.appendChild(streams);
     if (typeof Party !== 'undefined') box.appendChild(Party.button(meta, tgt.ep));
+    if (typeof OnePace !== 'undefined' && type === 'tv' && meta.id === OnePace.ONE_PIECE) box.appendChild(OnePace.button(meta));
     if (trailer) { const t = h(`<button class="btn" title="Watch the trailer on YouTube">${ICON.film} Trailer</button>`); t.onclick = () => window.reel.openExternal(`https://www.youtube.com/watch?v=${trailer.key}`); box.appendChild(t); }
     const add = (icon, label, on, fn, extra = '') => { const b = h(`<button class="act ${on ? 'on' : ''} ${extra}" title="${label}">${icon}</button>`); b.onclick = (e) => fn(b, e); cl.appendChild(b); return b; };
     add(cur.watchlist ? ICON.bookmarkFill : ICON.bookmark, cur.watchlist ? 'On your watchlist — click to remove' : 'Add to watchlist', cur.watchlist, () => {
@@ -481,8 +482,10 @@ Views.detail = async (root, { type, id, season }) => {
       <div class="ep-bar"><h2 class="row-title" style="margin:0">Episodes</h2>
         <button class="season-btn"><span></span>${ICON.chevDown}</button>
         <span class="ep-progress dim"></span>
-        <button class="season-rate" title="Rate this season"></button>
-        <button class="btn small ghost mark-season" style="margin-left:auto"></button>
+        <span class="ep-actions" style="margin-left:auto;display:inline-flex;align-items:center;gap:8px">
+          <button class="season-rate" title="Rate this season"></button>
+          <button class="btn small ghost mark-season"></button>
+        </span>
       </div>
       <div class="shelf ep-shelf"></div></section>`);
     below.appendChild(sec);

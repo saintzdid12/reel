@@ -3870,3 +3870,52 @@ body.mac .tw .show-side { left: 96px; }
 .party-drift .pd-x { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; color: rgba(255,255,255,.6); }
 .party-drift .pd-x:hover { background: rgba(255,255,255,.12); color: #fff; }
 .party-drift .pd-x svg { width: 12px; height: 12px; }
+
+/* ===================== One Pace (One Piece's page → "One Pace version") ===================== */
+.op-btn .ic { width: 17px; height: 17px; }
+.op-sheet { width: min(760px, 100%); }
+.op-sheet .sheet-head h3 { margin: 2px 0 4px; }
+.op-sheet .op-bar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 16px 0 14px; }
+.op-sheet .op-ver { display: inline-flex; padding: 4px; border-radius: 999px; background: var(--glass); border: 1px solid var(--glass-border); }
+.op-sheet .op-ver button { padding: 8px 18px; border-radius: 999px; font-weight: 600; font-size: 14px; color: var(--text-2); }
+.op-sheet .op-ver button.on { background: rgba(255,255,255,.94); color: #000; }
+.op-sheet .op-note { font-size: 13px; }
+.op-body { max-height: min(62vh, 640px); overflow: auto; margin: 0 -6px; padding: 0 6px 6px; }
+.op-continue { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; padding: 12px 16px; margin-bottom: 12px; border-radius: 16px;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); transition: background .25s; }
+.op-continue:hover, .op-continue:focus-visible { background: rgba(255,255,255,.14); }
+.op-continue .op-play { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: #fff; color: #000; flex: none; }
+.op-continue .op-play .ic { width: 16px; height: 16px; }
+.op-continue b { display: block; font-size: 15px; }
+.op-continue small { display: block; color: var(--text-3); font-size: 12.5px; margin-top: 2px; }
+.op-arcs { display: flex; flex-direction: column; gap: 6px; }
+.op-arc { border-radius: 16px; background: rgba(255,255,255,.035); border: 1px solid transparent; }
+.op-arc.open { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.1); }
+.op-arc-head { display: flex; align-items: center; gap: 14px; width: 100%; padding: 12px 14px; text-align: left; border-radius: 16px; }
+.op-arc-head:hover, .op-arc-head:focus-visible { background: rgba(255,255,255,.06); }
+.op-n { width: 30px; text-align: center; font-weight: 700; color: var(--text-3); font-variant-numeric: tabular-nums; flex: none; }
+.op-t { flex: 1; min-width: 0; }
+.op-t b { display: block; font-size: 15px; }
+.op-t small { display: block; font-size: 12.5px; color: var(--text-3); margin-top: 2px; }
+.op-seen { font-size: 12px; font-weight: 700; color: var(--text-2); padding: 3px 9px; border-radius: 999px; background: rgba(255,255,255,.08); }
+.op-seen.all { color: #000; background: #fff; display: grid; place-items: center; width: 24px; height: 24px; padding: 0; }
+.op-seen .ic { width: 15px; height: 15px; }
+.op-chev { color: var(--text-3); transition: transform .3s var(--spring); }
+.op-chev .ic { width: 20px; height: 20px; }
+.op-arc.open .op-chev { transform: rotate(180deg); }
+.op-eps { display: none; padding: 0 10px 10px; }
+.op-arc.open .op-eps { display: flex; flex-direction: column; gap: 4px; }
+.op-desc { margin: 0 6px 10px; color: var(--text-2); font-size: 13px; line-height: 1.5; }
+.op-ep { display: flex; align-items: flex-start; gap: 14px; width: 100%; text-align: left; padding: 8px; border-radius: 12px; }
+.op-ep:hover, .op-ep:focus-visible { background: rgba(255,255,255,.07); }
+.op-num { position: relative; width: 46px; height: 46px; flex: none; border-radius: 12px; display: grid; place-items: center; overflow: hidden;
+  background: rgba(255,255,255,.07); font-weight: 700; font-size: 15px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.op-num i { position: absolute; left: 0; bottom: 0; height: 3px; background: #fff; }
+.op-ep.done .op-num { color: var(--text-3); }
+.op-et { flex: 1; min-width: 0; }
+.op-et b { display: block; font-size: 14px; }
+.op-et small { display: block; font-size: 12px; color: var(--text-3); margin: 2px 0 4px; }
+.op-et em { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-style: normal; font-size: 12.5px; color: var(--text-2); line-height: 1.45; }
+.op-ep.done .op-et b { color: var(--text-2); }
+.op-tick { color: #fff; flex: none; padding-top: 2px; }
+.op-tick .ic { width: 18px; height: 18px; }

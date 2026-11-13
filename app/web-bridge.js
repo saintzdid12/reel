@@ -118,11 +118,14 @@
     streams: (type, id) => fetchStreams(type, id),
     async testStreaming() { throw new Error('Set up your debrid service in Reel on your computer — it comes with your account.'); },
     async prepare(url) {
-      const p = await server({ action: 'play', url });
+      const op = String(url).startsWith('onepace:') ? String(url).split(':') : null;   // One Pace: onepace:<hash>:<episode>:<name>
+      const p = op ? await server({ action: 'magnet', hash: op[1], part: op[2], name: decodeURIComponent(op.slice(3).join(':')), ...((typeof Store !== 'undefined' && Store.data.onepace && Store.data.onepace.dub) ? { audio: 'eng' } : { audio: 'jpn', subs: 'eng' }) }) : await server({ action: 'play', url });
       if (p.kind === 'hls') {
         const src = p.variants[p.pick];
         return { id: 'web', mode: 'direct', hls: true, directUrl: src, variants: p.variants, quality: p.pick, duration: p.duration || 0, audioTracks: [], subTracks: [], videoCodec: 'h264' };
       }
+      // One Pace files are HEVC in MKV, which browsers can't play; only Real-Debrid converts them for the web.
+      if (op) throw new Error('On the website, One Pace needs Real-Debrid (it converts the video for browsers). With TorBox, watch it in Reel on your computer or TV.');
       return { id: 'web', mode: 'direct', hls: false, directUrl: p.url, duration: 0, audioTracks: [], subTracks: [], videoCodec: 'h264' };
     },
     async endPlayback() { return true; },

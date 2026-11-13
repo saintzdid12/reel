@@ -199,7 +199,7 @@ const Playback = {
 
   // Entry point: find streams for a movie or an episode and play the best one (or show the list).
   async start(meta, ep, { manual, resumeAt } = {}) {
-    const sheet = h(`<div><div class="sheet-head"><div><div class="eyebrow">${ep ? `S${ep.season}, E${ep.episode}` : 'Choose a stream'}</div><h3>${esc(meta.title)}</h3>${ep ? `<div class="muted">${esc(ep.name || '')}</div>` : ''}</div><button class="btn small round close">${ICON.x}</button></div><div class="body" style="display:flex;align-items:center;gap:14px;padding:20px 0"><div class="spinner"></div><div class="muted">Finding streams…</div></div></div>`);
+    const sheet = h(`<div><div class="sheet-head"><div><div class="eyebrow">${ep ? epTag(ep) : 'Choose a stream'}</div><h3>${esc(meta.title)}</h3>${ep ? `<div class="muted">${esc(ep.name || '')}</div>` : ''}</div><button class="btn small round close">${ICON.x}</button></div><div class="body" style="display:flex;align-items:center;gap:14px;padding:20px 0"><div class="spinner"></div><div class="muted">Finding streams…</div></div></div>`);
     let m = null;
     const cachedQuick = !manual && Store.settings.autoPlay;
     // Only show the sheet right away when the list is needed (or the lookup is slow).
@@ -259,7 +259,7 @@ const Player = {
     this.close(true, true);
     const pkey = meta.type === 'movie' ? `movie:${meta.id}` : `tv:${meta.id}:${ep.season}:${ep.episode}`;
     const prog = Store.data.progress[pkey];
-    const sub = ep ? `S${ep.season}, E${ep.episode}${ep.name ? ' · ' + ep.name : ''}` : (meta.year || '');
+    const sub = ep ? `${epTag(ep)}${ep.name ? ' · ' + ep.name : ''}` : (meta.year || '');
     const root = h(`<div class="player">
       <div class="p-art" style="background-image:url('${TMDB.img((ep && ep.still) || meta.backdrop, 'original')}')"></div>
       <video playsinline></video>
@@ -304,7 +304,7 @@ const Player = {
       </div>
     </div>`);
     $('#player-root').appendChild(root);
-    TMDB.logo(meta.type, meta.id).then(p => { if (p && root.isConnected) $('.load-logo', root).innerHTML = `<img src="${TMDB.img(p, 'w500')}" alt="${esc(meta.title)}">`; });
+    if (!meta.onepace) TMDB.logo(meta.type, meta.id).then(p => { if (p && root.isConnected) $('.load-logo', root).innerHTML = `<img src="${TMDB.img(p, 'w500')}" alt="${esc(meta.title)}">`; });
     const video = $('video', root);
     const st = this.cur = {
       root, video, meta, ep, stream, list, ids, pkey,
@@ -870,7 +870,7 @@ const Player = {
     if (!next) return this.close();
     let n = Store.settings.nextEpSeconds || 0;
     const card = h(`<div class="next-up"><div class="still" style="background-image:url('${TMDB.img(next.still, 'w500')}')"></div>
-      <div class="eyebrow">Up next · S${next.season}, E${next.episode}</div>
+      <div class="eyebrow">Up next · ${epTag(next)}</div>
       <div style="font-weight:600;margin:4px 0 14px">${esc(next.name || '')}</div>
       <div class="btns"><button class="btn primary small go">${ICON.playSm} Play${n ? ` <span class="cd">(${n})</span>` : ''}</button><button class="btn small stop">Not now</button></div></div>`);
     s.root.appendChild(card);
@@ -910,6 +910,6 @@ const Player = {
     if (silent) return;
     rerender();
     if (s.finished && s.meta.type === 'movie' && s.autoEntry) openAfterWatch(s.meta, s.autoEntry);
-    else if (s.finished && s.meta.type === 'tv') toast(`Marked S${s.ep.season}, E${s.ep.episode} as watched`);
+    else if (s.finished && s.meta.type === 'tv') toast(`Marked ${epTag(s.ep)} as watched`);
   },
 };

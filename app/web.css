@@ -226,3 +226,10 @@ body.web.phone .stream:hover { transform: none; }
 body.web.phone .modal-back .sheet { width: auto !important; max-width: none !important; margin: 0 10px !important; padding: 20px 16px !important; box-sizing: border-box; max-height: calc(100dvh - 40px); }
 /* iPhone zooms the page into any text box under 16px: keep them at 16px */
 body.web.phone input:not([class*=code]):not([type=range]):not([type=checkbox]), body.web.phone textarea, body.web.phone select { font-size: 16px !important; }
+body.web.phone .ep-actions { margin-left: 0 !important; }
+/* One Pace list on phones: smaller thumbnails, taller list */
+body.web.phone .op-body { max-height: calc(100dvh - 250px); }
+body.web.phone .op-num { width: 40px; height: 40px; font-size: 14px; }
+body.web.phone .op-et em { -webkit-line-clamp: 2; font-size: 12px; }
+body.web.phone .op-arc-head { padding: 12px 10px; gap: 10px; }
+body.web.phone .op-n { width: 22px; }
