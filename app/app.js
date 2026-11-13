@@ -293,7 +293,7 @@ function endLaunch() {
   window.reel.updateStatus && window.reel.updateStatus().then(v => { if (v) updateToast(v); });
 })();
 
-// Playing something brings it back to Continue Watching / Up Next if you'd removed it.
+// Playing something brings it back to Continue Watching if you'd removed it.
 document.addEventListener('reel:play', (e) => { const m = e.detail && e.detail.meta; const it = m && Store.item(`${m.type}:${m.id}`); if (it && it.cwHiddenAt) { delete it.cwHiddenAt; Store.save(); } });
 // reel:// links — watch party invites (reel://party/CODE).
 function openLink(url) {

@@ -59,15 +59,27 @@ async function heroCarousel(container, items, { eyebrow, theme } = {}) {
 
 const rowsBox = () => h('<div class="rows"></div>');
 
+// Continue Watching: what you're partway through first, then the next episode of shows you're between episodes of
+// (formerly a separate "Up Next" row). One card per show or movie.
 function continueRow(container, filterType) {
-  // One card per show or movie: only the most recently watched episode/position.
   const latest = new Map();
   Object.values(Store.data.progress)
     .filter(p => !filterType || p.type === filterType)
     .forEach(p => { const cur = latest.get(p.key); if (!cur || p.updatedAt > cur.updatedAt) latest.set(p.key, p); });
   const items = [...latest.values()].sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 15);
-  if (!items.length) return;
-  const r = row('Continue Watching', items, p => {
+  const mark = document.createComment('continue-watching');
+  container.appendChild(mark);
+  let r = null;
+  const place = () => { if (!r) { r = row('Continue Watching', []); mark.parentNode && mark.parentNode.insertBefore(r, mark); } return $('.shelf', r); };
+  const withX = (card, p) => {
+    const x = h(`<button class="cw-x" title="Remove from Continue Watching">${ICON.x}</button>`);
+    x.addEventListener('pointerdown', (e) => e.stopPropagation());   // the shelf's drag-to-scroll would eat the click
+    x.onclick = (e) => { e.stopPropagation(); e.preventDefault(); removeFromContinue(p, card, r); };
+    card._cw = () => removeFromContinue(p, card, r);
+    $('.art', card).appendChild(x);
+    return card;
+  };
+  items.forEach((p, n) => {
     const card = landCard(
       { type: p.type, id: p.id, title: p.title, year: p.year, backdrop: p.type === 'tv' && p.still ? p.still : p.backdrop, poster: p.poster },
       {
@@ -77,14 +89,31 @@ function continueRow(container, filterType) {
         onClick: () => Playback.start({ type: p.type, id: p.id, title: p.title, year: p.year, poster: p.poster, backdrop: p.backdrop, imdb: p.imdb },
           p.type === 'tv' ? { season: p.season, episode: p.episode, name: p.epName, still: p.still } : null),
       });
-    const x = h(`<button class="cw-x" title="Remove from Continue Watching">${ICON.x}</button>`);
-    x.addEventListener('pointerdown', (e) => e.stopPropagation());   // the shelf's drag-to-scroll would eat the click
-    x.onclick = (e) => { e.stopPropagation(); e.preventDefault(); removeFromContinue(p, card, r); };
-    card._cw = () => removeFromContinue(p, card, r);
-    $('.art', card).appendChild(x);
-    return card;
+    card.style.animationDelay = `${Math.min(n, 8) * 40}ms`;
+    place().appendChild(withX(card, p));
   });
-  container.appendChild(r);
+  if (filterType === 'movie') return;
+  // Next episodes: shows you've watched part of, with nothing in progress right now.
+  const inProgress = new Set(Object.values(Store.data.progress).map(p => p.key));
+  const shows = Store.values().filter(i => i.type === 'tv' && i.lastEp && !i.cwHiddenAt && !inProgress.has(`tv:${i.id}`)).slice(0, 12);
+  if (!shows.length) return;
+  (async () => {
+    const found = await Promise.all(shows.map(async s => {
+      const [sn, en] = s.lastEp.split(':').map(Number);
+      let nx = (await TMDB.season(s.id, sn).catch(() => ({ episodes: [] }))).episodes.find(e => e.episode_number === en + 1);
+      if (!nx) nx = ((await TMDB.season(s.id, sn + 1).catch(() => ({ episodes: [] }))).episodes || [])[0];
+      return nx && (!nx.air_date || nx.air_date <= today()) ? { s, nx } : null;
+    }));
+    if (!mark.isConnected) return;   // you've moved on to another page
+    found.filter(Boolean).forEach(({ s, nx }, n) => {
+      const card = landCard({ type: 'tv', id: s.id, title: s.title, backdrop: nx.still_path || s.backdrop }, {
+        overlay: s.title, sub: `Next · S${nx.season_number}, E${nx.episode_number} · ${nx.name}`,
+        onClick: () => Playback.start(s, { season: nx.season_number, episode: nx.episode_number, name: nx.name, still: nx.still_path }),
+      });
+      card.style.animationDelay = `${Math.min(items.length + n, 8) * 40}ms`;
+      place().appendChild(withX(card, { key: `tv:${s.id}`, type: 'tv', title: s.title }));
+    });
+  })();
 }
 // Takes a title off Continue Watching only — your watched status, ratings and history stay exactly as they are.
 // (Play it again and it comes back.)
@@ -94,7 +123,7 @@ function removeFromContinue(p, card, rowEl) {
   saved.forEach(([k]) => delete Store.data.progress[k]);
   const it = Store.item(p.key);
   const hadHide = it && it.cwHiddenAt;
-  if (it && p.type === 'tv') it.cwHiddenAt = Date.now();   // keeps the show out of Up Next too
+  if (it && p.type === 'tv') it.cwHiddenAt = Date.now();   // keeps the show's next episode off the row too
   Store.save();
   if (card) {
     card.classList.add('dismissed');
@@ -105,26 +134,6 @@ function removeFromContinue(p, card, rowEl) {
     if (it && p.type === 'tv') { if (hadHide) it.cwHiddenAt = hadHide; else delete it.cwHiddenAt; }
     Store.save(); rerender();
   } });
-}
-
-// Next unwatched episode of every show you're partway through (and not already in Continue Watching).
-function upNextRow(container) {
-  const inProgress = new Set(Object.values(Store.data.progress).map(p => p.key));
-  const shows = Store.values().filter(i => i.type === 'tv' && i.lastEp && !i.cwHiddenAt && !inProgress.has(`tv:${i.id}`)).slice(0, 12);
-  if (!shows.length) return;
-  asyncRow(container, 'Up Next', async () => {
-    const out = [];
-    await Promise.all(shows.map(async s => {
-      const [sn, en] = s.lastEp.split(':').map(Number);
-      let nx = (await TMDB.season(s.id, sn).catch(() => ({ episodes: [] }))).episodes.find(e => e.episode_number === en + 1);
-      if (!nx) nx = ((await TMDB.season(s.id, sn + 1).catch(() => ({ episodes: [] }))).episodes || [])[0];
-      if (nx && (!nx.air_date || nx.air_date <= today())) out.push({ s, nx });
-    }));
-    return out;
-  }, ({ s, nx }) => landCard({ type: 'tv', id: s.id, title: s.title, backdrop: nx.still_path || s.backdrop }, {
-    overlay: s.title, sub: `S${nx.season_number}, E${nx.episode_number} · ${nx.name}`,
-    onClick: () => Playback.start(s, { season: nx.season_number, episode: nx.episode_number, name: nx.name, still: nx.still_path }),
-  }));
 }
 
 // Numbered Top 10 shelf.
@@ -207,7 +216,6 @@ Views.home = async (root) => {
   const rows = rowsBox();
   page.appendChild(rows);
   continueRow(rows);
-  upNextRow(rows);
   if (typeof SocialUI !== 'undefined') SocialUI.homeRow(rows);
   if (typeof Party !== 'undefined') Party.rejoinBanner(rows);
   Season.row(rows, { skip: heroKeys });
@@ -291,7 +299,6 @@ Views.tv = async (root) => {
   const rows = rowsBox();
   page.appendChild(rows);
   continueRow(rows, 'tv');
-  upNextRow(rows);
   asyncRow(rows, 'New Episodes This Week', () => TMDB.list('/tv/on_the_air', {}, 'tv'));
   top10Row(rows, 'Top 10 Shows This Week', '/trending/tv/week', 'tv');
   genreTiles(rows, 'tv', 'Categories');
