@@ -64,7 +64,7 @@
   });
 
   // ---- phones: a class for layout, and the install banner on iPhone ----
-  const phone = window.matchMedia('(max-width: 760px)');
+  const phone = window.matchMedia('(max-width: 760px), (pointer: coarse) and (max-height: 540px)');
   // On phones the tabs become a bottom bar; they live outside the top bar so they can span the screen.
   const tabs = document.getElementById('tabs'), navEl = document.getElementById('nav'), cluster = navEl && navEl.querySelector('.nav-cluster');
   const paint = () => {

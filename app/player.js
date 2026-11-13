@@ -90,8 +90,10 @@ function rankStreams(list, runtimeMin, memKey) {
   const mem = memKey && Store.data.streamPick[memKey];
   const prog = memKey && memKey.startsWith('movie:') && Store.data.progress[memKey];
   const midway = !!(prog && prog.pos > 60 && (!prog.dur || prog.pos < prog.dur * 0.92));
+  const wrong = new Set((mem && mem.wrong) || []);
   const score = (x) => {
     let v = 0;
+    if (wrong.has(x.filename)) { if (!x.flags.includes('Different film')) x.flags.push('Different film'); return -9000; }
     const text = `${x.release || ''} ${x.filename || ''}`;
     if (CAMLIKE.test(text) && !x.flags.includes('CAM')) x.flags.push('CAM');
     if (mem && x.cached) {
@@ -105,7 +107,7 @@ function rankStreams(list, runtimeMin, memKey) {
     if (x.flags.includes('3D')) v -= 400;
     if (x.flags.includes('UPSCALE')) v -= 300;
     if (x.flags.includes('HC')) v -= 150;
-    v += x.quality > s.maxQuality ? -400 : ({ 2160: 60, 1080: 40, 720: 20, 480: 5 }[x.quality] || 0);
+    v += x.quality > s.maxQuality ? -400 : ({ 2160: 70, 1080: 55, 720: 15, 480: 0 }[x.quality] || 0);
     if (x.flags.includes('HEVC') && !CAN_HEVC) v -= 500;
     if (s.avoidDV && x.flags.includes('DV') && !x.flags.includes('HDR') && !x.flags.includes('HDR10+')) v -= 250;
     if (x.foreignOnly && (s.audioLang || 'eng') === 'eng') v -= 200;
@@ -114,7 +116,7 @@ function rankStreams(list, runtimeMin, memKey) {
       const [lo, hi] = runtimeMin ? BITRATE[q] : SIZE_GB[q];
       const val = runtimeMin ? (x.sizeGB * 8192) / (runtimeMin * 60) : x.sizeGB;
       if (val >= lo && val <= hi) v += 25;
-      else if (val < lo) v -= ((lo - val) / lo) * 30;
+      else if (val < lo) v -= ((lo - val) / lo) * 30 + (val < lo / 3 ? 30 : 0);
       else v -= Math.min(30, ((val - hi) / hi) * 25);
     }
     // Popularity counts for a lot: a release lots of people share is almost always a real, clean copy (and a
@@ -152,8 +154,23 @@ const Playback = {
     return { list, stype, sid, best: list.find(x => x.cached && !x.flags.includes('CAM')) };
   },
   remember(meta, x) {
-    Store.data.streamPick[`${meta.type}:${meta.id}`] = { filename: meta.type === 'movie' ? x.filename : '', group: x.group, quality: x.quality, at: Date.now() };
+    const k = `${meta.type}:${meta.id}`, old = Store.data.streamPick[k];
+    Store.data.streamPick[k] = { filename: meta.type === 'movie' ? x.filename : '', group: x.group, quality: x.quality, at: Date.now(), ...(old && old.wrong ? { wrong: old.wrong } : {}) };
     Store.save();
+  },
+  // Same name and year, different film (Torrentio mixes them up). Kept with your account so it's never picked again.
+  markWrong(meta, x) {
+    if (!x || !x.filename) return;
+    const k = `${meta.type}:${meta.id}`, cur = Store.data.streamPick[k] || {};
+    const wrong = [...new Set([...(cur.wrong || []), x.filename])].slice(-20);
+    Store.data.streamPick[k] = { ...cur, wrong, ...(cur.filename === x.filename ? { filename: '' } : {}) };
+    Store.save();
+  },
+  // A film's file should run about as long as the film. Way off (15 min and 15%) = a different film.
+  wrongLength(meta, ep, info) {
+    if (meta.type !== 'movie' || !meta.runtime || !info || !(info.duration > 0)) return false;
+    const mins = info.duration / 60;
+    return Math.abs(mins - meta.runtime) > Math.max(15, meta.runtime * 0.15);
   },
   isRemembered(meta, x) {
     const mem = Store.data.streamPick[`${meta.type}:${meta.id}`];
@@ -256,7 +273,6 @@ const Player = {
       <div class="chrome">
         <div class="p-top">
           <button class="pbtn x" title="Back (Esc)">${ICON.back}</button>
-          <button class="btn small restart" style="display:none">${ICON.rewatch} Start over</button>
           <div class="p-vol p-glass">
             <input type="range" class="volume" min="0" max="1" step="0.05" value="1">
             <button class="pbtn mute" title="Mute (M)">${ICON.vol}</button>
@@ -303,15 +319,25 @@ const Player = {
 
     // Prepare, falling back to the next cached stream if a link fails.
     const candidates = [stream, ...list.filter(x => x !== stream && x.cached && !x.flags.includes('CAM'))].slice(0, 4);
+    let offLen = null, skipped = 0;
     for (const cand of candidates) {
       try {
-        $('.loading .msg', root).textContent = cand === stream ? 'Preparing stream…' : 'That link failed, trying the next one…';
-        st.info = await window.reel.prepare(cand.url);
+        $('.loading .msg', root).textContent = cand === stream ? 'Preparing stream…' : skipped ? 'That was a different film, trying the next one…' : 'That link failed, trying the next one…';
+        const info = await window.reel.prepare(cand.url);
+        if (Playback.wrongLength(meta, ep, info)) {
+          Playback.markWrong(meta, cand); skipped++;
+          if (!offLen) offLen = { info, cand };
+          if (st.closed) return;
+          continue;
+        }
+        st.info = info;
         st.stream = cand;
         break;
       } catch (e) { st.lastErr = e; }
       if (st.closed) return;
     }
+    if (!st.info && offLen) { st.info = offLen.info; st.stream = offLen.cand; }   // nothing matched: play what we have
+    else if (skipped) toast(`Skipped ${skipped === 1 ? 'a version' : skipped + ' versions'} that turned out to be a different film`);
     if (st.closed) return;
     if (!st.info) return this.fail(cleanErr(st.lastErr || 'No playable stream.'));
     const i = st.info;
@@ -320,7 +346,6 @@ const Player = {
     Playback.remember(meta, st.stream);
     this.badges();
     const start = resumeAt != null ? resumeAt : (prog && prog.pos > 60 && prog.pos < (prog.dur || i.duration) * 0.92 ? prog.pos : 0);
-    if (start && resumeAt == null) { const r = $('.restart', root); r.style.display = ''; setTimeout(() => (r.style.display = 'none'), 12000); }
     this.load(start);
     this.loadSubs();
     document.dispatchEvent(new CustomEvent('reel:play', { detail: st }));
@@ -456,7 +481,6 @@ const Player = {
     $('.f10', root).onclick = () => this.skip(10);
     $('.x', root).onclick = () => this.close();
     $('.fs', root).onclick = () => window.reel.fullscreen();
-    $('.restart', root).onclick = (e) => { e.currentTarget.style.display = 'none'; this.seek(0); };
     $('.sbtn', root).onclick = () => this.menu();
     $('.strbtn', root).onclick = () => this.streamPanel();
     $('.pipbtn', root).onclick = () => this.pip();
@@ -765,6 +789,11 @@ const Player = {
     let info;
     try { info = await window.reel.prepare(x.url); } catch (e) { toast(`That stream didn’t work — still playing the current one.`, true); return; }
     if (s.closed || this.cur !== s) return;
+    if (Playback.wrongLength(s.meta, s.ep, info)) {
+      Playback.markWrong(s.meta, x); window.reel.endPlayback(info.id);
+      toast(`That version is a different film (${Math.round(info.duration / 60)} min) — still playing the current one.`, true);
+      return;
+    }
     s.switching = true;
     if (s.info) window.reel.endPlayback(s.info.id);
     this.stopEmbedded();

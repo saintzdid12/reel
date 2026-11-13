@@ -469,6 +469,8 @@ input[type=range].volume::-webkit-slider-thumb { -webkit-appearance: none; width
 @keyframes shimmer { to { background-position: -200% 0; } }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+/* ...but loading spinners keep turning, or a slow load looks frozen */
+@media (prefers-reduced-motion: reduce) { .spinner, .tw-ib.spin svg { animation: spin 1s linear infinite !important; } }
 
 /* =================== Additions: setup, ambient, polish, new components =================== */
 

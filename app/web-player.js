@@ -31,6 +31,9 @@
     if (play) v.play().catch(() => {});                 // a phone may want a tap first; the play button is there
     this.subsFollow && this.subsFollow(t);
   };
+  // While a finger is dragging the progress bar, don't let playback repaint it under the finger.
+  const paint0 = Player.paint && Player.paint.bind(Player);
+  if (paint0) Player.paint = function (...a) { if (this.cur && this.cur.dragging) return; return paint0(...a); };
   const close0 = Player.close.bind(Player);
   Player.close = function (...a) {
     const s = this.cur;
@@ -40,26 +43,44 @@
 })();
 
 // ---- phones: tap shows/hides the controls (it doesn't pause); double-tap the left/right side to skip 10 s ----
+// A finger tap also sends a pretend mouse-move, which the player treats as "show the controls". So the state that
+// counts is the one at the moment the finger touched down; otherwise the tap would show and hide them at once.
 (() => {
   if (typeof Player === 'undefined') return;
-  let lastTap = 0, lastX = 0, single = 0;
+  const isPhone = () => document.body.classList.contains('phone');
+  let lastTap = 0, lastX = 0, single = 0, downIdle = false;
+  const CONTROL = 'button, input, .scrub, .p-panel, .p-tools, .party-chat, .party-bar, .pause-info a';
+  const show = (s) => {
+    s.root.classList.remove('idle'); clearTimeout(s.idleT);
+    s.idleT = setTimeout(() => { if (Player.cur === s && !s.video.paused && !Player.panel()) s.root.classList.add('idle'); }, 3500);
+  };
+  document.addEventListener('pointerdown', (e) => {
+    const s = Player.cur;
+    if (s && isPhone() && s.root.contains(e.target)) downIdle = s.root.classList.contains('idle');
+  }, true);
   document.addEventListener('click', (e) => {
-    if (!document.body.classList.contains('phone') || !Player.cur) return;
-    const root = Player.cur.root;
-    if (!root.contains(e.target) || e.target.closest('button, input, .scrub, .p-panel, .p-tools, .party-chat, .party-bar')) return;
+    const s = Player.cur;
+    if (!s || !isPhone() || !s.root.contains(e.target)) return;
+    if (e.target.closest(CONTROL)) {
+      // Controls hidden: the first tap only brings them back, it doesn't press an invisible button.
+      if (downIdle && e.target.closest('.chrome, .p-center, .p-top, .p-bottom')) { e.stopPropagation(); e.preventDefault(); show(s); }
+      else show(s);
+      return;
+    }
     e.stopPropagation(); e.preventDefault();
     const now = Date.now(), x = e.clientX, w = innerWidth;
     if (now - lastTap < 300 && Math.abs(x - lastX) < 80) {                   // double-tap: skip
       clearTimeout(single);
       const dir = x < w / 3 ? -10 : x > (w * 2) / 3 ? 10 : 0;
-      if (dir && Player.time) { Player.seek(Player.time() + dir); flash(root, dir); }
+      if (dir) { Player.skip ? Player.skip(dir) : Player.seek(Player.time() + dir); flash(s.root, dir); show(s); }
       lastTap = 0; return;
     }
     lastTap = now; lastX = x;
+    const wasIdle = downIdle;
     single = setTimeout(() => {                                               // single tap: controls on/off
-      const idle = root.classList.toggle('idle');
-      clearTimeout(Player.cur && Player.cur.idleT);
-      if (!idle && Player.cur && !Player.cur.video.paused) Player.cur.idleT = setTimeout(() => root.classList.add('idle'), 3500);
+      if (Player.cur !== s) return;
+      if (wasIdle) show(s);
+      else { clearTimeout(s.idleT); s.root.classList.add('idle'); }
     }, 260);
   }, true);
   function flash(root, dir) {
@@ -69,4 +90,30 @@
     el.className = 'web-skip ' + (dir > 0 ? 'r' : 'l');
     void el.offsetWidth; el.classList.add('show');
   }
+
+  // Drag along the progress bar with a finger (the computer version only knows clicks).
+  document.addEventListener('pointerdown', (e) => {
+    const s = Player.cur, bar = e.target.closest && e.target.closest('.player .scrub');
+    if (!s || !bar || e.pointerType === 'mouse') return;
+    e.preventDefault(); e.stopPropagation();
+    const ht = bar.querySelector('.hover-time'), cur = bar.querySelector('.cur'), knob = bar.querySelector('.knob');
+    const at = (ev) => { const r = bar.getBoundingClientRect(); return Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)); };
+    let f = at(e);
+    const paint = () => {
+      const pct = (f * 100).toFixed(2) + '%';
+      if (cur) cur.style.width = pct; if (knob) knob.style.left = pct;
+      if (ht) { ht.textContent = fmtTime(f * Player.duration()); ht.style.left = pct; }
+    };
+    s.dragging = true; bar.classList.add('dragging'); show(s); clearTimeout(s.idleT); paint();
+    try { bar.setPointerCapture(e.pointerId); } catch {}
+    const move = (ev) => { f = at(ev); paint(); };
+    const up = () => {
+      bar.removeEventListener('pointermove', move); bar.removeEventListener('pointerup', up); bar.removeEventListener('pointercancel', up);
+      bar.classList.remove('dragging'); s.dragging = false;
+      Player.seek(f * Player.duration()); show(s);
+    };
+    bar.addEventListener('pointermove', move); bar.addEventListener('pointerup', up); bar.addEventListener('pointercancel', up);
+  }, true);
+  // Stop the computer's click-to-seek from firing again after a drag.
+  document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('.player .scrub') && isPhone()) { e.stopPropagation(); } }, true);
 })();

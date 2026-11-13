@@ -536,7 +536,7 @@ Views.detail = async (root, { type, id, season }) => {
           <p>${isAired ? esc(e.overview || '') : 'Coming soon'}</p>
           <div class="ep-actions">
             <button class="mini er" title="Rate this episode">${w.rating ? ICON.starFill : ICON.star}</button>
-            <button class="mini ${w.watched ? 'on' : ''} tw" title="${w.watched ? 'Watched — click to unmark' : 'Mark as watched'}">${w.watched ? ICON.checkCircleFill : ICON.checkCircle}</button>
+            <button class="mini ${w.watched ? 'on' : ''} ep-tw" title="${w.watched ? 'Watched — click to unmark' : 'Mark as watched'}">${w.watched ? ICON.checkCircleFill : ICON.checkCircle}</button>
           </div>
         </div>`);
         $('.er', el).onclick = (ev) => {
@@ -548,7 +548,7 @@ Views.detail = async (root, { type, id, season }) => {
           }, `Rate episode ${e.episode_number}`);
         };
         $('.still', el).onclick = () => isAired && Playback.start(meta, { season: n, episode: e.episode_number, name: e.name, still: e.still_path });
-        $('.tw', el).onclick = (ev) => {
+        $('.ep-tw', el).onclick = (ev) => {
           ev.stopPropagation();
           Store.data.episodes[key] = Store.data.episodes[key] || {};
           const c = Store.data.episodes[key][ek] || {};

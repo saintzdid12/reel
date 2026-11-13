@@ -159,3 +159,70 @@ body.web.phone .grid .card, body.web.phone .grid .card .art, body.web.phone .gri
 .tv-auth .ta-discord:hover { background: #6d78f5 !important; }
 .tv-auth .ta-mini-or { display: flex; align-items: center; gap: 10px; color: var(--text-3); font-size: 12.5px; font-weight: 600; margin: 4px 0 2px; }
 .tv-auth .ta-mini-or::before, .tv-auth .ta-mini-or::after { content: ""; flex: 1; height: 1px; background: rgba(255,255,255,.1); }
+
+/* ===================== Phone polish ===================== */
+/* No desktop scrollbars on phones: they steal 10px on the right and make rows look cut off */
+body.web.phone, body.web.phone * { scrollbar-width: none; }
+body.web.phone ::-webkit-scrollbar { display: none; width: 0; height: 0; }
+/* The welcome / sign-in screen: no tab bar until you're in, and the card fits the screen */
+body.web.phone.setup-mode #tabs { display: none !important; }
+body.web.phone .setup-card { width: auto !important; max-width: none !important; margin: 0 16px !important; box-sizing: border-box; }
+body.web.phone.setup-mode #view { padding-bottom: 0; }
+/* Taps feel instant and don't flash grey */
+body.web.phone { -webkit-tap-highlight-color: transparent; }
+body.web.phone button, body.web.phone .card, body.web.phone a { touch-action: manipulation; }
+
+/* Player loading screen: logo and title sized for a phone */
+body.web.phone .load-card { max-width: 100%; padding: 0 28px; box-sizing: border-box; }
+body.web.phone .load-logo img { max-width: min(72vw, 300px); max-height: 84px; }
+body.web.phone .load-title { font-size: 28px; line-height: 1.15; }
+body.web.phone .load-card .spinner { margin-top: 22px; width: 34px; height: 34px; }
+body.web.phone .player .loading .msg { font-size: 13px; }
+/* The player fills the whole phone screen, notch included */
+body.web.phone .player { position: fixed; inset: 0; height: 100dvh; }
+body.web.phone .player video { object-fit: contain; }
+/* A bigger, easier progress bar to drag */
+body.web.phone .player .scrub { height: 36px; touch-action: none; }
+body.web.phone .player .scrub .knob { width: 16px; height: 16px; }
+body.web.phone .player .scrub.dragging .knob { transform: translate(-50%, -50%) scale(1.35); }
+body.web.phone .player .scrub.dragging .hover-time { opacity: 1; }
+body.web.phone .player .p-tools .pbtn { width: 42px; height: 42px; }
+/* Sideways phone: controls hug the edges, less padding, smaller title */
+@media (orientation: landscape) {
+  body.web.phone .player .p-top { top: 10px; left: calc(14px + env(safe-area-inset-left, 0px)); right: calc(14px + env(safe-area-inset-right, 0px)); }
+  body.web.phone .player .p-bottom { left: calc(20px + env(safe-area-inset-left, 0px)); right: calc(20px + env(safe-area-inset-right, 0px)); bottom: 8px; }
+  body.web.phone .player .p-info .t { font-size: 17px; }
+  body.web.phone .player .p-info { margin-bottom: 2px; }
+  body.web.phone .player .pbtn.ring.big { width: 64px; height: 64px; }
+  body.web.phone .load-logo img { max-height: 70px; }
+  /* Tab bar slimmer when sideways */
+  body.web.phone #tabs button { flex-direction: row; gap: 6px; padding: 4px 0; font-size: 12px; }
+  body.web.phone #tabs button::before { width: 20px; height: 20px; }
+  body.web.phone #view { padding-bottom: calc(52px + var(--safe-b)); }
+  body.web.phone .hero { height: 88vh; min-height: 0; }
+}
+
+/* "Part of a collection" under a movie: title, count and progress stacked, button on its own line */
+body.web.phone .collection .col-head { flex-direction: column; align-items: stretch; gap: 10px; }
+body.web.phone .collection .col-head .row-title { font-size: 19px; }
+body.web.phone .collection .col-head .next-col { align-self: flex-start; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.web.phone .collection .ch-bar { max-width: none !important; }
+/* No dimmed "paused" title screen on phones: pausing just leaves the controls up */
+body.web.phone .player .pause-info { display: none !important; }
+body.web.phone .player.pinfo .chrome, body.web.phone .player.pinfo .subs { opacity: 1 !important; }
+body.web.phone .player.pinfo video { filter: none !important; opacity: 1 !important; }
+
+/* Versions list on phones: quality on the left; tags, file name and details stacked on the right */
+body.web.phone .stream { grid-template-columns: 54px minmax(0, 1fr); grid-template-areas: "q body" "q meta"; gap: 4px 12px; padding: 12px 12px; }
+body.web.phone .stream > .q { grid-area: q; font-size: 16px; }
+body.web.phone .stream > div:nth-child(2) { grid-area: body; min-width: 0; }
+body.web.phone .stream > .meta { grid-area: meta; text-align: left; font-size: 12px; white-space: normal; }
+body.web.phone .stream > .meta br { display: none; }
+body.web.phone .stream > .meta .peers { margin-left: 6px; }
+body.web.phone .stream .fn { -webkit-line-clamp: 2; font-size: 12px; }
+body.web.phone .stream .tags { flex-wrap: wrap; }
+body.web.phone .stream:hover { transform: none; }
+/* Sheets use the whole phone width */
+body.web.phone .modal-back .sheet { width: auto !important; max-width: none !important; margin: 0 10px !important; padding: 20px 16px !important; box-sizing: border-box; max-height: calc(100dvh - 40px); }
+/* iPhone zooms the page into any text box under 16px: keep them at 16px */
+body.web.phone input:not([class*=code]):not([type=range]):not([type=checkbox]), body.web.phone textarea, body.web.phone select { font-size: 16px !important; }

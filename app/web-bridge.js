@@ -138,7 +138,15 @@
     async lbPick() { throw new Error('Import your Letterboxd history in Reel on your computer — it syncs here.'); },
     // Full screen for the player (Android/desktop); on iPhone the player just fills the screen.
     async fullscreen(onOff) {
+      const toggle = onOff === undefined;
+      if (toggle) onOff = !document.fullscreenElement;
       try {
+        // iPhone has no full screen for web pages, only for a video: use it when you press the button.
+        if (onOff && !document.documentElement.requestFullscreen) {
+          const v = typeof Player !== 'undefined' && Player.cur && Player.cur.video;
+          if (toggle && v && v.webkitEnterFullscreen) v.webkitEnterFullscreen();
+          return true;
+        }
         if (onOff && !document.fullscreenElement && document.documentElement.requestFullscreen) {
           await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
           try { await screen.orientation.lock('landscape'); } catch {}
