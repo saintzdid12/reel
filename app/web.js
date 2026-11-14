@@ -67,13 +67,13 @@
     };
   }
 
-  // ---- signed in is enough on the website: browse, search, rate, keep your watchlist, see profiles. Watching
+  // ---- on the website you must be signed in (a saved debrid key alone is not enough), and signed in is enough: browse, search, rate, keep your watchlist, see profiles. Watching
   // needs a debrid service; pressing Play without one explains that and offers to connect one. ----
   if (typeof Setup !== 'undefined') {
-    Object.defineProperty(Setup, 'done', { configurable: true, get() { return this.tmdb && (this.streaming || !!(window.reel.signedIn && window.reel.signedIn())); } });
+    Object.defineProperty(Setup, 'done', { configurable: true, get() { return !!this.tmdb && !!(window.reel.signedIn && window.reel.signedIn()); } });
   }
   // The app may pick its first screen before this loads: once it's up, a signed-in visitor lands on Home, not setup.
-  (() => { let n = 0; const t = setInterval(() => { if (++n > 50) return clearInterval(t); if (typeof route === 'undefined' || !route.name) return; clearInterval(t); if (route.name === 'setup' && Setup.done) go('home', {}, true); }, 100); })();
+  (() => { let n = 0; const t = setInterval(() => { if (++n > 50) return clearInterval(t); if (typeof route === 'undefined' || !route.name) return; clearInterval(t); if (route.name === 'setup' && Setup.done) go('home', {}, true); else if (route.name !== 'setup' && !Setup.done) go('setup', {}, true); }, 100); })();
   window.REEL_TORBOX = 'https://torbox.app/pricing';
   function needDebrid() {
     const sheet = h(`<div class="need-debrid">

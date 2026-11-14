@@ -46,7 +46,7 @@ Views.setup = async (root) => {
   let step = Setup.tmdb ? (Setup.streaming ? 3 : 2) : 1;
   // A Reel account comes first (your debrid key, library and friends come with it).
   const signedIn = () => typeof Cloud !== 'undefined' && Cloud.on;
-  if (step === 2 && !signedIn()) step = 'acct';
+  if ((step === 2 || (window.REEL_WEB && step === 3)) && !signedIn()) step = 'acct';
   const page = h(`<div class="setup"><div class="setup-card"></div></div>`);
   root.appendChild(page);
   const card = $('.setup-card', page);
