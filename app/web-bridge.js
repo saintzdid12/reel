@@ -116,7 +116,18 @@
     },
     async debridKey() { return null; },
     streams: (type, id) => fetchStreams(type, id),
-    async testStreaming() { throw new Error('Set up your debrid service in Reel on your computer — it comes with your account.'); },
+    // Setup's "Connect": the key is saved straight to your Reel account (only you can read it there), then Reel's
+    // server checks that it finds streams with it. The browser never keeps the key.
+    async testStreaming(v) {
+      if (typeof Cloud === 'undefined' || !Cloud.sb || !Cloud.user) throw new Error('Sign in to Reel first.');
+      const key = String((v && v.rdKey) || '').trim(), debrid = (v && v.debrid) || 'realdebrid';
+      if (!key) throw new Error('Paste your API key.');
+      const { error } = await Cloud.sb.from('user_keys').upsert({ user_id: Cloud.user.id, debrid, api_key: key, updated_at: new Date().toISOString() });
+      if (error) throw new Error('Couldn’t save it to your account. Try again.');
+      const r = await server({ action: 'streams', type: 'movie', id: 'tt0111161' });
+      const list = (r.streams || []).filter((x) => x && x.url);
+      return { total: list.length, cached: list.filter((x) => /\[[A-Z]{2,3}\+\]/.test(x.name || '')).length };
+    },
     async prepare(url) {
       const op = String(url).startsWith('onepace:') ? String(url).split(':') : null;   // One Pace: onepace:<hash>:<episode>:<name>
       const p = op ? await server({ action: 'magnet', hash: op[1], part: op[2], name: decodeURIComponent(op.slice(3).join(':')), ...((typeof Store !== 'undefined' && Store.data.onepace && Store.data.onepace.dub) ? { audio: 'eng' } : { audio: 'jpn', subs: 'eng' }) }) : await server({ action: 'play', url });
@@ -170,7 +181,7 @@
       async config() {
         let id = lget('reel:device'); if (!id) { id = Array.from(crypto.getRandomValues(new Uint8Array(8)), (b) => b.toString(16).padStart(2, '0')).join(''); lset('reel:device', id); }
         const phone = /iphone|android.+mobile/i.test(navigator.userAgent);
-        return { url: SB_URL, key: SB_KEY, site: 'https://saintzdid12.github.io/reel', port: 0,
+        return { url: SB_URL, key: SB_KEY, site: 'https://reelwatch.stream', port: 0,
           device: { id, name: phone ? 'Phone' : 'Browser', platform: 'web', version: K.version || '1.0.0' } };
       },
       async authGet(k) { return lget('reel:auth:' + k); },

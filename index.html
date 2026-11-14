@@ -40,6 +40,7 @@
   <div class="dls">
     <a class="btn" id="dl-win" href="https://github.com/saintzdid12/reel/releases/latest">Download for Windows</a>
     <a class="btn alt" id="dl-mac" href="https://github.com/saintzdid12/reel/releases/latest" hidden>Download for Mac</a>
+    <a class="btn alt" id="watch" href="watch/">Watch in your browser</a>
   </div>
   <div class="ver" id="ver">Windows 10 and 11</div>
   <div class="mac-arch" id="mac-arch" hidden>Older Intel Mac? <a id="dl-mac-intel" href="https://github.com/saintzdid12/reel/releases/latest">Get the Intel version</a></div>
@@ -47,7 +48,7 @@
     <li><b>One-step setup</b><span>Pick your debrid service — Real-Debrid, TorBox, AllDebrid and more — and paste its API key. Movie info is built in.</span></li>
     <li><b>Your library everywhere</b><span>Sign in with Discord or a Reel username and your ratings, diary, lists, where you are in every show and your debrid key follow you to every device.</span></li>
     <li><b>Watch together</b><span>Start a watch party, share the code, and everyone stays in sync — and the party waits if someone is still loading.</span></li>
-    <li><b>On your TV and phone too</b><span>Reel for Fire TV and Android TV, and Reel in any browser at <a href="app/" style="color:#fff">saintzdid12.github.io/reel/app</a>. Same account, same library.</span></li>
+    <li><b>On your TV and phone too</b><span>Reel for Fire TV and Android TV, and Reel in any browser at <a href="watch/" style="color:#fff">reelwatch.stream/watch</a>. Same account, same library.</span></li>
     <li><b>Friends</b><span>See what friends are watching and rating, the shows they’re on, their favorites and reviews, and how well your tastes match.</span></li>
   </ul>
   <div class="fine">
@@ -56,6 +57,12 @@
   </div>
 </main>
 <script>
+  // On a phone or tablet there's nothing to download (except the TV app): "Watch in your browser" comes first.
+  if (/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Mac/.test(navigator.platform || ''))) {
+    const w = document.getElementById('watch'), dls = document.querySelector('.dls');
+    w.classList.remove('alt'); dls.prepend(w); document.getElementById('dl-win').classList.add('alt');
+    document.body.classList.add('touch');
+  }
   // Point the buttons straight at the newest downloads, and put the right one first for this computer.
   fetch('https://api.github.com/repos/saintzdid12/reel/releases/latest').then(r => r.json()).then(rel => {
     const find = (re) => (rel.assets || []).find(x => re.test(x.name));
@@ -67,7 +74,7 @@
       const mac = document.getElementById('dl-mac');
       mac.href = (arm || intel).browser_download_url; mac.hidden = false;
       if (arm && intel) { document.getElementById('dl-mac-intel').href = intel.browser_download_url; document.getElementById('mac-arch').hidden = false; }
-      if (/Mac/i.test(navigator.platform || navigator.userAgent)) { document.querySelector('.dls').prepend(mac); mac.classList.remove('alt'); document.getElementById('dl-win').classList.add('alt'); }
+      if (!document.body.classList.contains('touch') && /Mac/i.test(navigator.platform || navigator.userAgent)) { document.querySelector('.dls').prepend(mac); mac.classList.remove('alt'); document.getElementById('dl-win').classList.add('alt'); }
     }
     document.getElementById('ver').textContent = `Version ${v} · Windows 10 and 11${arm || intel ? ' · macOS 11 or newer' : ''}`;
   }).catch(() => {});

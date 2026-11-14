@@ -78,7 +78,7 @@ Turn it on in Settings and connect your own IPTV subscription — **Game Day** s
 ## Install
 
 ### Windows
-1. Download **Reel-Setup-….exe** from the [latest release](https://github.com/saintzdid12/reel/releases/latest) (or the [download page](https://saintzdid12.github.io/reel)).
+1. Download **Reel-Setup-….exe** from the [latest release](https://github.com/saintzdid12/reel/releases/latest) (or **[reelwatch.stream](https://reelwatch.stream)**).
 2. Windows may say *"Windows protected your PC"* the first time — click **More info → Run anyway**.
 3. Reel **updates itself** from then on — a button under the top-right icons shows the download, then *Update ready · Restart*. Restarting shows the installer's progress and Reel reopens by itself.
 
@@ -89,7 +89,7 @@ Turn it on in Settings and connect your own IPTV subscription — **Game Day** s
 4. When there's a new version, Reel shows a *Download* button — open it and drag the new Reel into Applications again.
 
 ### On your phone (or any browser)
-Open **https://saintzdid12.github.io/reel/app/** and sign in with Discord or your Reel username (or link it from Reel on your computer: **Settings → Account → Link a device**). Add it to your home screen for a full-screen app: on iPhone, **Share → Add to Home Screen**; on Android, **⋮ → Install app**.
+Open **https://reelwatch.stream/watch** and sign in with Discord or your Reel username (or link it from Reel on your computer: **Settings → Account → Link a device**). Add it to your home screen for a full-screen app: on iPhone, **Share → Add to Home Screen**; on Android, **⋮ → Install app**.
 Works best with **Real-Debrid**, which converts any movie to phone-friendly video on its own servers. With TorBox, only versions a browser can play directly are listed.
 
 ### Fire TV and Android TV

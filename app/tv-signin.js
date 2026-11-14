@@ -41,7 +41,7 @@
     check();
   }
 
-  AccountUI.signIn = async function () {
+  AccountUI.signIn = async function (_reason, startMode) {
     if (!Cloud.sb) return toast('Can’t reach Reel’s servers right now', true);
     const wrap = h(`<div class="tv-auth">
       <div class="ta-head"><img src="icon.png" alt=""><div><h2>Sign in to Reel</h2><p>Your library, ratings and streaming setup come with your account.</p></div></div>
@@ -58,8 +58,10 @@
           <div class="ta-label">${ICO.user}<span>Use your username</span></div>
           <label class="ta-field"><span>Username</span><input class="input ta-u" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="yourname"></label>
           <label class="ta-field"><span>Password</span><input class="input ta-p" type="password" autocomplete="current-password" placeholder="••••••••"></label>
+          ${window.REEL_WEB ? '<label class="ta-field ta-up" hidden><span>Confirm password</span><input class="input ta-p2" type="password" autocomplete="new-password" placeholder="••••••••"></label><p class="ta-up ta-hint" hidden>Letters, numbers, dots and underscores. There’s no email, so pick a password you’ll remember.</p>' : ''}
           <div class="ta-err"></div>
           <button class="btn primary ta-go">Sign in</button>
+          ${window.REEL_WEB ? '<button class="ta-switch">New to Reel? <b>Create an account</b></button>' : ''}
           ${window.REEL_WEB ? '' : '<p class="ta-note">Signed up with Discord? Use the code instead.</p>'}
         </section>
       </div>
@@ -71,22 +73,42 @@
     $('.ta-cancel', wrap).onclick = () => m.close();
 
     // Username & password
-    const u = $('.ta-u', wrap), p = $('.ta-p', wrap), go = $('.ta-go', wrap), err = $('.ta-err', wrap);
+    const u = $('.ta-u', wrap), p = $('.ta-p', wrap), p2 = $('.ta-p2', wrap), go = $('.ta-go', wrap), err = $('.ta-err', wrap);
+    // Sign in, or (website) create an account: same two boxes plus "Confirm password".
+    let mode = 'in';
+    const label = () => (mode === 'up' ? 'Create account' : 'Sign in');
+    const sw = $('.ta-switch', wrap);
+    if (sw) sw.onclick = () => {
+      mode = mode === 'in' ? 'up' : 'in';
+      $$('.ta-up', wrap).forEach((x) => (x.hidden = mode !== 'up'));
+      $('.ta-pass .ta-label span', wrap).textContent = mode === 'up' ? 'Create a Reel account' : 'Use your username';
+      p.autocomplete = mode === 'up' ? 'new-password' : 'current-password';
+      sw.innerHTML = mode === 'up' ? 'Already have an account? <b>Sign in</b>' : 'New to Reel? <b>Create an account</b>';
+      $('.ta-head h2', wrap).textContent = mode === 'up' ? 'Create your Reel account' : 'Sign in to Reel';
+      go.textContent = label(); err.textContent = '';
+    };
     const submit = async () => {
-      const name = u.value.trim(), pass = p.value;
+      const name = u.value.trim().replace(/^@/, ''), pass = p.value;
       if (!name || !pass) { err.textContent = !name ? 'Type your username.' : 'Type your password.'; return; }
-      err.textContent = ''; go.disabled = true; go.textContent = 'Signing in…';
+      if (mode === 'up') {
+        if (!/^[a-z0-9._]{3,24}$/i.test(name)) { err.textContent = 'Usernames are 3–24 letters, numbers, dots or underscores.'; return; }
+        if (pass.length < 8) { err.textContent = 'Pick a password of at least 8 characters.'; return; }
+        if (p2 && p2.value !== pass) { err.textContent = 'The passwords don’t match.'; return; }
+      }
+      err.textContent = ''; go.disabled = true; go.textContent = mode === 'up' ? 'Creating your account…' : 'Signing in…';
       try {
-        await Cloud.signInPassword(name, pass);
-        stopped = true; cover(); m.close();
-      } catch (e) { err.textContent = cleanErr(e); go.disabled = false; go.textContent = 'Sign in'; }
+        if (mode === 'up') await Cloud.signUpPassword(name, pass); else await Cloud.signInPassword(name, pass);
+        stopped = true; if (mode !== 'up') cover(); m.close();
+      } catch (e) { err.textContent = cleanErr(e); go.disabled = false; go.textContent = label(); }
     };
     go.onclick = submit;
     const dc = $('.ta-discord', wrap);
     if (dc) dc.onclick = async () => { dc.disabled = true; $('span', dc).textContent = 'Opening Discord…'; try { await Cloud.signInDiscord(); } catch (e) { err.textContent = cleanErr(e); dc.disabled = false; $('span', dc).textContent = 'Continue with Discord'; } };
     // The TV keyboard's Enter: username → password → sign in.
     u.addEventListener('keydown', (e) => { if (e.key === 'Enter' && u.value.trim()) (window.tvFocus ? window.tvFocus.focus(p) : p.focus()); });
-    p.addEventListener('keydown', (e) => { if (e.key === 'Enter' && p.value) submit(); });
+    p.addEventListener('keydown', (e) => { if (e.key === 'Enter' && p.value) { if (mode === 'up' && p2) p2.focus(); else submit(); } });
+    if (startMode === 'up' && sw) sw.onclick();   // opened from "Create an account"
+    if (p2) p2.addEventListener('keydown', (e) => { if (e.key === 'Enter' && p2.value) submit(); });
     setTimeout(() => window.tvFocus && window.tvFocus.focus(u), 80);
 
     // Link with a code: a code now, a fresh one every 14 minutes, checked every 3 s.

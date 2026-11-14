@@ -6,8 +6,9 @@ body.web { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none
 body.web #drag, body.web .mac-lights, body.web .upd-btn, body.web .import-block, body.web .lb-how,
 body.web .search-bar .seg, body.web .vibe-chips, body.web .discord-btn, body.web .pipbtn { display: none !important; }
 /* Accounts are made on the computer; the web signs in */
-body.web .setup-card .acct-choices .su, body.web .setup-card .acct-why { display: none !important; }
-body.web .setup-card .acct-choices::after { content: "Sign in with Discord or your Reel username, or link this browser from Reel on your computer."; display: block; margin-top: 14px; font-size: 14px; color: var(--text-3); text-align: center; }
+body.web .setup-card .acct-why { display: none !important; }
+body.web .setup-card .acct-choices .su { margin-top: 10px; }
+body.web .setup-card .acct-choices::after { content: "Use Discord or a Reel username (no email needed), or link this browser from Reel on your computer."; display: block; margin-top: 14px; font-size: 14px; color: var(--text-3); text-align: center; }
 
 /* Settings (the simple one, shared with the TV) */
 body.web .tvs { max-width: 720px; margin: 0 auto; padding: 96px 20px 120px; }
@@ -320,3 +321,9 @@ body.web.phone .actions.compact > .btn:last-child:nth-child(even) { grid-column:
 body.web.phone .action-cluster.compact { display: flex !important; justify-content: space-around; width: 100%; box-sizing: border-box; margin-top: 12px; padding: 6px 4px; }
 body.web.phone .action-cluster.compact .act, body.web.phone .action-cluster.compact .more-btn { width: 46px; height: 46px; }
 body.web.phone .disc-side { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+
+/* Sign-in sheet: switch between signing in and creating an account */
+.tv-auth .ta-switch { margin-top: 12px; background: none; border: 0; color: var(--text-2); font-size: 14px; padding: 6px; align-self: center; }
+.tv-auth .ta-switch b { color: #fff; }
+.tv-auth .ta-hint { margin: -2px 0 4px; font-size: 12.5px; color: var(--text-3); line-height: 1.45; }
+.tv-auth [hidden] { display: none !important; }
