@@ -299,3 +299,24 @@ body.web.phone .disc-side > :not(.side-item) { display: none !important; }
 .web-fs-hint.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
 .web-fs-hint .ic { width: 16px; height: 16px; }
 body.web.phone .lib-tabs::before, body.web.phone .lib-tabs::after, body.web.phone .lib-tabs > :not(button) { display: none !important; }
+
+/* Library tabs on phones: plain chips. No frosted bar behind them (it picked up the colors under it), not pinned. */
+body.web.phone .lib-tabs { position: static !important; background: transparent !important; box-shadow: none !important; border: 0 !important;
+  backdrop-filter: none !important; -webkit-backdrop-filter: none !important; margin: 4px 0 22px !important; }
+
+/* For You tools on phones: one even list of full-width rows instead of a 3 + 2 grid */
+body.web.phone .d-tiles { display: flex !important; flex-direction: column; gap: 8px; margin-bottom: 26px; }
+body.web.phone .d-tile { display: grid !important; grid-template-columns: 40px minmax(0, 1fr) 16px; grid-template-rows: auto auto; column-gap: 14px; row-gap: 2px; align-items: center; padding: 12px 14px; border-radius: 16px; }
+body.web.phone .d-tile .ti { grid-row: 1 / 3; margin: 0; width: 40px; height: 40px; border-radius: 12px; }
+body.web.phone .d-tile b { grid-column: 2; font-size: 15.5px; }
+body.web.phone .d-tile small { grid-column: 2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.web.phone .d-tile::after { content: ""; grid-column: 3; grid-row: 1 / 3; width: 8px; height: 8px; border-right: 2px solid var(--text-3); border-top: 2px solid var(--text-3); transform: rotate(45deg); justify-self: center; }
+
+/* Show page on phones: Play across the top, the other big buttons side by side, the small icons spread out */
+body.web.phone .actions.compact { display: grid !important; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+body.web.phone .actions.compact > .btn { width: 100%; margin: 0 !important; justify-content: center; height: 48px; padding: 0 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.web.phone .actions.compact > .btn.primary { grid-column: 1 / -1; height: 52px; font-size: 17px; }
+body.web.phone .actions.compact > .btn:last-child:nth-child(even) { grid-column: 1 / -1; }
+body.web.phone .action-cluster.compact { display: flex !important; justify-content: space-around; width: 100%; box-sizing: border-box; margin-top: 12px; padding: 6px 4px; }
+body.web.phone .action-cluster.compact .act, body.web.phone .action-cluster.compact .more-btn { width: 46px; height: 46px; }
+body.web.phone .disc-side { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }

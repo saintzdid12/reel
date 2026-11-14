@@ -455,12 +455,17 @@ Views.detail = async (root, { type, id, season }) => {
     const play = h(`<button class="btn primary">${ICON.playSm} ${esc(tgt.label)}</button>`);
     play.onclick = () => Playback.start(meta, tgt.ep);
     box.appendChild(play);
+    // Phones and TVs: fewer big buttons. Versions, Trailer, Log and Add to list live in the … menu there.
+    const compact = document.body.classList.contains('phone') || !!window.REEL_TV;
+    box.classList.toggle('compact', compact); cl.classList.toggle('compact', compact);
+    const pickVersion = () => Playback.start(meta, tgt.ep, { manual: true });
+    const playTrailer = trailer ? () => window.reel.openExternal(`https://www.youtube.com/watch?v=${trailer.key}`) : null;
     const streams = h(`<button class="btn" title="Choose a specific version / quality">${ICON.streams.replace('<svg', '<svg class="ic"')} Versions</button>`);
-    streams.onclick = () => Playback.start(meta, tgt.ep, { manual: true });
-    box.appendChild(streams);
+    streams.onclick = pickVersion;
+    if (!compact) box.appendChild(streams);
     if (typeof Party !== 'undefined') box.appendChild(Party.button(meta, tgt.ep));
     if (typeof OnePace !== 'undefined' && type === 'tv' && meta.id === OnePace.ONE_PIECE) box.appendChild(OnePace.button(meta));
-    if (trailer) { const t = h(`<button class="btn" title="Watch the trailer on YouTube">${ICON.film} Trailer</button>`); t.onclick = () => window.reel.openExternal(`https://www.youtube.com/watch?v=${trailer.key}`); box.appendChild(t); }
+    if (trailer && !compact) { const t = h(`<button class="btn" title="Watch the trailer on YouTube">${ICON.film} Trailer</button>`); t.onclick = playTrailer; box.appendChild(t); }
     const add = (icon, label, on, fn, extra = '') => { const b = h(`<button class="act ${on ? 'on' : ''} ${extra}" title="${label}">${icon}</button>`); b.onclick = (e) => fn(b, e); cl.appendChild(b); return b; };
     add(cur.watchlist ? ICON.bookmarkFill : ICON.bookmark, cur.watchlist ? 'On your watchlist — click to remove' : 'Add to watchlist', cur.watchlist, () => {
       const r = Store.toggleWatchlist(meta); toast(r.watchlist ? 'Added to watchlist' : 'Removed from watchlist'); paintActions();
@@ -472,10 +477,31 @@ Views.detail = async (root, { type, id, season }) => {
       rateWithUndo(meta, v, () => paintActions());
     }), cur.rating ? 'wide' : '');
     add(cur.liked ? ICON.heartFill : ICON.heart, cur.liked ? 'Liked — click to unlike' : 'Like', cur.liked, () => { Store.toggleLike(meta); Recs.cache = null; paintActions(); });
-    cl.appendChild(h('<i class="sep"></i>'));
-    add(ICON.pencil, 'Log a watch / write a review', false, () => openLog(meta, { onSaved: () => go('detail', { type, id }, true, true) }));
-    add(ICON.listPlus, 'Add to a list', false, () => openAddToList(meta));
-    cl.appendChild(moreBtn(meta, 'in-cluster'));
+    const logIt = () => openLog(meta, { onSaved: () => go('detail', { type, id }, true, true) });
+    if (!compact) {
+      cl.appendChild(h('<i class="sep"></i>'));
+      add(ICON.pencil, 'Log a watch / write a review', false, logIt);
+      add(ICON.listPlus, 'Add to a list', false, () => openAddToList(meta));
+      cl.appendChild(moreBtn(meta, 'in-cluster'));
+    } else {
+      // One … with what used to be separate buttons first, then everything else.
+      const more = h(`<button class="more-btn in-cluster" title="More" aria-label="More options">${ICON.more}</button>`);
+      more.onclick = (e) => {
+        e.stopPropagation(); e.preventDefault();
+        const r = more.getBoundingClientRect(), x = Math.max(12, Math.min(r.left - 8, innerWidth - 270)), y = r.bottom + 6;
+        menuAt(x, y, meta.title, [
+          [ICON.streams.replace('<svg', '<svg class="ic"'), 'Choose a version', pickVersion],
+          playTrailer && [ICON.film, 'Watch the trailer', playTrailer],
+          'sep',
+          [ICON.pencil, 'Log a watch / write a review', logIt],
+          [ICON.listPlus, 'Add to a list', () => openAddToList(meta)],
+          'sep',
+          [ICON.more, 'More options…', () => contextMenu(x, y, (Store.item(`${meta.type}:${meta.id}`) || {}).id ? Store.item(`${meta.type}:${meta.id}`) : meta)],
+        ]);
+      };
+      more.addEventListener('pointerdown', (e) => e.stopPropagation());
+      cl.appendChild(more);
+    }
     paintYours();
     detailRefresh();
   };
