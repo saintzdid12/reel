@@ -403,9 +403,21 @@ const Player = {
       v.src = s.info.directUrl;
       if (t) v.addEventListener('loadedmetadata', () => (v.currentTime = t), { once: true });
     } else {
+      const start = (k) => {
+        if (this.cur !== s || s.closed) return;
+        s.offset = k;
+        v.crossOrigin = 'anonymous'; // lets audio boost process the local stream
+        v.src = `${s.info.streamBase}?t=${k.toFixed(3)}&a=${s.audio ?? ''}${s.needTx ? '&tx=1' : ''}`;
+        const rate = v.playbackRate;
+        if (play) v.play().catch(() => {});
+        v.playbackRate = rate;
+        this.subsFollow(k);
+      };
       s.offset = t;
-      v.crossOrigin = 'anonymous'; // lets audio boost process the local stream
-      v.src = `${s.info.streamBase}?t=${t.toFixed(2)}&a=${s.audio ?? ''}${s.needTx ? '&tx=1' : ''}`;
+      // Picture copied as-is: start picture and sound together at the keyframe (keeps them in sync).
+      if (!s.needTx && t >= 1 && window.reel.keyframe) { const ask = s.loadAsk = {}; window.reel.keyframe(s.info.id, t).then((k) => s.loadAsk === ask && start(k), () => s.loadAsk === ask && start(t)); }
+      else start(t);
+      return;
     }
     const rate = v.playbackRate;
     if (play) v.play().catch(() => {});

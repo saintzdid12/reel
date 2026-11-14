@@ -139,7 +139,13 @@ const logoObserver = new IntersectionObserver(entries => {
     });
   }
 }, { rootMargin: window.REEL_TV ? '1200px' : '200px' });
-function lazyLogo(el, m) { el.dataset.type = m.type; el.dataset.id = m.id; logoObserver.observe(el); }
+function lazyLogo(el, m) {
+  el.dataset.type = m.type; el.dataset.id = m.id;
+  const known = TMDB.logoNow(m.type, m.id);
+  if (known) { const slot = el.querySelector('.title-on'); if (slot && !slot.childElementCount) { slot.innerHTML = `<img src="${TMDB.img(known, 'w300')}" alt="">`; return; } }
+  if (known === null) return;   // looked up before: this one has no logo
+  logoObserver.observe(el);
+}
 
 function posterCard(m, opts = {}) {
   const it = Store.item(`${m.type}:${m.id}`) || {};

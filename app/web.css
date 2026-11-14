@@ -233,3 +233,39 @@ body.web.phone .op-num { width: 40px; height: 40px; font-size: 14px; }
 body.web.phone .op-et em { -webkit-line-clamp: 2; font-size: 12px; }
 body.web.phone .op-arc-head { padding: 12px 10px; gap: 10px; }
 body.web.phone .op-n { width: 22px; }
+
+/* ===================== Search on phones ===================== */
+body.web:not(.phone) .ph-filters-btn, body.web:not(.phone) .sb-cancel, body.web:not(.phone) .sb-ic { display: none !important; }
+/* The box lives at the very top of the screen (where the round buttons are on other screens) */
+body.web.phone[data-route="search"] #nav .nav-cluster { visibility: hidden; }
+body.web.phone[data-route="search"] .search-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 130; margin: 0; gap: 12px;
+  padding: calc(10px + var(--safe-t)) 14px 10px; background: rgba(0,0,0,.78);
+  backdrop-filter: blur(22px) saturate(160%); -webkit-backdrop-filter: blur(22px) saturate(160%);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+body.web.phone[data-route="search"] .page { padding-top: calc(74px + var(--safe-t)) !important; }
+body.web.phone .search-bar { position: relative; }
+body.web.phone .search-bar .q { height: 44px; font-size: 16px !important; padding: 0 14px 0 40px; border-radius: 14px; min-width: 0; box-shadow: none; }
+body.web.phone .search-bar .q:focus { outline: none; box-shadow: 0 0 0 2px rgba(255,255,255,.22); }
+body.web.phone .search-bar .sb-ic { position: absolute; left: 28px; top: calc(50% + var(--safe-t) / 2); transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-3); pointer-events: none; z-index: 1; }
+body.web.phone .search-bar .sb-ic .ic { width: 18px; height: 18px; }
+body.web.phone .sb-cancel { flex: none; background: none; border: 0; color: #fff; font-size: 16px; font-weight: 600; padding: 8px 2px; }
+/* One row: All · Movies · Shows · People, then Filters */
+body.web.phone .search-filters { flex-wrap: nowrap; gap: 8px; margin: 2px calc(-1 * var(--gutter)) 16px; padding: 0 var(--gutter); overflow-x: auto; }
+body.web.phone .search-filters > * { flex: none; }
+body.web.phone .search-filters:not(.open) > :not(:first-child):not(.ph-filters-btn) { display: none !important; }
+body.web.phone .search-filters.open { flex-wrap: wrap; overflow: visible; }
+body.web.phone .search-filters .seg { padding: 3px; }
+body.web.phone .search-filters .seg button { padding: 7px 11px; font-size: 13.5px; }
+body.web.phone .search-filters .gsel { height: 38px; font-size: 13.5px; }
+body.web.phone .ph-filters-btn { display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 12px; border-radius: 999px; font-size: 13.5px; font-weight: 600;
+  color: var(--text-2); background: var(--glass); border: 1px solid var(--glass-border); }
+body.web.phone .ph-filters-btn .ic { width: 15px; height: 15px; }
+body.web.phone .ph-filters-btn.on { color: #000; background: rgba(255,255,255,.94); border-color: transparent; }
+body.web.phone[data-route="search"] .results > .dim:first-child, body.web.phone[data-route="search"] .res-count { font-size: 12.5px; margin-bottom: 10px; }
+body.web.phone[data-route="search"] #nav::before { opacity: 0 !important; }
+/* Filters is a small round icon until filters are open or set, so the whole row fits a phone */
+body.web.phone .ph-filters-btn:not(.on) { width: 38px; padding: 0; justify-content: center; }
+body.web.phone .ph-filters-btn:not(.on) span { display: none; }
+body.web.phone .search-filters .seg button { padding: 7px 10px !important; }

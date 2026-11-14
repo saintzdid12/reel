@@ -5,7 +5,7 @@
 <h1 align="center">Reel</h1>
 
 <p align="center">
-  <b>Track, rate and watch movies and shows — with recommendations that learn your taste, a clean macOS-style app, and your friends. On Windows, Mac and Fire TV.</b>
+  <b>Track, rate and watch movies and shows — with recommendations that learn your taste, a clean macOS-style app, and your friends. On Windows, Mac, Fire TV, your phone and any browser.</b>
 </p>
 
 <p align="center">
@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <b>Reel 1.2 is out</b> · <a href="https://github.com/saintzdid12/reel/releases/latest">See what’s new →</a>
+  <b>Reel 1.3 is out</b>: Reel on your phone, a better TV app, One Pace and smarter stream picks · <a href="https://github.com/saintzdid12/reel/releases/latest">See what’s new →</a>
 </p>
 
 <p align="center">
@@ -43,7 +43,10 @@
 - Plays from **your own debrid account** — Real-Debrid, TorBox, AllDebrid, Premiumize, Debrid-Link, EasyDebrid or Offcloud
 - HD by default, up to 4K HDR with 7.1 audio, subtitles and automatic next episode
 - Works on any PC: video a laptop can't show is converted on the fly
-- Picks up where you left off, on any of your PCs. Sign in on a new one and your debrid key comes with you, so you can start watching right away
+- Picks up where you left off, on any of your devices. Sign in on a new one and your debrid key comes with you, so you can start watching right away
+- **Smart stream picks**: popular, properly sourced releases first, theatre recordings caught, and a different film with the same name is spotted (by its running time) and skipped
+- **Continue Watching** shows what you're partway through and the next episode of every show you're on
+- **One Pace**: on One Piece's page, *One Pace version* plays the fan edit without the filler, every arc, subbed or dubbed
 
 <p align="center">
   <img src="screenshots/player.webp" alt="The player" width="960">
@@ -95,7 +98,8 @@ Works best with **Real-Debrid**, which converts any movie to phone-friendly vide
    (On an Android TV, open the same link with any downloader or file manager.)
 2. If the TV asks, allow Downloader to install apps, then choose **Install**.
 3. Open Reel and sign in: type the code the TV shows into **Settings → Account → Link a device** on your computer, or use your Reel username and password. Your library and debrid service come with your account.
-4. Reel for TV **updates itself**: when a new version is out it asks once, downloads it and opens the installer.
+4. **To update**, open Downloader and enter the same link again, then choose **Install**. Your account, library and place in every show stay as they are.
+5. On the TV: **Down** from the timeline reaches Subtitles and Audio, and the next episode starts by itself (press **OK** on *Up next* to start it right away).
 
 ### Setup (computer)
 **One step:** pick your debrid service from the list and paste its API key (there's a *Find your API key* link for each one), then choose HD or 4K. Movie info is built in, so there's no TMDB key to set up.

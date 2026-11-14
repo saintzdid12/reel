@@ -38,6 +38,35 @@
     };
   }
 
+  // ---- search: on phones the box sits at the very top (with Cancel), the type chips on one row, and the other
+  // filters fold behind one "Filters" button. On a computer everything shows as before. ----
+  if (typeof Views !== 'undefined' && Views.search) {
+    const search0 = Views.search;
+    Views.search = async (root, params) => {
+      await search0(root, params);
+      const page = root.querySelector('.page') || root;
+      const sb = page.querySelector('.search-bar'), input = sb && sb.querySelector('.q'), bar = page.querySelector('.search-filters');
+      if (input) { input.placeholder = 'Movies, shows, people'; input.setAttribute('enterkeyhint', 'search'); input.setAttribute('autocomplete', 'off'); }
+      if (sb && !sb.querySelector('.sb-cancel')) {
+        sb.insertBefore(h(`<span class="sb-ic">${ICON.search}</span>`), input);
+        const c = h('<button class="sb-cancel">Cancel</button>');
+        c.onclick = () => { if (input) input.blur(); if (typeof backStack !== 'undefined' && backStack.length && typeof back === 'function') back(); else go('home'); };
+        sb.appendChild(c);
+      }
+      if (bar && !bar.querySelector('.ph-filters-btn')) {
+        const btn = h(`<button class="ph-filters-btn">${ICON.filter}<span>Filters</span></button>`);
+        const active = () => [...bar.querySelectorAll('.gsel b')].filter((b) => b.textContent && !/^Any/.test(b.textContent)).length
+          + (/Unseen/.test((bar.querySelector(':scope > .seg:last-of-type .on, :scope > .segm:last-of-type .on') || {}).textContent || '') ? 1 : 0);
+        const paint = () => { const n = active(); btn.classList.toggle('on', bar.classList.contains('open') || n > 0); btn.querySelector('span').textContent = n ? `Filters · ${n}` : 'Filters'; };
+        btn.onclick = () => { bar.classList.toggle('open'); paint(); };
+        bar.addEventListener('click', () => setTimeout(paint, 50));
+        const first = bar.firstElementChild;
+        if (first) first.after(btn); else bar.appendChild(btn);
+        paint();
+      }
+    };
+  }
+
   // ---- no Live TV on the web ----
   if (typeof LiveTV !== 'undefined') { LiveTV.enabled = () => false; LiveTV.addNav = () => {}; try { LiveTV.removeNav(); } catch {} }
 
@@ -46,7 +75,9 @@
   if (typeof go === 'function') {
     const go0 = go;
     window.go = function (name, params, replace, ...rest) {
+      document.body.dataset.route = name;
       const r = go0(name, params, replace, ...rest);
+      Promise.resolve(r).then(() => { if (typeof route !== 'undefined') document.body.dataset.route = route.name; }).catch(() => {});
       if (!replace && !window.__webPopping) { try { history.pushState({ reel: Date.now() }, ''); } catch {} }
       return r;
     };

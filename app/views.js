@@ -61,6 +61,9 @@ const rowsBox = () => h('<div class="rows"></div>');
 
 // Continue Watching: what you're partway through first, then the next episode of shows you're between episodes of
 // (formerly a separate "Up Next" row). One card per show or movie.
+// The season each show's page was last on (this session), so leaving an episode doesn't jump back to season 1.
+const seasonShown = {};
+
 function continueRow(container, filterType) {
   const latest = new Map();
   Object.values(Store.data.progress)
@@ -499,7 +502,7 @@ Views.detail = async (root, { type, id, season }) => {
     const shelf = $('.ep-shelf', sec);
     let curSeason;
     const showSeason = async (n) => {
-      curSeason = n;
+      curSeason = n; seasonShown[meta.id] = n;
       const sMeta = seasons.find(s => s.season_number === n) || { name: `Season ${n}` };
       $('.season-btn span', sec).textContent = sMeta.name;
       shelf.innerHTML = '<div class="spinner" style="margin:40px auto"></div>';
@@ -590,8 +593,11 @@ Views.detail = async (root, { type, id, season }) => {
       const away = (ev) => { if (!menu.contains(ev.target)) { menu.remove(); document.removeEventListener('mousedown', away, true); } };
       setTimeout(() => document.addEventListener('mousedown', away, true));
     };
+    // Coming back to a show keeps the season you were on; otherwise the one you're partway through or last watched.
     const lastS = it().lastEp ? +it().lastEp.split(':')[0] : null;
-    showSeason(season || lastS || (seasons[0] && seasons[0].season_number) || 1);
+    const prog = Object.values(Store.data.progress).filter(p => p.key === `tv:${meta.id}`).sort((a, b) => b.updatedAt - a.updatedAt)[0];
+    const has = (n) => n && seasons.some(x => x.season_number === n);
+    showSeason([season, seasonShown[meta.id], prog && prog.season, lastS].find(has) || (seasons[0] && seasons[0].season_number) || 1);
   }
 
   // One-click log + how your rating compares (IMDb / TMDB / you / your genre average).
@@ -749,7 +755,7 @@ Views.search = async (root) => {
   };
 
   if (searchState.mode === 'search') {
-    const f = searchState.f = searchState.f || { type: 'all', genre: '', era: '', rating: '', hideSeen: false };
+    const f = searchState.f = searchState.f || { type: 'all', genre: '', era: '', rating: '' };
     Store.data.recentSearches = Store.data.recentSearches || [];
     // Filters
     const bar = h('<div class="search-filters"></div>');
@@ -759,14 +765,12 @@ Views.search = async (root) => {
     bar.appendChild(glassSelect('Genre', [['', 'Any'], ...allGenres.map(([n, id]) => [String(id), n])], f.genre, v => { f.genre = v; run(); }));
     bar.appendChild(glassSelect('Released', [['', 'Any time'], ['2020', '2020s'], ['2010', '2010s'], ['2000', '2000s'], ['1990', '1990s'], ['1980', '1980s'], ['1970', '1970s'], ['old', 'Before 1970']], f.era, v => { f.era = v; run(); }));
     bar.appendChild(glassSelect('Rating', [['', 'Any'], ['6', '6+'], ['7', '7+'], ['8', '8+']], f.rating, v => { f.rating = v; run(); }));
-    bar.appendChild(segmented([['0', 'Include seen'], ['1', 'Unseen only']], f.hideSeen ? '1' : '0', v => { f.hideSeen = v === '1'; run(); }));
     const eraRange = () => (f.era === 'old' ? [1900, 1969] : f.era ? [+f.era, +f.era + 9] : null);
     const keep = (m) => {
       if (f.type !== 'all' && m.type !== f.type) return false;
       if (f.genre && !(m.genreIds || []).includes(+f.genre)) return false;
       const r = eraRange(); if (r && (!m.year || m.year < r[0] || m.year > r[1])) return false;
       if (f.rating && (m.vote || 0) < +f.rating) return false;
-      if (f.hideSeen && (Store.item(`${m.type}:${m.id}`) || {}).watched) return false;
       return true;
     };
     const remember = (q) => {

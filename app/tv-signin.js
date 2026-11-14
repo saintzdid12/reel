@@ -109,3 +109,27 @@
     }
   };
 })();
+
+// TV start-up: the start screen (see build-www.mjs) stays until Reel knows whether you're signed in and the first
+// real screen has settled: Home for you, or the sign-in screen — never one flashing before the other.
+(() => {
+  const boot = document.querySelector('.tv-boot');
+  if (!boot) return;
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const routeName = () => (typeof route !== 'undefined' ? route.name : '');
+  (async () => {
+    const t0 = Date.now(), late = () => Date.now() - t0 > 9000;
+    while (!late() && !(typeof Cloud !== 'undefined' && Cloud.sb)) await wait(100);
+    try {
+      const { data } = await Cloud.sb.auth.getSession();
+      // Signed in: wait for your account to load, and (first time on this TV) for your streaming service to arrive.
+      if (data && data.session) while (!late() && (!Cloud.user || routeName() === 'setup')) await wait(150);
+    } catch {}
+    // Then a beat for the screen to draw.
+    let last = routeName(), since = Date.now();
+    while (!late()) { await wait(150); if (routeName() !== last) { last = routeName(); since = Date.now(); } if (last && Date.now() - since > 450 && document.querySelector('#view > *')) break; }
+    boot.classList.add('out');
+    setTimeout(() => boot.remove(), 400);
+    if (window.tvFocus) setTimeout(() => window.tvFocus.start(), 120);
+  })();
+})();

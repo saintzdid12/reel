@@ -419,6 +419,18 @@ const TMDB = {
     const d = await this.get(`/${type}/${id}/external_ids`);
     return d.imdb_id;
   },
+  // The logo path if it's already saved on this device (instant), undefined if it has to be looked up.
+  logoMemo: new Map(),
+  logoNow(type, id) {
+    const mk = type + ':' + id;
+    if (this.logoMemo.has(mk)) return this.logoMemo.get(mk);
+    const hit = DiskCache.get(DiskCache.key(`/${type}/${id}/images`, { include_image_language: 'en,null' }));
+    if (!hit || !hit.v) return undefined;
+    const l = (hit.v.logos || []).find(x => x.iso_639_1 === 'en') || (hit.v.logos || [])[0];
+    const v = l ? l.file_path : null;
+    this.logoMemo.set(mk, v);
+    return v;
+  },
   async logo(type, id) {
     try {
       const d = await this.get(`/${type}/${id}/images`, { include_image_language: 'en,null' });
