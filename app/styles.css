@@ -1,3 +1,9 @@
+/* Share your profile */
+.share-prof h3 { margin: 0 0 16px; font-size: 22px; letter-spacing: -.02em; }
+.share-prof .sp-link { display: flex; gap: 8px; }
+.share-prof .sp-link .input { flex: 1; min-width: 0; font-size: 14px; }
+.share-prof .sp-note { margin: 12px 0 0; font-size: 13px; line-height: 1.5; }
+.share-prof .sp-stop { background: none; border: 0; padding: 0; color: var(--text-2); font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
 ﻿/* Reel — tvOS-inspired: monochrome, glass, motion. */
 :root {
   --bg: #000;
