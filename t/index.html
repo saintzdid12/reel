@@ -32,7 +32,7 @@
   .art { position: fixed; inset: 0; z-index: 0; background: center 20% / cover no-repeat; opacity: 0; transition: opacity 1s var(--ease); }
   .art.on { opacity: .5; }
   .art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,.6) 45%, #000 85%), linear-gradient(90deg, rgba(0,0,0,.7), transparent 70%); }
-  main { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; padding: 18px var(--gutter) 80px; }
+  main { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; padding: clamp(28px, 7vw, 96px) var(--gutter) 80px; }
 
   .top { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: clamp(36px, 9vw, 120px); }
   .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 700; font-size: 17px; letter-spacing: -.02em; color: inherit; }
@@ -67,7 +67,7 @@
   .missing p { color: var(--text-2); }
 
   @media (max-width: 640px) {
-    .top { margin-bottom: 28px; }
+    main { padding-top: 16px; }
     .title { grid-template-columns: 110px minmax(0, 1fr); grid-template-areas: "poster info" "acts acts"; }
     .title .info { align-self: center; }
     h1 { font-size: 30px; }
@@ -78,9 +78,9 @@
 </style>
 </head>
 <body>
+<script src="/header.js"></script>
 <div class="art" id="art"></div>
 <main>
-  <header class="top"><a class="brand" href="/"><img src="/icon.png" alt="">Reel</a><a class="btn glass small" href="/download/">Get Reel</a></header>
   <div id="view"></div>
 </main>
 <script src="/app/web-keys.js"></script>

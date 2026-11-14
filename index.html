@@ -124,12 +124,7 @@
 </style>
 </head>
 <body>
-<header class="top" id="top">
-  <div class="wrap">
-    <a class="brand" href="./"><img src="icon.png" alt="">Reel</a>
-    <nav><a class="link wide" href="#need">What you need</a><a class="link wide" href="/help/">Help</a><a class="link" href="watch/">Open Reel</a><a class="btn primary small" href="download/">Get Reel</a></nav>
-  </div>
-</header>
+<script src="/header.js"></script>
 
 <main>
   <section class="hero">
@@ -213,11 +208,6 @@
     <p>Reel doesn’t host or provide any content. It plays from services you have your own account with. Movie info from TMDB; Reel isn’t endorsed or certified by TMDB.</p>
   </div>
 </footer>
-<script>
-  const bar = document.getElementById('top');
-  const onScroll = () => bar.classList.toggle('scrolled', scrollY > 10);
-  addEventListener('scroll', onScroll, { passive: true }); onScroll();
-</script>
 <script src="/count.js" data-page="home"></script>
 </body>
 </html>

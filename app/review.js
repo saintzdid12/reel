@@ -95,28 +95,28 @@ async function shareYearCard(d, btn) {
     x.fillStyle = '#000'; x.fillRect(0, 0, W, H);
     if (bg) {
       x.save(); x.filter = 'blur(40px) saturate(1.3) brightness(.55)';
-      const s = Math.max(W / bg.width, 1100 / bg.height); x.drawImage(bg, (W - bg.width * s) / 2, -80, bg.width * s, bg.height * s); x.restore();
+      const s = Math.max(W / bg.width, 1250 / bg.height); x.drawImage(bg, (W - bg.width * s) / 2, -80, bg.width * s, bg.height * s); x.restore();
     }
-    const fade = x.createLinearGradient(0, 300, 0, 1150); fade.addColorStop(0, 'rgba(0,0,0,0)'); fade.addColorStop(1, '#000');
-    x.fillStyle = fade; x.fillRect(0, 0, W, 1200);
+    const fade = x.createLinearGradient(0, 360, 0, 1250); fade.addColorStop(0, 'rgba(0,0,0,0)'); fade.addColorStop(1, '#000');
+    x.fillStyle = fade; x.fillRect(0, 0, W, 1300);
     const name = (typeof Cloud !== 'undefined' && Cloud.profile && (Cloud.profile.display_name || Cloud.profile.username)) || '';
-    x.fillStyle = 'rgba(235,235,245,.7)'; x.font = F(600, 40); x.fillText(name ? `${name}’s ${d.year} on Reel` : `My ${d.year} on Reel`, 80, 150);
-    x.fillStyle = '#fff'; x.font = F(800, 300); x.fillText(d.items.length.toLocaleString(), 64, 470);
-    x.font = F(700, 52); x.fillText(`titles watched`, 80, 550);
+    x.fillStyle = 'rgba(235,235,245,.7)'; x.font = F(600, 40); x.fillText(name ? `${name}’s ${d.year} on Reel` : `My ${d.year} on Reel`, 80, 190);
+    x.fillStyle = '#fff'; x.font = F(800, 340); x.fillText(d.items.length.toLocaleString(), 62, 560);
+    x.font = F(700, 56); x.fillText(`titles watched`, 80, 650);
     x.fillStyle = 'rgba(235,235,245,.7)'; x.font = F(500, 40);
-    x.fillText([`${d.films.length} film${d.films.length === 1 ? '' : 's'}`, d.shows.length ? `${d.shows.length} show${d.shows.length === 1 ? '' : 's'}` : ''].filter(Boolean).join(' and '), 80, 615);
+    x.fillText([`${d.films.length} film${d.films.length === 1 ? '' : 's'}`, d.shows.length ? `${d.shows.length} show${d.shows.length === 1 ? '' : 's'}` : ''].filter(Boolean).join(' and '), 80, 715);
     // Numbers
     const stats = [[Math.round((d.minutes || 0) / 60).toLocaleString(), 'hours'], [d.avg ? d.avg.toFixed(1) : '–', 'average rating'], [d.genre || '–', 'top genre']];
     stats.forEach(([v, l], i) => {
-      const sx = 80 + i * 320; x.fillStyle = '#fff'; x.font = F(800, String(v).length > 7 ? 46 : 72); x.fillText(String(v), sx, 790);
-      x.fillStyle = 'rgba(235,235,245,.6)'; x.font = F(500, 34); x.fillText(l, sx, 840);
+      const sx = 80 + i * 320; x.fillStyle = '#fff'; x.font = F(800, String(v).length > 7 ? 50 : 80); x.fillText(String(v), sx, 920);
+      x.fillStyle = 'rgba(235,235,245,.6)'; x.font = F(500, 34); x.fillText(l, sx, 972);
     });
     // Top five
     if (top.length) {
-      x.fillStyle = '#fff'; x.font = F(700, 52); x.fillText('My top ' + top.length, 80, 1010);
-      const pw = 172, ph = 258, gap = (W - 160 - pw * 5) / 4;
+      x.fillStyle = '#fff'; x.font = F(700, 56); x.fillText('My top ' + top.length, 80, 1170);
+      const pw = 164, ph = 246, gap = (W - 160 - pw * 5) / 4;
       top.forEach((it, i) => {
-        const px = 80 + i * (pw + gap), py = 1060, im = posters[i];
+        const px = 80 + i * (pw + gap), py = 1222, im = posters[i];
         x.save(); x.beginPath(); x.roundRect ? x.roundRect(px, py, pw, ph, 16) : x.rect(px, py, pw, ph); x.clip();
         x.fillStyle = '#1c1c1e'; x.fillRect(px, py, pw, ph);
         if (im) x.drawImage(im, px, py, pw, ph);

@@ -20,12 +20,12 @@
   :root { color-scheme: dark; --text: #f5f5f7; --text-2: rgba(235,235,245,.68); --text-3: rgba(235,235,245,.46); --spring: cubic-bezier(.2,.9,.25,1.1); }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: #000; color: var(--text); }
-  body { font: 16px/1.6 Inter, -apple-system, "Segoe UI", system-ui, sans-serif; -webkit-font-smoothing: antialiased; min-height: 100vh; display: grid; place-items: center; padding: 24px 18px; }
+  body { font: 16px/1.6 Inter, -apple-system, "Segoe UI", system-ui, sans-serif; -webkit-font-smoothing: antialiased; min-height: 100vh; }
   [hidden] { display: none !important; }
-  main { width: 100%; max-width: 440px; }
+  main { width: 100%; max-width: 476px; margin: clamp(24px, 10vh, 120px) auto 60px; padding: 0 18px; }
   .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; text-decoration: none; color: inherit; }
   .brand img { width: 30px; height: 30px; border-radius: 8px; }
-  h1 { margin: 34px 0 8px; font-size: clamp(32px, 8vw, 44px); line-height: 1.05; letter-spacing: -.04em; }
+  h1 { margin: 0 0 8px; font-size: clamp(32px, 8vw, 44px); line-height: 1.05; letter-spacing: -.04em; }
   p { margin: 0; color: var(--text-2); }
   .code { margin: 22px 0 26px; font-size: 40px; font-weight: 800; letter-spacing: .16em; font-variant-numeric: tabular-nums; }
   .code small { display: block; font-size: 13px; font-weight: 500; letter-spacing: 0; color: var(--text-3); }
@@ -39,8 +39,8 @@
 </style>
 </head>
 <body>
+<script src="/header.js"></script>
 <main>
-  <a class="brand" href="/"><img src="/icon.png" alt="">Reel</a>
   <h1>You’re invited to a watch party</h1>
   <p>Everyone’s playback stays in sync, with chat and reactions.</p>
   <div class="code" id="code"><small>Party code</small><span></span></div>

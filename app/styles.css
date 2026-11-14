@@ -3936,10 +3936,7 @@ body.mac .tw .show-side { left: 96px; }
 .spoiler.shown .sp-body { filter: none; opacity: 1; user-select: text; pointer-events: auto; }
 .spoiler.shown .sp-show { display: none; }
 .sp-own { display: inline-block; margin-bottom: 6px; font-size: 12px; font-weight: 600; color: var(--text-2); padding: 2px 9px; border-radius: 999px; background: rgba(255,255,255,.08); }
-.sp-check { margin: 10px 0 0; font-size: 13.5px; gap: 10px; color: var(--text-2); }
-.sp-check input { width: 36px; height: 22px; }
-.sp-check input::after { width: 18px; height: 18px; }
-.sp-check input:checked::after { transform: translateX(14px); }
+.check.sp-check, .field .check.sp-check { display: flex; align-items: center; gap: 12px; margin: 12px 0 0; font-size: 14.5px; font-weight: 400; color: rgba(255,255,255,.88); text-transform: none; letter-spacing: 0; }
 .cp-review { flex-wrap: wrap; }
 .cp-review .sp-check { flex-basis: 100%; }
 
@@ -3949,3 +3946,7 @@ body.mac .tw .show-side { left: 96px; }
 .yc-sheet h3 { margin: 0 0 14px; font-size: 22px; letter-spacing: -.02em; }
 .yc-img { display: block; width: auto; max-width: 100%; height: min(62vh, 640px); margin: 0 auto 18px; border-radius: 18px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
 .yc-sheet .btns { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+
+/* TorBox suggestion under the debrid key */
+.stream-form .sf-get { margin-top: 14px; font-size: 13px; line-height: 1.5; color: var(--text-2); font-weight: 500; }
+.stream-form .sf-get a { color: var(--text); font-weight: 600; }
