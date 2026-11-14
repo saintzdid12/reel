@@ -350,12 +350,11 @@ function shareProfile() {
   const p = Cloud.profile; if (!p) return;
   const link = `${(Cloud.cfg && Cloud.cfg.site) || 'https://reelwatch.stream'}/@${p.username}`;
   const sheet = h(`<div class="share-prof">
-    <h3>Your profile link</h3>
-    <div class="sp-link"><input class="input" readonly value="${esc(link)}"><button class="btn small primary sp-copy">Copy link</button></div>
-    <button class="btn sp-image">${ICON.image || ''}Share as image</button>
+    <div class="sp-card"><div class="sp-img"><div class="sp-wait"></div></div><button class="sp-copyimg" type="button" hidden></button></div>
+    <div class="sp-link"><input class="input" readonly value="${esc(link)}" aria-label="Your profile link"><button class="btn small primary sp-copy">Copy link</button></div>
   </div>`);
-  const shareModal = openModal(sheet);
-  $('.sp-image', sheet).onclick = (ev) => { shareModal.close(); shareProfileImage(ev.currentTarget); };
+  const m = openModal(sheet, { onClose: () => { if (url) setTimeout(() => URL.revokeObjectURL(url), 60000); } });
+  let url = null;
   // Sharing once also gets your link a proper preview card (name, picture, favorites) within about half an hour.
   if (!p.public_profile) Cloud.updateProfile({ public_profile: true }).catch(() => {});
   const input = $('input', sheet), btn = $('.sp-copy', sheet);
@@ -365,13 +364,33 @@ function shareProfile() {
     btn.textContent = 'Copied';
     setTimeout(() => { if (btn.isConnected) btn.textContent = 'Copy link'; }, 1800);
   };
+  // The picture of your profile, made right away.
+  profileCardImage().then((blob) => {
+    if (!sheet.isConnected) return;
+    const box = $('.sp-img', sheet), cb = $('.sp-copyimg', sheet);
+    if (!blob) { box.closest('.sp-card').remove(); return; }
+    url = URL.createObjectURL(blob);
+    box.innerHTML = `<img src="${url}" alt="A picture of your Reel profile">`;
+    const file = typeof File !== 'undefined' ? new File([blob], `reel-${p.username}.png`, { type: 'image/png' }) : null;
+    // Copy where the browser can put pictures on the clipboard; otherwise Share (phones) or Save.
+    const mode = typeof ClipboardItem !== 'undefined' && navigator.clipboard && navigator.clipboard.write ? 'copy'
+      : file && navigator.canShare && navigator.canShare({ files: [file] }) ? 'share' : 'save';
+    const label = { copy: 'Copy', share: 'Share', save: 'Save' }[mode];
+    cb.innerHTML = `${mode === 'copy' ? '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M15 9V6.5A2.5 2.5 0 0 0 12.5 4h-6A2.5 2.5 0 0 0 4 6.5v6A2.5 2.5 0 0 0 6.5 15H9"/></svg>' : ''}<span>${label}</span>`;
+    cb.hidden = false;
+    cb.onclick = async () => {
+      if (mode === 'share') return navigator.share({ files: [file], title: `${p.display_name || p.username} on Reel` }).catch(() => {});
+      if (mode === 'save') { const a = document.createElement('a'); a.href = url; a.download = `reel-${p.username}.png`; document.body.appendChild(a); a.click(); a.remove(); return; }
+      try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); $('span', cb).textContent = 'Copied'; setTimeout(() => { if (cb.isConnected) $('span', cb).textContent = 'Copy'; }, 1800); }
+      catch { toast('Couldn’t copy the picture. Right-click it to save instead.', true); }
+    };
+  });
 }
 
 // "Share as image": a 1080×1350 picture of your profile (the shape that fits chats and Instagram posts) with your
 // picture, name, numbers and favorites, to send instead of the link. Pictures that can't be loaded are left out.
-async function shareProfileImage(btn) {
-  const p = Cloud.profile; if (!p) return;
-  if (btn) btn.disabled = true;
+async function profileCardImage() {
+  const p = Cloud.profile; if (!p) return null;
   try {
     const items = Store.values();
     const films = items.filter((i) => i.type === 'movie' && i.watched).length;
@@ -439,29 +458,13 @@ async function shareProfileImage(btn) {
       // Footer
       x.fillStyle = 'rgba(255,255,255,.12)'; x.fillRect(80, H - 140, W - 160, 2);
       x.fillStyle = '#fff'; x.font = F(800, 44); x.fillText('Reel', 80, H - 64);
-      x.fillStyle = 'rgba(235,235,245,.7)'; x.font = F(500, 34); x.textAlign = 'right'; x.fillText(`reelwatch.stream/@${p.username}`, W - 80, H - 66); x.textAlign = 'left';
+      const rw = x.measureText('Reel').width; x.fillStyle = 'rgba(235,235,245,.7)'; x.font = F(500, 34); x.fillText(`reelwatch.stream/@${p.username}`, 80 + rw + 28, H - 66);
       return new Promise((res) => { try { c.toBlob((b) => res(b), 'image/png'); } catch { res(null); } });
     };
     // If a picture refuses to be copied into the image, try again without it.
     const blob = (await draw(true, true)) || (await draw(false, true)) || (await draw(false, false));
-    if (!blob) throw new Error('no image');
-
-    const url = URL.createObjectURL(blob);
-    const file = typeof File !== 'undefined' ? new File([blob], `reel-${p.username}.png`, { type: 'image/png' }) : null;
-    const canShare = file && navigator.canShare && navigator.canShare({ files: [file] });
-    const sheet = h(`<div class="yc-sheet pc-sheet"><h3>Your profile</h3><img class="yc-img pc-img" src="${url}" alt="Your Reel profile">
-      <div class="btns end"><button class="btn ghost yc-close">Close</button>${typeof ClipboardItem !== 'undefined' ? '<button class="btn pc-copy">Copy image</button>' : ''}${canShare ? '<button class="btn pc-share">Share</button>' : ''}<a class="btn primary" href="${url}" download="reel-${esc(p.username)}.png">Save image</a></div></div>`);
-    const m = openModal(sheet, { onClose: () => setTimeout(() => URL.revokeObjectURL(url), 60000) });
-    $('.yc-close', sheet).onclick = m.close;
-    const cp = $('.pc-copy', sheet);
-    if (cp) cp.onclick = async () => {
-      try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); cp.textContent = 'Copied'; setTimeout(() => { if (cp.isConnected) cp.textContent = 'Copy image'; }, 1800); }
-      catch { toast('Couldn’t copy the image. Save it instead.', true); }
-    };
-    const sh = $('.pc-share', sheet); if (sh) sh.onclick = () => navigator.share({ files: [file], title: `${name} on Reel` }).catch(() => {});
-  } catch {
-    toast('Couldn’t make your profile image right now', true);
-  } finally { if (btn) btn.disabled = false; }
+    return blob;
+  } catch { return null; }
 }
 
 Views.friend = async (root, { id }) => {
