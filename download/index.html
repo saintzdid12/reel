@@ -1,5 +1,159 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Reel</title><meta http-equiv="refresh" content="0; url=../"><link rel="canonical" href="https://reelwatch.stream/">
-<style>html,body{background:#050505;color:#fff;font:16px system-ui,sans-serif}</style></head>
-<body><script>location.replace('../' + location.search)</script><a href="../">Reel</a></body></html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Get Reel</title>
+<meta name="description" content="Download Reel for Windows, Mac, Fire TV and Android TV, or open it in your browser.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="reelwatch.stream">
+<meta property="og:title" content="Get Reel">
+<meta property="og:description" content="Free for Windows, Mac, Fire TV and Android TV, and in any browser.">
+<meta property="og:url" content="https://reelwatch.stream/download/">
+<meta property="og:image" content="https://reelwatch.stream/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#f2f2f2">
+<link rel="icon" href="../icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&display=swap" media="print" onload="this.media='all'">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #000; --text: #f5f5f7; --text-2: rgba(235,235,245,.68); --text-3: rgba(235,235,245,.46); --line: rgba(255,255,255,.1);
+    --gutter: clamp(18px, 5vw, 64px); --max: 1000px;
+    --spring: cubic-bezier(.2,.9,.25,1.1); --ease: cubic-bezier(.25,.8,.25,1);
+    --r-ctl: 999px; --r-code: 12px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); }
+  body { font: 16px/1.6 Inter, -apple-system, "Segoe UI", system-ui, sans-serif; -webkit-font-smoothing: antialiased; letter-spacing: -.005em; }
+  a { color: inherit; }
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
+  :focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 46px; padding: 0 22px; border-radius: var(--r-ctl);
+         font: 600 15.5px Inter, system-ui, sans-serif; text-decoration: none; white-space: nowrap; cursor: pointer; border: 0;
+         transition: transform .3s var(--spring), background .2s var(--ease); }
+  .btn:hover { transform: scale(1.04); } .btn:active { transform: scale(.96); }
+  .btn.primary { background: rgba(255,255,255,.95); color: #000; box-shadow: inset 0 1px 0 #fff, 0 10px 30px rgba(0,0,0,.35); }
+  .btn.glass { color: var(--text); background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.05)), rgba(38,38,44,.4);
+               border: 1px solid rgba(255,255,255,.14); box-shadow: inset 0 1px 0 rgba(255,255,255,.22); }
+  .btn.small { height: 38px; padding: 0 18px; font-size: 14px; }
+
+  .top .wrap { display: flex; align-items: center; justify-content: space-between; height: 68px; gap: 16px; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 700; font-size: 18px; letter-spacing: -.02em; }
+  .brand img { width: 32px; height: 32px; border-radius: 8px; }
+  .top nav a { text-decoration: none; color: var(--text-2); font-weight: 600; font-size: 15px; }
+  .top nav a:hover { color: var(--text); }
+
+  h1 { margin: clamp(34px, 6vw, 70px) 0 0; font-size: clamp(42px, 6.4vw, 76px); line-height: 1; letter-spacing: -.045em; font-weight: 800; }
+  .lead { margin: 16px 0 0; max-width: 52ch; color: var(--text-2); font-size: clamp(16px, 1.5vw, 18px); }
+  .lead a { color: var(--text); font-weight: 600; }
+  .ver { margin-top: 10px; color: var(--text-3); font-size: 14px; font-variant-numeric: tabular-nums; }
+
+  /* One row per platform, separated by hairlines */
+  .plats { margin-top: clamp(36px, 6vw, 60px); border-top: 1px solid var(--line); }
+  .plat { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: clamp(16px, 4vw, 56px); padding: clamp(28px, 4vw, 40px) 0; border-bottom: 1px solid var(--line); scroll-margin-top: 20px; }
+  .plat h2 { margin: 0; font-size: clamp(26px, 3vw, 34px); letter-spacing: -.03em; line-height: 1.1; }
+  .plat .req { margin-top: 6px; color: var(--text-3); font-size: 14px; }
+  .plat .here { display: inline-block; margin-top: 10px; font-size: 13px; font-weight: 600; color: #000; background: rgba(255,255,255,.92); padding: 3px 10px; border-radius: var(--r-ctl); }
+  .plat .acts { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+  .plat p, .plat ol { margin: 0; color: var(--text-2); }
+  .plat ol { padding-left: 20px; display: grid; gap: 8px; }
+  .plat b { color: var(--text); }
+  .code { display: flex; align-items: center; gap: 8px; margin: 10px 0 2px; padding: 6px 6px 6px 14px; border-radius: var(--r-code); background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); }
+  .code span { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 14px; color: var(--text); }
+  .code button { flex: none; height: 32px; padding: 0 14px; border-radius: var(--r-ctl); border: 0; background: rgba(255,255,255,.92); color: #000; font: 600 13px Inter, system-ui, sans-serif; cursor: pointer; }
+
+  .need { margin-top: clamp(48px, 7vw, 80px); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px 32px; align-items: center; }
+  .need h2 { margin: 0; font-size: 24px; letter-spacing: -.02em; }
+  .need p { margin: 6px 0 0; color: var(--text-2); max-width: 58ch; }
+
+  footer { margin-top: clamp(70px, 10vw, 120px); padding: 28px 0 44px; border-top: 1px solid var(--line); color: var(--text-3); font-size: 14px; }
+  footer a { color: var(--text-2); text-decoration: none; margin-right: 20px; }
+
+  @media (max-width: 760px) {
+    .plat, .need { grid-template-columns: 1fr; }
+    .plat .acts .btn { flex: 1 1 auto; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap"><a class="brand" href="../"><img src="../icon.png" alt="">Reel</a><nav><a href="../watch/">Open Reel</a></nav></div></header>
+<main class="wrap">
+  <h1>Get Reel</h1>
+  <p class="lead">Free on every screen, with one account for all of them. To watch you’ll need a debrid service; <a href="../#need">here’s what that is</a>.</p>
+  <div class="ver" id="ver"></div>
+
+  <div class="plats">
+    <section class="plat" id="windows">
+      <div><h2>Windows</h2><div class="req">Windows 10 and 11</div></div>
+      <div>
+        <div class="acts"><a class="btn primary" id="dl-win" href="https://github.com/saintzdid12/reel/releases/latest">Download for Windows</a></div>
+        <p>If Windows says “Windows protected your PC”, choose <b>More info</b>, then <b>Run anyway</b>. Reel updates itself after that.</p>
+      </div>
+    </section>
+
+    <section class="plat" id="mac">
+      <div><h2>Mac</h2><div class="req">macOS 11 or newer</div></div>
+      <div>
+        <div class="acts"><a class="btn primary" id="dl-arm" href="https://github.com/saintzdid12/reel/releases/latest">Apple Silicon</a><a class="btn glass" id="dl-intel" href="https://github.com/saintzdid12/reel/releases/latest">Intel</a></div>
+        <p>Apple Silicon is any Mac from late 2020 on. Open the download and drag <b>Reel</b> into Applications. The first time, macOS may say it can’t check the app: open <b>System Settings</b>, then <b>Privacy &amp; Security</b>, and choose <b>Open Anyway</b>.</p>
+      </div>
+    </section>
+
+    <section class="plat" id="tv">
+      <div><h2>Fire TV and Android TV</h2><div class="req">Installed with the free Downloader app</div></div>
+      <div>
+        <ol>
+          <li>On the TV, install <b>Downloader</b> from the Amazon Appstore (or Google Play).</li>
+          <li>Open it and enter this address:
+            <div class="code"><span id="tvlink">https://github.com/saintzdid12/reel/releases/latest/download/Reel-TV.apk</span><button id="copytv" type="button">Copy</button></div></li>
+          <li>If the TV asks, allow Downloader to install apps, then choose <b>Install</b>.</li>
+          <li>Open Reel and sign in with a code from Reel on your computer or phone, or with your username.</li>
+        </ol>
+        <p style="margin-top:12px">To update, enter the same address again. Your account and your place in every show stay as they are.</p>
+      </div>
+    </section>
+
+    <section class="plat" id="phone">
+      <div><h2>Phone and browser</h2><div class="req">iPhone, Android and any computer browser</div></div>
+      <div>
+        <div class="acts"><a class="btn primary" href="../watch/">Open Reel</a></div>
+        <p>For a full-screen app, add it to your home screen: on iPhone, <b>Share</b> then <b>Add to Home Screen</b>; on Android, the <b>⋮</b> menu then <b>Install app</b>.</p>
+      </div>
+    </section>
+  </div>
+
+  <div class="need">
+    <div><h2>Need a debrid service?</h2><p>We recommend TorBox: about $3 a month, and up to three people can stream on one account at once.</p></div>
+    <a class="btn glass" href="https://torbox.app/pricing" target="_blank" rel="noopener">Get TorBox</a>
+  </div>
+</main>
+<footer><div class="wrap"><a href="../">Reel</a><a href="https://github.com/saintzdid12/reel/releases" target="_blank" rel="noopener">All versions</a></div></footer>
+<script>
+  // Point the buttons straight at the newest files, and mark the platform you're on.
+  fetch('https://api.github.com/repos/saintzdid12/reel/releases/latest').then((r) => r.json()).then((rel) => {
+    const find = (re) => (rel.assets || []).find((x) => re.test(x.name));
+    const win = find(/Setup.*\.exe$/i), arm = find(/mac-arm64\.dmg$/i), intel = find(/mac-x64\.dmg$/i);
+    if (win) document.getElementById('dl-win').href = win.browser_download_url;
+    if (arm) document.getElementById('dl-arm').href = arm.browser_download_url;
+    if (intel) document.getElementById('dl-intel').href = intel.browser_download_url;
+    const v = /^Reel\s+\d/.test(rel.name || '') ? rel.name.replace(/^Reel\s+/, '') : String(rel.tag_name || '').replace(/^v/, '');
+    if (v) document.getElementById('ver').textContent = `Version ${v}`;
+  }).catch(() => {});
+  const ua = navigator.userAgent, touchMac = navigator.maxTouchPoints > 1 && /Mac/.test(navigator.platform || '');
+  const here = /AFT|Android TV|BRAVIA|GoogleTV/i.test(ua) ? 'tv' : /Android|iPhone|iPad|iPod|Mobile/i.test(ua) || touchMac ? 'phone' : /Mac/i.test(ua) ? 'mac' : /Win/i.test(ua) ? 'windows' : '';
+  if (here) {
+    const sec = document.getElementById(here);
+    sec.querySelector('h2').insertAdjacentHTML('afterend', '<span class="here">This device</span>');
+    if (here === 'phone' || here === 'tv') sec.parentNode.prepend(sec);
+  }
+  document.getElementById('copytv').onclick = async (e) => {
+    try { await navigator.clipboard.writeText(document.getElementById('tvlink').textContent); e.target.textContent = 'Copied'; setTimeout(() => (e.target.textContent = 'Copy'), 1800); } catch {}
+  };
+</script>
+</body>
+</html>

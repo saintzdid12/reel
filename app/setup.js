@@ -104,7 +104,7 @@ Views.setup = async (root) => {
         <div class="form-slot"></div>
         <div class="q-choice"><span>Picture quality</span><div class="acct-seg"><button type="button" data-q="1080" class="on">HD · 1080p</button><button type="button" data-q="2160">4K</button></div><em>HD works on any connection. 4K needs a fast connection and a 4K screen — change it any time in Settings.</em></div>
         <div class="err"></div>
-        <div class="btns end">${saved.tmdbBuiltIn ? '' : '<button class="btn ghost back">Back</button>'}<button class="btn primary next">Connect</button></div>`;
+        <div class="btns end">${saved.tmdbBuiltIn ? '' : '<button class="btn ghost back">Back</button>'}${window.REEL_WEB ? '<button class="btn ghost later">Not now</button>' : ''}<button class="btn primary next">Connect</button></div>`;
       const form = streamingForm(saved);
       $('.form-slot', card).appendChild(form);
       let q = Store.settings.maxQuality === 2160 ? 2160 : 1080;
@@ -115,6 +115,7 @@ Views.setup = async (root) => {
       if (si) si.onclick = (e) => { e.preventDefault(); if (typeof AccountUI !== 'undefined') AccountUI.signIn('Sign in with the account you use on your other computer — your library and debrid key come with it.'); };
       const btn = $('.next', card);
       const bk = $('.back', card); if (bk) bk.onclick = () => { step = 1; render(); };
+      const later = $('.later', card); if (later) later.onclick = () => go('home', {}, true);   // website: browse now, connect later
       btn.onclick = async () => {
         const v = form.value();
         if (!v.rdKey) return ($('.err', card).textContent = `Paste your ${form.serviceName()} API key.`);

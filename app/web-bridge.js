@@ -102,6 +102,7 @@
       const t = await kvGet('reel-data'); try { return t ? JSON.parse(t) : null; } catch { return null; }
     },
     wipe,
+    signedIn,
     async saveData(d) { await kvSet('reel-data', JSON.stringify(d)); return true; },
     async getSecrets() {
       const a = acct();

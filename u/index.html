@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Profile on Reel</title>
+<meta name="description" content="Favorites, ratings and reviews on Reel.">
+<meta property="og:type" content="profile">
+<meta property="og:site_name" content="reelwatch.stream">
+<meta property="og:title" content="A movie profile on Reel">
+<meta property="og:description" content="Favorites, ratings and reviews. Open the link to see them.">
+<meta property="og:image" content="https://reelwatch.stream/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="../icon.png">
+<link rel="preconnect" href="https://image.tmdb.org">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&display=swap" media="print" onload="this.media='all'">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #000; --text: #f5f5f7; --text-2: rgba(235,235,245,.66); --text-3: rgba(235,235,245,.42); --line: rgba(255,255,255,.09);
+    --gutter: clamp(18px, 5vw, 64px);
+    --spring: cubic-bezier(.2,.9,.25,1.1); --ease: cubic-bezier(.25,.8,.25,1);
+    --r-art: 12px; --r-ctl: 999px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); }
+  body { font: 15px/1.55 Inter, -apple-system, "Segoe UI", system-ui, sans-serif; -webkit-font-smoothing: antialiased; letter-spacing: -.005em; min-height: 100vh; }
+  a { color: inherit; }
+  img { display: block; }
+
+  /* The person's own favorite poster, blurred, is the only color on the page */
+  .ambient { position: fixed; inset: -80px; z-index: 0; background: center / cover no-repeat; filter: blur(70px) saturate(1.4) brightness(.5); opacity: 0; transition: opacity 1.2s var(--ease); }
+  .ambient.on { opacity: .55; }
+  .ambient::after { content: ""; position: absolute; inset: 0; background: radial-gradient(120% 90% at 50% 0%, transparent 30%, #000 78%); }
+  main { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 22px var(--gutter) 96px; }
+
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: clamp(36px, 7vw, 72px); }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 700; font-size: 17px; letter-spacing: -.02em; }
+  .brand img { width: 30px; height: 30px; border-radius: 8px; }
+  .get { display: inline-flex; align-items: center; height: 38px; padding: 0 18px; border-radius: var(--r-ctl); text-decoration: none; font-weight: 600; font-size: 14px;
+         background: rgba(255,255,255,.94); color: #000; transition: transform .3s var(--spring); }
+  .get:hover { transform: scale(1.04); } .get:active { transform: scale(.96); }
+
+  /* Who */
+  .who { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: clamp(18px, 3vw, 32px); align-items: center; }
+  .avatar { width: clamp(84px, 12vw, 132px); aspect-ratio: 1; border-radius: 50%; object-fit: cover; background: #1c1c1e; box-shadow: 0 0 0 1px rgba(255,255,255,.1), 0 20px 50px rgba(0,0,0,.5); }
+  .avatar.letter { display: grid; place-items: center; font-size: clamp(34px, 5vw, 54px); font-weight: 700; color: var(--text-2); }
+  h1 { margin: 0; font-size: clamp(32px, 5.4vw, 60px); line-height: 1.02; letter-spacing: -.04em; font-weight: 800; text-wrap: balance; }
+  .handle { margin-top: 6px; color: var(--text-2); font-size: 15px; }
+  .bio { margin: 14px 0 0; max-width: 60ch; color: var(--text-2); text-wrap: pretty; }
+
+  /* Numbers set in type, no boxes */
+  .stats { display: flex; flex-wrap: wrap; gap: clamp(24px, 5vw, 56px); margin: clamp(30px, 5vw, 48px) 0 0; padding-top: 22px; border-top: 1px solid var(--line); }
+  .stats div { display: flex; flex-direction: column; }
+  .stats b { font-size: clamp(26px, 3.4vw, 36px); font-weight: 700; letter-spacing: -.03em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .stats span { color: var(--text-3); font-size: 13px; font-weight: 500; }
+
+  section { margin-top: clamp(48px, 8vw, 88px); }
+  h2 { margin: 0 0 18px; font-size: 22px; font-weight: 700; letter-spacing: -.02em; }
+  h2 small { font-size: 14px; font-weight: 500; color: var(--text-3); letter-spacing: 0; margin-left: 8px; }
+
+  /* Favorites: the signature, big */
+  .favs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(10px, 2vw, 22px); }
+  .favs.two-groups { grid-template-columns: repeat(auto-fill, minmax(clamp(120px, 20vw, 210px), 1fr)); }
+  .poster { position: relative; aspect-ratio: 2 / 3; border-radius: var(--r-art); overflow: hidden; background: #161618;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), 0 10px 30px rgba(0,0,0,.45); }
+  .poster img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .5s var(--ease); }
+  .poster img.in { opacity: 1; }
+  a.poster { transition: transform .45s var(--spring), box-shadow .45s var(--ease); }
+  a.poster:hover { transform: translateY(-4px) scale(1.03); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1), 0 26px 50px rgba(0,0,0,.6); }
+  .poster .ph { position: absolute; inset: 0; display: grid; place-items: center; padding: 10px; text-align: center; color: var(--text-3); font-size: 13px; font-weight: 600; }
+  .cap { margin-top: 8px; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sub { font-size: 13px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .stars { color: var(--text); letter-spacing: 1px; font-size: 13px; }
+  .heart { color: #ff4f7b; width: 13px; height: 13px; margin-left: 6px; vertical-align: -2px; }
+
+  /* Ratings grid */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(clamp(98px, 14vw, 150px), 1fr)); gap: 22px clamp(10px, 1.6vw, 18px); }
+  .seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: var(--r-ctl); background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); margin-bottom: 18px; }
+  .seg button { height: 32px; padding: 0 14px; border: 0; border-radius: var(--r-ctl); background: none; color: var(--text-2); font: 600 13.5px Inter, system-ui, sans-serif; cursor: pointer; transition: background .2s, color .2s; }
+  .seg button.on { background: rgba(255,255,255,.94); color: #000; }
+  .more { margin-top: 22px; height: 40px; padding: 0 20px; border-radius: var(--r-ctl); border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); color: var(--text); font: 600 14px Inter, system-ui, sans-serif; cursor: pointer; }
+
+  /* Reviews: a typographic list */
+  .reviews { display: flex; flex-direction: column; }
+  .rev { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 18px; padding: 22px 0; border-top: 1px solid var(--line); }
+  .rev:first-child { border-top: 0; padding-top: 4px; }
+  .rev .poster { border-radius: 8px; }
+  .rev h3 { margin: 0; font-size: 17px; letter-spacing: -.01em; }
+  .rev h3 span { color: var(--text-3); font-weight: 500; }
+  .rev .stars { display: block; margin: 4px 0 8px; }
+  .rev p { margin: 0; color: var(--text-2); white-space: pre-line; max-width: 70ch; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+  .rev p.open { -webkit-line-clamp: unset; display: block; }
+  .rev .read { margin-top: 6px; background: none; border: 0; padding: 0; color: var(--text); font: 600 13.5px Inter, system-ui, sans-serif; cursor: pointer; }
+
+  .foot { margin-top: clamp(64px, 10vw, 120px); padding-top: 26px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 16px 28px; align-items: center; justify-content: space-between; color: var(--text-2); }
+  .foot b { color: var(--text); }
+
+  /* Loading and missing */
+  .sk { background: linear-gradient(90deg, rgba(255,255,255,.04), rgba(255,255,255,.09), rgba(255,255,255,.04)); background-size: 200% 100%; animation: sh 1.3s linear infinite; border-radius: var(--r-art); }
+  @keyframes sh { to { background-position: -200% 0; } }
+  .missing { max-width: 520px; margin: 12vh auto 0; text-align: center; }
+  .missing h1 { font-size: clamp(28px, 5vw, 40px); }
+  .missing p { color: var(--text-2); margin: 12px 0 26px; }
+
+  @media (max-width: 600px) {
+    .favs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .who { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+  :focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+</style>
+</head>
+<body>
+<div class="ambient" id="ambient"></div>
+<main id="main">
+  <header class="top">
+    <a class="brand" href="../"><img src="../icon.png" alt="">Reel</a>
+    <a class="get" href="../">Get Reel</a>
+  </header>
+  <div id="view">
+    <div class="who"><div class="avatar sk"></div><div><div class="sk" style="height:48px;width:min(420px,70vw)"></div><div class="sk" style="height:16px;width:160px;margin-top:12px"></div></div></div>
+  </div>
+</main>
+<script>
+(() => {
+  const SB = 'https://tsuyeypohzfcjikuuknh.supabase.co', KEY = 'sb_publishable_mc8VFdYKE_sMALLgRGsZhw_QqkJPlTm';
+  const view = document.getElementById('view');
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const img = (p, size) => (p ? (/^https?:/.test(p) ? p : `https://image.tmdb.org/t/p/${size}${p}`) : '');
+  const tmdb = (x) => { const [type, id] = String(x.key || '').split(':'); return id ? `https://www.themoviedb.org/${type === 'tv' ? 'tv' : 'movie'}/${id}` : null; };
+  const stars = (r) => { if (!r) return ''; const full = Math.floor(r), half = r - full >= .5; return '★'.repeat(full) + (half ? '½' : ''); };
+  const name = (() => {
+    const q = decodeURIComponent(location.search.slice(1)).split('&')[0];
+    return (q.includes('=') ? q.split('=')[1] : q).replace(/^@/, '').trim().toLowerCase();
+  })();
+
+  const missing = (title, text) => {
+    document.title = 'Reel';
+    view.innerHTML = `<div class="missing"><h1>${title}</h1><p>${text}</p><a class="get" href="../">Get Reel</a></div>`;
+  };
+  if (!name) return missing('Whose profile?', 'Profile links look like reelwatch.stream/u/?yourname. Ask your friend for theirs.');
+
+  const poster = (x, size, link = true) => {
+    const href = link && tmdb(x);
+    const inner = x.poster ? `<img src="${img(x.poster, size)}" alt="" loading="lazy" onload="this.classList.add('in')">` : `<div class="ph">${esc(x.title || '')}</div>`;
+    return href ? `<a class="poster" href="${href}" target="_blank" rel="noopener" title="${esc(x.title || '')}">${inner}</a>` : `<div class="poster">${inner}</div>`;
+  };
+
+  fetch(`${SB}/rest/v1/rpc/public_profile`, { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_username: name }) })
+    .then((r) => r.json().then((j) => ({ ok: r.ok, j })))
+    .then(({ ok, j }) => {
+      if (!ok || !j || !j.username) return missing('This profile isn’t shared', `@${esc(name)} hasn’t made their profile public, or the name is spelled differently. In Reel they can turn it on from their profile with Share profile.`);
+      render(j);
+    })
+    .catch(() => missing('Couldn’t load this profile', 'Check your connection and try again in a moment.'));
+
+  function render(p) {
+    const display = p.name || p.username;
+    document.title = `${display} on Reel`;
+    const items = p.items || [];
+    const films = items.filter((x) => x.type !== 'tv' && x.watched);
+    const shows = items.filter((x) => x.type === 'tv' && x.watched);
+    const rated = items.filter((x) => x.rating > 0);
+    const reviews = items.filter((x) => x.review && x.review.trim());
+    const avg = rated.length ? rated.reduce((a, x) => a + x.rating, 0) / rated.length : 0;
+    const fav = p.fav4 || [];
+    const since = p.since ? new Date(p.since).toLocaleDateString([], { month: 'long', year: 'numeric' }) : '';
+
+    // ambient: their first favorite (or most recent rating)
+    const lead = fav.find((x) => x.poster) || rated.find((x) => x.poster);
+    if (lead) { const a = document.getElementById('ambient'); const pre = new Image(); pre.onload = () => { a.style.backgroundImage = `url('${img(lead.poster, 'w342')}')`; a.classList.add('on'); }; pre.src = img(lead.poster, 'w342'); }
+
+    const avatar = p.avatar ? `<img class="avatar" src="${esc(p.avatar)}" alt="">` : `<div class="avatar letter">${esc(display.slice(0, 1).toUpperCase())}</div>`;
+    let html = `<div class="who">${avatar}<div><h1>${esc(display)}</h1><div class="handle">@${esc(p.username)}${since ? `, on Reel since ${esc(since)}` : ''}</div>${p.bio ? `<p class="bio">${esc(p.bio)}</p>` : ''}</div></div>`;
+    if (p.library) {
+      html += `<div class="stats">
+        <div><b>${films.length.toLocaleString()}</b><span>Films watched</span></div>
+        <div><b>${shows.length.toLocaleString()}</b><span>Shows watched</span></div>
+        <div><b>${avg ? avg.toFixed(1) : '–'}</b><span>Average rating</span></div>
+        <div><b>${reviews.length.toLocaleString()}</b><span>Reviews</span></div></div>`;
+    }
+
+    const favFilms = fav.filter((x) => !String(x.key).startsWith('tv:')), favShows = fav.filter((x) => String(x.key).startsWith('tv:'));
+    const favBlock = (title, list) => list.length ? `<section><h2>${title}</h2><div class="favs">${list.map((x) => `<div>${poster(x, 'w500')}<div class="cap">${esc(x.title)}</div><div class="sub">${esc(x.year || '')}</div></div>`).join('')}</div></section>` : '';
+    html += favBlock('Favorite films', favFilms) + favBlock('Favorite shows', favShows);
+
+    if (p.library && rated.length) {
+      html += `<section id="rated"><h2>Ratings <small>${rated.length.toLocaleString()}</small></h2>
+        <div class="seg" role="tablist"><button class="on" data-s="recent">Recent</button><button data-s="top">Highest rated</button></div>
+        <div class="grid" id="ratedGrid"></div><button class="more" id="ratedMore" hidden>Show more</button></section>`;
+    }
+    if (p.library && reviews.length) {
+      html += `<section><h2>Reviews <small>${reviews.length.toLocaleString()}</small></h2><div class="reviews">${reviews.slice(0, 12).map((x) => `
+        <article class="rev">${poster(x, 'w185')}<div><h3>${esc(x.title)} <span>${esc(x.year || '')}</span></h3>${x.rating ? `<span class="stars">${stars(x.rating)}</span>` : ''}<p>${esc(x.review)}</p></div></article>`).join('')}</div></section>`;
+    }
+    const want = items.filter((x) => x.watchlist && !x.watched && x.poster);
+    if (p.library && want.length) {
+      html += `<section><h2>Wants to watch <small>${want.length.toLocaleString()}</small></h2><div class="grid">${want.slice(0, 18).map((x) => `<div>${poster(x, 'w342')}<div class="cap">${esc(x.title)}</div></div>`).join('')}</div></section>`;
+    }
+    if (!fav.length && !(p.library && items.length)) html += `<section><p style="color:var(--text-2)">Nothing here yet. ${esc(display)} hasn’t rated anything on Reel so far.</p></section>`;
+    html += `<footer class="foot"><span><b>Reel</b> keeps track of what you watch and what you thought of it, and lets you watch together with friends.</span><a class="get" href="../">Make your own</a></footer>`;
+    view.innerHTML = html;
+
+    // Ratings: recent or highest first, 24 at a time
+    const grid = document.getElementById('ratedGrid');
+    if (grid) {
+      let sort = 'recent', shown = 24;
+      const more = document.getElementById('ratedMore');
+      const paint = () => {
+        const list = rated.slice().sort(sort === 'top' ? (a, b) => b.rating - a.rating : () => 0);
+        grid.innerHTML = list.slice(0, shown).map((x) => `<div>${poster(x, 'w342')}<div class="cap">${esc(x.title)}</div><div class="sub"><span class="stars">${stars(x.rating)}</span>${x.liked ? '<svg class="heart" viewBox="0 0 24 24" aria-label="Liked" role="img"><path fill="currentColor" d="M12 20.3 10.6 19C5.4 14.4 2 11.3 2 7.5 2 4.4 4.4 2 7.5 2c1.7 0 3.4.8 4.5 2.1A6 6 0 0 1 16.5 2C19.6 2 22 4.4 22 7.5c0 3.8-3.4 6.9-8.6 11.5L12 20.3z"/></svg>' : ''}</div></div>`).join('');
+        more.hidden = shown >= list.length;
+      };
+      document.querySelectorAll('#rated .seg button').forEach((b) => b.onclick = () => { sort = b.dataset.s; shown = 24; document.querySelectorAll('#rated .seg button').forEach((x) => x.classList.toggle('on', x === b)); paint(); });
+      more.onclick = () => { shown += 24; paint(); };
+      paint();
+    }
+    // Long reviews: Read more
+    document.querySelectorAll('.rev p').forEach((pEl) => {
+      if (pEl.scrollHeight > pEl.clientHeight + 4) {
+        const b = document.createElement('button'); b.className = 'read'; b.textContent = 'Read more';
+        b.onclick = () => { pEl.classList.toggle('open'); b.textContent = pEl.classList.contains('open') ? 'Show less' : 'Read more'; };
+        pEl.after(b);
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

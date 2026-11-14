@@ -67,6 +67,38 @@
     };
   }
 
+  // ---- signed in is enough on the website: browse, search, rate, keep your watchlist, see profiles. Watching
+  // needs a debrid service; pressing Play without one explains that and offers to connect one. ----
+  if (typeof Setup !== 'undefined') {
+    Object.defineProperty(Setup, 'done', { configurable: true, get() { return this.tmdb && (this.streaming || !!(window.reel.signedIn && window.reel.signedIn())); } });
+  }
+  // The app may pick its first screen before this loads: once it's up, a signed-in visitor lands on Home, not setup.
+  (() => { let n = 0; const t = setInterval(() => { if (++n > 50) return clearInterval(t); if (typeof route === 'undefined' || !route.name) return; clearInterval(t); if (route.name === 'setup' && Setup.done) go('home', {}, true); }, 100); })();
+  window.REEL_TORBOX = 'https://torbox.app/pricing';
+  function needDebrid() {
+    const sheet = h(`<div class="need-debrid">
+      <h3>Connect a debrid service to watch</h3>
+      <p>Reel plays movies and shows from your own debrid account, a small subscription that streams them instantly and privately. Everything else in Reel works without one.</p>
+      <div class="nd-pick"><b>Not sure which?</b> <span>We recommend <a href="${window.REEL_TORBOX}" target="_blank" rel="noopener">TorBox</a>. It’s about $3 a month, and up to three people can stream on one account at the same time.</span></div>
+      <div class="btns"><button class="btn primary nd-go">Connect a service</button><a class="btn nd-get" href="${window.REEL_TORBOX}" target="_blank" rel="noopener">Get TorBox</a><button class="btn ghost nd-no">Not now</button></div>
+    </div>`);
+    const m = openModal(sheet);
+    $('.nd-go', sheet).onclick = () => { m.close(); go('setup'); };
+    $('.nd-no', sheet).onclick = () => m.close();
+  }
+  window.REEL_needDebrid = needDebrid;
+  if (typeof Playback !== 'undefined') {
+    const start0 = Playback.start.bind(Playback);
+    Playback.start = function (meta, ep, opts) {
+      if (!Setup.streaming) return needDebrid();
+      return start0(meta, ep, opts);
+    };
+  }
+  if (typeof Party !== 'undefined' && Party.startHost) {
+    const host0 = Party.startHost.bind(Party);
+    Party.startHost = function (...a) { if (!Setup.streaming) return needDebrid(); return host0(...a); };
+  }
+
   // ---- no Live TV on the web ----
   if (typeof LiveTV !== 'undefined') { LiveTV.enabled = () => false; LiveTV.addNav = () => {}; try { LiveTV.removeNav(); } catch {} }
 

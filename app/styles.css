@@ -3919,3 +3919,11 @@ body.mac .tw .show-side { left: 96px; }
 .op-ep.done .op-et b { color: var(--text-2); }
 .op-tick { color: #fff; flex: none; padding-top: 2px; }
 .op-tick .ic { width: 18px; height: 18px; }
+
+/* Share your profile */
+.share-prof h3 { margin: 0 0 10px; font-size: 22px; letter-spacing: -.02em; }
+.share-prof p { margin: 0 0 18px; line-height: 1.55; max-width: 460px; }
+.share-prof .sp-link { display: flex; gap: 8px; margin-bottom: 18px; }
+.share-prof .sp-link .input { flex: 1; min-width: 0; font-size: 14px; user-select: all; }
+.share-prof .btns { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+.fp-acts { display: flex; gap: 8px; flex-wrap: wrap; }
