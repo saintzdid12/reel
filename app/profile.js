@@ -134,11 +134,11 @@ Views.complete = async (root, { tab } = {}) => {
       ctl.appendChild(b);
     }
     if (tab === 'review') {
-      const box = h(`<div class="cp-review"><textarea class="input" rows="1" placeholder="What did you think?"></textarea><button class="btn small primary">Save</button></div>`);
+      const box = h(`<div class="cp-review"><textarea class="input" rows="1" placeholder="What did you think?"></textarea><button class="btn small primary">Save</button><label class="check sp-check"><input type="checkbox" class="spoil"> Contains spoilers</label></div>`);
       const ta = $('textarea', box);
       ta.oninput = () => { ta.style.height = 'auto'; ta.style.height = `${Math.min(160, ta.scrollHeight)}px`; };
       $('button', box).onclick = () => {
-        const text = ta.value.trim(); if (!text) return ta.focus();
+        const text = markSpoiler(ta.value, $('.spoil', box).checked); if (!text) return ta.focus();
         Store.upsert(it, { review: text });
         const e = Store.data.diary.filter(d => d.key === key).sort((a, b) => b.date.localeCompare(a.date))[0];
         if (e && !e.review) e.review = text;

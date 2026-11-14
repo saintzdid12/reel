@@ -14,7 +14,7 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#000000">
-<link rel="icon" href="../icon.png">
+<link rel="icon" href="/icon.png">
 <link rel="preconnect" href="https://image.tmdb.org">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&display=swap" media="print" onload="this.media='all'">
 <style>
@@ -95,6 +95,11 @@
   .rev .stars { display: block; margin: 4px 0 8px; }
   .rev p { margin: 0; color: var(--text-2); white-space: pre-line; max-width: 70ch; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
   .rev p.open { -webkit-line-clamp: unset; display: block; }
+  .spoiler { position: relative; }
+  .spoiler p { filter: blur(7px); opacity: .55; user-select: none; pointer-events: none; }
+  .spoiler .sp-show { position: absolute; left: 0; top: 50%; transform: translateY(-50%); z-index: 1; height: 32px; padding: 0 14px; border-radius: var(--r-ctl); border: 1px solid rgba(255,255,255,.16); background: rgba(30,30,34,.88); color: var(--text); font: 600 13px Inter, system-ui, sans-serif; cursor: pointer; }
+  .spoiler.shown p { filter: none; opacity: 1; user-select: text; pointer-events: auto; }
+  .spoiler.shown .sp-show { display: none; }
   .rev .read { display: block; margin-top: 6px; background: none; border: 0; padding: 0; color: var(--text); font: 600 13.5px Inter, system-ui, sans-serif; cursor: pointer; }
 
   .foot { margin-top: clamp(64px, 10vw, 120px); padding-top: 26px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 16px 28px; align-items: center; justify-content: space-between; color: var(--text-2); }
@@ -140,8 +145,8 @@
 <div class="ambient" id="ambient"></div>
 <main id="main">
   <header class="top">
-    <a class="brand" href="../"><img src="../icon.png" alt="">Reel</a>
-    <a class="get" href="../">Get Reel</a>
+    <a class="brand" href="/"><img src="/icon.png" alt="">Reel</a>
+    <a class="get" href="/">Get Reel</a>
   </header>
   <div id="view">
     <div class="who"><div class="avatar sk"></div><div><div class="sk" style="height:48px;width:min(420px,70vw)"></div><div class="sk" style="height:16px;width:160px;margin-top:12px"></div></div></div>
@@ -153,7 +158,7 @@
   const view = document.getElementById('view');
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const img = (p, size) => (p ? (/^https?:/.test(p) ? p : `https://image.tmdb.org/t/p/${size}${p}`) : '');
-  const tmdb = (x) => { const [type, id] = String(x.key || '').split(':'); return id ? `https://www.themoviedb.org/${type === 'tv' ? 'tv' : 'movie'}/${id}` : null; };
+  const tmdb = (x) => { const [type, id] = String(x.key || '').split(':'); return id ? `/t/?${type === 'tv' ? 'tv' : 'movie'}/${id}` : null; };
   const stars = (r) => { if (!r) return ''; const full = Math.floor(r), half = r - full >= .5; return '★'.repeat(full) + (half ? '½' : ''); };
   const name = (() => {
     const q = decodeURIComponent(location.search.slice(1)).split('&')[0];
@@ -162,14 +167,14 @@
 
   const missing = (title, text) => {
     document.title = 'Reel';
-    view.innerHTML = `<div class="missing"><h1>${title}</h1><p>${text}</p><a class="get" href="../">Get Reel</a></div>`;
+    view.innerHTML = `<div class="missing"><h1>${title}</h1><p>${text}</p><a class="get" href="/">Get Reel</a></div>`;
   };
-  if (!name) return missing('Whose profile?', 'Profile links look like reelwatch.stream/u/?yourname. Ask your friend for theirs.');
+  if (!name) return missing('Whose profile?', 'Profile links look like reelwatch.stream/@yourname. Ask your friend for theirs.');
 
   const poster = (x, size, link = true) => {
     const href = link && tmdb(x);
     const inner = x.poster ? `<img src="${img(x.poster, size)}" alt="" loading="lazy" onload="this.classList.add('in')">` : `<div class="ph">${esc(x.title || '')}</div>`;
-    return href ? `<a class="poster" href="${href}" target="_blank" rel="noopener" title="${esc(x.title || '')}">${inner}</a>` : `<div class="poster">${inner}</div>`;
+    return href ? `<a class="poster" href="${href}" title="${esc(x.title || '')}">${inner}</a>` : `<div class="poster">${inner}</div>`;
   };
 
   fetch(`${SB}/rest/v1/rpc/public_profile`, { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_username: name }) })
@@ -182,6 +187,8 @@
 
   function render(p) {
     const display = p.name || p.username;
+    // The address shows the short link with their current username (also after a rename).
+    try { history.replaceState(null, '', '/@' + p.username); } catch {}
     document.title = `${display} on Reel`;
     const items = p.items || [];
     const films = items.filter((x) => x.type !== 'tv' && x.watched);
@@ -217,14 +224,14 @@
     }
     if (p.library && reviews.length) {
       html += `<section><h2>Reviews <small>${reviews.length.toLocaleString()}</small></h2><div class="reviews">${reviews.map((x, i) => `
-        <article class="rev"${i >= 4 ? ' hidden' : ''}>${poster(x, 'w185')}<div><h3>${esc(x.title)} <span>${esc(x.year || '')}</span></h3>${x.rating ? `<span class="stars">${stars(x.rating)}</span>` : ''}<p>${esc(x.review)}</p></div></article>`).join('')}</div>${reviews.length > 4 ? '<button class="more" id="revMore">Show more</button>' : ''}</section>`;
+        <article class="rev"${i >= 4 ? ' hidden' : ''}>${poster(x, 'w185')}<div><h3>${esc(x.title)} <span>${esc(x.year || '')}</span></h3>${x.rating ? `<span class="stars">${stars(x.rating)}</span>` : ''}${/^s*[spoiler]/i.test(x.review) ? `<div class="spoiler"><button class="sp-show" type="button">Contains spoilers. Show review</button><p>${esc(x.review.replace(/^s*[spoiler]s*/i, ''))}</p></div>` : `<p>${esc(x.review)}</p>`}</div></article>`).join('')}</div>${reviews.length > 4 ? '<button class="more" id="revMore">Show more</button>' : ''}</section>`;
     }
     const want = items.filter((x) => x.watchlist && !x.watched && x.poster);
     if (p.library && want.length) {
       html += `<section><h2>Wants to watch <small>${want.length.toLocaleString()}</small></h2><div class="grid" id="wantGrid">${want.map((x, i) => `<div${i >= 12 ? ' hidden' : ''}>${poster(x, 'w342')}<div class="cap">${esc(x.title)}</div></div>`).join('')}</div>${want.length > 12 ? '<button class="more" id="wantMore">Show more</button>' : ''}</section>`;
     }
     if (!fav.length && !(p.library && items.length)) html += `<section><p style="color:var(--text-2)">Nothing here yet. ${esc(display)} hasn’t rated anything on Reel so far.</p></section>`;
-    html += `<footer class="foot"><span><b>Reel</b> keeps track of what you watch and what you thought of it, and lets you watch together with friends.</span><a class="get" href="../">Make your own</a></footer>`;
+    html += `<footer class="foot"><span><b>Reel</b> keeps track of what you watch and what you thought of it, and lets you watch together with friends.</span><a class="get" href="/">Make your own</a></footer>`;
     view.innerHTML = html;
 
     // Ratings: recent or highest first, 24 at a time
@@ -250,6 +257,7 @@
       };
     };
     reveal('revMore', '.rev', 6);
+    document.addEventListener('click', (ev) => { const b = ev.target.closest('.sp-show'); if (b) { const sp = b.closest('.spoiler'); sp.classList.add('shown'); clampCheck(sp.closest('.rev')); } });
     reveal('wantMore', '#wantGrid > div', 12);
     // Long reviews: Read more
     function clampCheck(root) {
@@ -266,5 +274,6 @@
   }
 })();
 </script>
+<script src="/count.js" data-page="profile"></script>
 </body>
 </html>

@@ -104,7 +104,7 @@ Works best with **Real-Debrid**, which converts any movie to phone-friendly vide
 ### Setup (computer)
 **One step:** pick your debrid service from the list and paste its API key (there's a *Find your API key* link for each one), then choose HD or 4K. Movie info is built in, so there's no TMDB key to set up.
 
-**Needs:** Windows 10/11 or macOS 11+ · a debrid account — [Real-Debrid](https://real-debrid.com), [TorBox](https://torbox.app), [AllDebrid](https://alldebrid.com), [Premiumize](https://www.premiumize.me), [Debrid-Link](https://debrid-link.com), EasyDebrid or [Offcloud](https://offcloud.com)
+**Needs:** Windows 10/11 or macOS 11+ · a debrid account — [Real-Debrid](https://real-debrid.com), [TorBox](https://torbox.app/subscription?referral=d09493b9-7df7-4352-8fbd-907852399904), [AllDebrid](https://alldebrid.com), [Premiumize](https://www.premiumize.me), [Debrid-Link](https://debrid-link.com), EasyDebrid or [Offcloud](https://offcloud.com)
 
 ## Privacy
 - Your debrid API key is stored encrypted on your PC. If you sign in, it's also saved privately to your Reel account so it follows you to your other computers; only you can read it.

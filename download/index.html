@@ -44,6 +44,7 @@
   .top .wrap { display: flex; align-items: center; justify-content: space-between; height: 68px; gap: 16px; }
   .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 700; font-size: 18px; letter-spacing: -.02em; }
   .brand img { width: 32px; height: 32px; border-radius: 8px; }
+  .top nav { display: flex; gap: 20px; }
   .top nav a { text-decoration: none; color: var(--text-2); font-weight: 600; font-size: 15px; }
   .top nav a:hover { color: var(--text); }
 
@@ -81,7 +82,7 @@
 </style>
 </head>
 <body>
-<header class="top"><div class="wrap"><a class="brand" href="../"><img src="../icon.png" alt="">Reel</a><nav><a href="../watch/">Open Reel</a></nav></div></header>
+<header class="top"><div class="wrap"><a class="brand" href="../"><img src="../icon.png" alt="">Reel</a><nav><a href="/help/">Help</a><a href="../watch/">Open Reel</a></nav></div></header>
 <main class="wrap">
   <h1>Get Reel</h1>
   <p class="lead">Free on every screen, with one account for all of them. To watch you’ll need a debrid service; <a href="../#need">here’s what that is</a>.</p>
@@ -91,7 +92,7 @@
     <section class="plat" id="windows">
       <div><h2>Windows</h2><div class="req">Windows 10 and 11</div></div>
       <div>
-        <div class="acts"><a class="btn primary" id="dl-win" href="https://github.com/saintzdid12/reel/releases/latest">Download for Windows</a></div>
+        <div class="acts"><a class="btn primary" id="dl-win" data-count="dl:windows" href="https://github.com/saintzdid12/reel/releases/latest">Download for Windows</a></div>
         <p>If Windows says “Windows protected your PC”, choose <b>More info</b>, then <b>Run anyway</b>. Reel updates itself after that.</p>
       </div>
     </section>
@@ -99,7 +100,7 @@
     <section class="plat" id="mac">
       <div><h2>Mac</h2><div class="req">macOS 11 or newer</div></div>
       <div>
-        <div class="acts"><a class="btn primary" id="dl-arm" href="https://github.com/saintzdid12/reel/releases/latest">Apple Silicon</a><a class="btn glass" id="dl-intel" href="https://github.com/saintzdid12/reel/releases/latest">Intel</a></div>
+        <div class="acts"><a class="btn primary" id="dl-arm" data-count="dl:mac-arm" href="https://github.com/saintzdid12/reel/releases/latest">Apple Silicon</a><a class="btn glass" id="dl-intel" data-count="dl:mac-intel" href="https://github.com/saintzdid12/reel/releases/latest">Intel</a></div>
         <p>Apple Silicon is any Mac from late 2020 on. Open the download and drag <b>Reel</b> into Applications. The first time, macOS may say it can’t check the app: open <b>System Settings</b>, then <b>Privacy &amp; Security</b>, and choose <b>Open Anyway</b>.</p>
       </div>
     </section>
@@ -110,7 +111,7 @@
         <ol>
           <li>On the TV, install <b>Downloader</b> from the Amazon Appstore (or Google Play).</li>
           <li>Open it and enter this address:
-            <div class="code"><span id="tvlink">https://github.com/saintzdid12/reel/releases/latest/download/Reel-TV.apk</span><button id="copytv" type="button">Copy</button></div></li>
+            <div class="code"><span id="tvlink">https://github.com/saintzdid12/reel/releases/latest/download/Reel-TV.apk</span><button id="copytv" type="button" data-count="dl:tv">Copy</button></div></li>
           <li>If the TV asks, allow Downloader to install apps, then choose <b>Install</b>.</li>
           <li>Open Reel and sign in with a code from Reel on your computer or phone, or with your username.</li>
         </ol>
@@ -129,10 +130,10 @@
 
   <div class="need">
     <div><h2>Need a debrid service?</h2><p>We recommend TorBox: about $3 a month, and up to three people can stream on one account at once.</p></div>
-    <a class="btn glass" href="https://torbox.app/pricing" target="_blank" rel="noopener">Get TorBox</a>
+    <a class="btn glass" href="https://torbox.app/subscription?referral=d09493b9-7df7-4352-8fbd-907852399904" target="_blank" rel="noopener">Get TorBox</a>
   </div>
 </main>
-<footer><div class="wrap"><a href="../">Reel</a><a href="https://github.com/saintzdid12/reel/releases" target="_blank" rel="noopener">All versions</a></div></footer>
+<footer><div class="wrap"><a href="../">Reel</a><a href="/help/">Help</a><a href="/terms/">Terms and privacy</a><a href="https://github.com/saintzdid12/reel/releases" target="_blank" rel="noopener">All versions</a></div></footer>
 <script>
   // Point the buttons straight at the newest files, and mark the platform you're on.
   fetch('https://api.github.com/repos/saintzdid12/reel/releases/latest').then((r) => r.json()).then((rel) => {
@@ -155,5 +156,6 @@
     try { await navigator.clipboard.writeText(document.getElementById('tvlink').textContent); e.target.textContent = 'Copied'; setTimeout(() => (e.target.textContent = 'Copy'), 1800); } catch {}
   };
 </script>
+<script src="/count.js" data-page="download"></script>
 </body>
 </html>

@@ -13,6 +13,8 @@ const DEBRID_SERVICES = [
   { id: 'easydebrid', name: 'EasyDebrid', key: 'https://easydebrid.com' },
   { id: 'offcloud', name: 'Offcloud', key: 'https://offcloud.com/#/account' },
 ];
+// Our recommendation for people who don't have a debrid service yet (Reel's referral link).
+const TORBOX_SIGNUP = 'https://torbox.app/subscription?referral=d09493b9-7df7-4352-8fbd-907852399904';
 const debridName = (id) => (DEBRID_SERVICES.find(d => d.id === id) || DEBRID_SERVICES[0]).name;
 function streamingForm(saved) {
   const el = h(`<div class="stream-form">
@@ -23,6 +25,7 @@ function streamingForm(saved) {
       <input class="input rd" type="password" autocomplete="off" placeholder="${saved.hasRd ? '•••••••• saved — paste to replace' : 'Paste your API key'}">
       <div class="hint"><a class="sf-keylink" href="#">Find your API key</a> <span class="sf-keynote"></span></div>
     </div>
+    <div class="hint sf-get">No debrid service yet? We recommend TorBox: about $3 a month, and up to three people can stream on one account. <a class="sf-torbox" href="#">Get TorBox</a></div>
     <div class="hint sf-about">${ICON.check} Reel plays only from your own debrid account. It never downloads or shares torrents on your computer.</div>
   </div>`);
   const sel = $('.sf-svc', el);
@@ -34,6 +37,7 @@ function streamingForm(saved) {
   };
   sel.onchange = () => { paint(); $('.rd', el).focus(); };
   $('.sf-keylink', el).onclick = (e) => { e.preventDefault(); window.reel.openExternal((DEBRID_SERVICES.find(x => x.id === sel.value) || DEBRID_SERVICES[0]).key); };
+  $('.sf-torbox', el).onclick = (e) => { e.preventDefault(); window.reel.openExternal(TORBOX_SIGNUP); };
   paint();
   el.value = () => ({ rdKey: $('.rd', el).value.trim(), debrid: sel.value });
   el.serviceName = () => debridName(sel.value);

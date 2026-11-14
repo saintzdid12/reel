@@ -438,7 +438,9 @@ const Social = {
     const { data } = await q;
     return (data || []).map(a => ({ ...a, who: uid && uid === Cloud.user.id ? Cloud.profile : this.byId(a.user_id) })).filter(a => a.who);
   },
-  async nowPlaying() {
+  // What friends are watching right now isn't shared (by design), so there's nothing to show.
+  async nowPlaying() { return []; },
+  async nowPlayingUnused() {
     await this.ensure();
     if (!this.friends.length) return [];
     const since = new Date(Date.now() - 4 * 3600e3).toISOString();
@@ -454,7 +456,7 @@ const Social = {
   },
   async setPlaying(info) {
     if (!Cloud.on) return;
-    await Cloud.sb.from('presence').upsert({ user_id: Cloud.user.id, playing: info, updated_at: new Date().toISOString() });
+    await Cloud.sb.from('presence').upsert({ user_id: Cloud.user.id, playing: null, updated_at: new Date().toISOString() });
   },
   // Activity posts are held for a few seconds and collapsed per title, so "rated, then logged" shows once.
   post(kind, meta, extra = {}) {

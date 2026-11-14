@@ -1275,7 +1275,7 @@ function editEntry(e, it, onDone) {
   const wrap = h(`<div>
     <div class="sheet-head"><img src="${TMDB.img(it.poster, 'w154')}" alt=""><div><div class="eyebrow">Edit diary entry</div><h3>${esc(it.title)}</h3><div class="muted">${esc(it.year || '')}</div></div><button class="btn small round close">${ICON.x}</button></div>
     <div style="display:flex;align-items:center;gap:10px;padding:8px 0 20px"><div class="stars-slot"></div><span class="like-toggle ${liked ? 'on' : ''}">${liked ? ICON.heartFill : ICON.heart}</span></div>
-    <div class="field"><textarea class="input review" placeholder="Review">${esc(e.review || '')}</textarea></div>
+    <div class="field"><textarea class="input review" placeholder="Review">${esc(stripSpoiler(e.review || ''))}</textarea><label class="check sp-check"><input type="checkbox" class="spoil"${isSpoiler(e.review) ? ' checked' : ''}> Contains spoilers</label></div>
     <div style="display:flex;align-items:center;gap:20px">
       <label class="check" style="margin:0"><input type="checkbox" class="rewatch" ${e.rewatch ? 'checked' : ''}> Rewatch</label>
       <input type="date" class="input date" value="${esc(e.date)}" style="width:170px;padding:9px 12px">
@@ -1288,7 +1288,7 @@ function editEntry(e, it, onDone) {
   $('.close', wrap).onclick = m.close;
   $('.del', wrap).onclick = () => { Store.data.diary = Store.data.diary.filter(x => x.id !== e.id); Store.save(); m.close(); toast('Entry deleted'); onDone(); };
   $('.save', wrap).onclick = () => {
-    Object.assign(e, { rating, liked, review: $('.review', wrap).value.trim(), rewatch: $('.rewatch', wrap).checked, date: $('.date', wrap).value || e.date });
+    Object.assign(e, { rating, liked, review: markSpoiler($('.review', wrap).value, $('.spoil', wrap).checked), rewatch: $('.rewatch', wrap).checked, date: $('.date', wrap).value || e.date });
     const latest = Store.data.diary.filter(x => x.key === e.key).sort((a, b) => b.date.localeCompare(a.date))[0];
     if (latest === e) Store.upsert(it, { rating: rating || it.rating, liked: liked || it.liked, review: e.review || it.review });
     Store.save(); m.close(); toast('Entry updated'); onDone();

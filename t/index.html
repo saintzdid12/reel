@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reel</title>
+<meta name="description" content="Watch it in Reel, or add it to your watchlist.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="reelwatch.stream">
+<meta property="og:title" content="A movie on Reel">
+<meta property="og:image" content="https://reelwatch.stream/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="/icon.png">
+<link rel="preconnect" href="https://image.tmdb.org">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&display=swap" media="print" onload="this.media='all'">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #000; --text: #f5f5f7; --text-2: rgba(235,235,245,.68); --text-3: rgba(235,235,245,.46); --line: rgba(255,255,255,.1);
+    --gutter: clamp(18px, 5vw, 64px);
+    --spring: cubic-bezier(.2,.9,.25,1.1); --ease: cubic-bezier(.25,.8,.25,1);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); }
+  body { font: 16px/1.6 Inter, -apple-system, "Segoe UI", system-ui, sans-serif; -webkit-font-smoothing: antialiased; letter-spacing: -.005em; min-height: 100vh; }
+  img { display: block; max-width: 100%; }
+  [hidden] { display: none !important; }
+  :focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+
+  /* The film's own backdrop is the page's only color */
+  .art { position: fixed; inset: 0; z-index: 0; background: center 20% / cover no-repeat; opacity: 0; transition: opacity 1s var(--ease); }
+  .art.on { opacity: .5; }
+  .art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,.6) 45%, #000 85%), linear-gradient(90deg, rgba(0,0,0,.7), transparent 70%); }
+  main { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; padding: 18px var(--gutter) 80px; }
+
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: clamp(36px, 9vw, 120px); }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 700; font-size: 17px; letter-spacing: -.02em; color: inherit; }
+  .brand img { width: 30px; height: 30px; border-radius: 8px; }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 46px; padding: 0 22px; border-radius: 999px; border: 0; cursor: pointer;
+         font: 600 15.5px Inter, system-ui, sans-serif; text-decoration: none; white-space: nowrap; transition: transform .3s var(--spring), background .2s var(--ease); }
+  .btn:hover { transform: scale(1.04); } .btn:active { transform: scale(.96); }
+  .btn.primary { background: rgba(255,255,255,.95); color: #000; }
+  .btn.glass { color: var(--text); background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.05)), rgba(38,38,44,.45); border: 1px solid rgba(255,255,255,.14);
+               box-shadow: inset 0 1px 0 rgba(255,255,255,.2); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
+  .btn.small { height: 38px; padding: 0 16px; font-size: 14px; }
+
+  .title { display: grid; grid-template-columns: clamp(130px, 22vw, 240px) minmax(0, 1fr); grid-template-areas: "poster info" "poster acts"; column-gap: clamp(20px, 4vw, 48px); row-gap: 0; }
+  .title .poster { grid-area: poster; }
+  .title .info { grid-area: info; align-self: end; }
+  .title .acts { grid-area: acts; align-self: start; }
+  .poster { aspect-ratio: 2 / 3; border-radius: 14px; overflow: hidden; background: #161618; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 30px 70px rgba(0,0,0,.6); }
+  .poster img { width: 100%; height: 100%; object-fit: cover; }
+  h1 { margin: 0; font-size: clamp(34px, 6vw, 68px); line-height: 1.02; letter-spacing: -.04em; font-weight: 800; text-wrap: balance; }
+  .facts { margin-top: 10px; color: var(--text-2); font-size: 15px; }
+  .acts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+  .note { margin-top: 12px; font-size: 13.5px; color: var(--text-3); }
+  .note a { color: var(--text-2); }
+  .about { margin-top: clamp(32px, 6vw, 56px); display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: clamp(24px, 5vw, 64px); border-top: 1px solid var(--line); padding-top: 26px; }
+  .about p { margin: 0; color: var(--text-2); max-width: 62ch; text-wrap: pretty; }
+  .about dl { margin: 0; display: grid; gap: 14px; }
+  .about dt { font-size: 13px; color: var(--text-3); }
+  .about dd { margin: 2px 0 0; font-size: 15px; }
+  .tmdb { margin-top: 48px; font-size: 13px; color: var(--text-3); }
+  .missing { max-width: 480px; }
+  .missing p { color: var(--text-2); }
+
+  @media (max-width: 640px) {
+    .top { margin-bottom: 28px; }
+    .title { grid-template-columns: 110px minmax(0, 1fr); grid-template-areas: "poster info" "acts acts"; }
+    .title .info { align-self: center; }
+    h1 { font-size: 30px; }
+    .acts .btn { flex: 1 1 auto; }
+    .about { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="art" id="art"></div>
+<main>
+  <header class="top"><a class="brand" href="/"><img src="/icon.png" alt="">Reel</a><a class="btn glass small" href="/download/">Get Reel</a></header>
+  <div id="view"></div>
+</main>
+<script src="/app/web-keys.js"></script>
+<script>
+(() => {
+  // Address: /t/?movie/603 or /t/?tv/1399
+  const m = decodeURIComponent(location.search.slice(1)).match(/^(movie|tv)[/:](\d+)/);
+  const view = document.getElementById('view');
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const missing = (t, p) => { view.innerHTML = `<div class="missing"><h1>${t}</h1><p>${p}</p><a class="btn primary" href="/">Go to Reel</a></div>`; };
+  if (!m) return missing('Nothing here', 'This link is missing the movie or show. Check it was copied in full.');
+  const [, type, id] = m;
+  const key = (window.REEL_WEB && window.REEL_WEB.tmdb) || '';
+  const url = new URL(`https://api.themoviedb.org/3/${type}/${id}`);
+  url.searchParams.set('append_to_response', 'credits');
+  const headers = {};
+  if (key.length > 40) headers.Authorization = `Bearer ${key}`; else url.searchParams.set('api_key', key);
+
+  const isPhone = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Mac/.test(navigator.platform || ''));
+  const isTV = /AFT|Android TV|BRAVIA|GoogleTV/i.test(navigator.userAgent);
+
+  fetch(url, { headers }).then((r) => (r.ok ? r.json() : Promise.reject(r.status))).then((t) => {
+    const title = t.title || t.name || '';
+    const year = (t.release_date || t.first_air_date || '').slice(0, 4);
+    document.title = `${title}${year ? ` (${year})` : ''} on Reel`;
+    const facts = [year, type === 'tv' ? (t.number_of_seasons ? `${t.number_of_seasons} season${t.number_of_seasons > 1 ? 's' : ''}` : 'Series') : (t.runtime ? `${Math.floor(t.runtime / 60)}h ${t.runtime % 60}m` : ''),
+      (t.genres || []).slice(0, 2).map((g) => g.name).join(' and ')].filter(Boolean);
+    const crew = (t.credits && t.credits.crew) || [];
+    const by = type === 'tv' ? (t.created_by || []).map((c) => c.name) : crew.filter((c) => c.job === 'Director').map((c) => c.name);
+    const cast = ((t.credits && t.credits.cast) || []).slice(0, 4).map((c) => c.name);
+    const open = `/watch/?open=${type}:${id}`;
+    view.innerHTML = `<section class="title">
+        <div class="poster">${t.poster_path ? `<img src="https://image.tmdb.org/t/p/w500${t.poster_path}" alt="">` : ''}</div>
+        <div class="info">
+          <h1>${esc(title)}</h1>
+          <div class="facts">${esc(facts.join(', '))}</div>
+        </div>
+        <div class="acts">
+          ${!isPhone && !isTV ? `<a class="btn primary" href="reel://title/${type}/${id}">Open in Reel</a><a class="btn glass" href="${open}">Watch in your browser</a>` : `<a class="btn primary" href="${open}">Watch on Reel</a>`}
+          <a class="btn glass" href="${open}&add=watchlist">Add to watchlist</a>
+        </div>
+      </section>
+      ${!isPhone && !isTV ? '<div class="note">Open in Reel needs the Reel app on this computer. <a href="/download/">Get Reel</a></div>' : ''}
+      <section class="about">
+        <p>${esc(t.overview || 'No description yet.')}</p>
+        <dl>
+          ${by.length ? `<div><dt>${type === 'tv' ? 'Created by' : 'Directed by'}</dt><dd>${esc(by.slice(0, 2).join(' and '))}</dd></div>` : ''}
+          ${cast.length ? `<div><dt>Starring</dt><dd>${esc(cast.join(', '))}</dd></div>` : ''}
+        </dl>
+      </section>
+      <div class="tmdb">Movie and show info from TMDB.</div>`;
+    if (t.backdrop_path) {
+      const art = document.getElementById('art'), pre = new Image();
+      pre.onload = () => { art.style.backgroundImage = `url('${pre.src}')`; art.classList.add('on'); };
+      pre.src = `https://image.tmdb.org/t/p/w1280${t.backdrop_path}`;
+    }
+  }).catch(() => missing('Couldn’t load this title', 'Check your connection and try again in a moment.'));
+})();
+</script>
+<script src="/count.js" data-page="title"></script>
+</body>
+</html>

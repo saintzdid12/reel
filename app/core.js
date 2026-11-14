@@ -6,11 +6,26 @@ const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 // Review text → safe HTML paragraphs. Letterboxd exports reviews with a little HTML (<br />, <p>, <i>, <b>):
 // that becomes real line breaks and italics; any other tag is dropped; everything else is shown as typed.
+// Spoilers: a review marked "Contains spoilers" starts with [spoiler]. The mark travels with the text everywhere a
+// review syncs (library, diary, friends, feed, public profile), and every place that shows a review blurs it until tapped.
+const SPOILER_MARK = /^\s*\[spoiler\]\s*/i;
+const isSpoiler = (t) => SPOILER_MARK.test(String(t || ''));
+const stripSpoiler = (t) => String(t || '').replace(SPOILER_MARK, '');
+const markSpoiler = (t, on) => { const s = stripSpoiler(t).trim(); return s && on ? '[spoiler] ' + s : s; };
+if (typeof document !== 'undefined') document.addEventListener('click', (e) => {
+  const b = e.target.closest && e.target.closest('.sp-show'); if (!b) return;
+  e.preventDefault(); e.stopPropagation(); b.closest('.spoiler').classList.add('shown');
+}, true);
 function reviewPlain(text) {
+  if (isSpoiler(text)) return 'Contains spoilers';
   return String(text || '').replace(/\r/g, '').replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>\s*<p[^>]*>/gi, '\n\n').replace(/<\/?(p|i|em|b|strong|a|span|div|u|s|blockquote)\b[^>]*>/gi, '')
     .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
 }
-function reviewHtml(text, max) {
+function reviewHtml(text, max, own) {
+  if (isSpoiler(text)) {
+    const inner = reviewHtml(stripSpoiler(text), max);
+    return own ? `<div class="sp-own">Contains spoilers</div>${inner}` : `<div class="spoiler"><button class="sp-show" type="button">Contains spoilers. Show review</button><div class="sp-body">${inner}</div></div>`;
+  }
   let s = String(text || '').replace(/\r/g, '').replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>\s*<p[^>]*>/gi, '\n\n').replace(/<\/?p[^>]*>/gi, '\n')
     .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
   if (max && s.length > max) s = s.slice(0, max).replace(/\s+\S*$/, '') + '…';

@@ -74,7 +74,38 @@
   }
   // The app may pick its first screen before this loads: once it's up, a signed-in visitor lands on Home, not setup.
   (() => { let n = 0; const t = setInterval(() => { if (++n > 50) return clearInterval(t); if (typeof route === 'undefined' || !route.name) return; clearInterval(t); if (route.name === 'setup' && Setup.done) go('home', {}, true); else if (route.name !== 'setup' && !Setup.done) go('setup', {}, true); }, 100); })();
-  window.REEL_TORBOX = 'https://torbox.app/pricing';
+  window.REEL_TORBOX = TORBOX_SIGNUP;
+  (() => {
+    let pending = null;
+    try {
+      const q = new URLSearchParams(location.search);
+      const open = (q.get('open') || '').match(/^(movie|tv):(\d+)$/), party = (q.get('party') || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+      if (open || party) {
+        pending = { type: open && open[1], id: open && +open[2], add: q.get('add') === 'watchlist', party };
+        sessionStorage.setItem('reel:pending', JSON.stringify(pending));
+        history.replaceState(null, '', location.pathname);
+      } else pending = JSON.parse(sessionStorage.getItem('reel:pending') || 'null');
+    } catch {}
+    if (!pending) return;
+    // Wait until you're signed in and past setup (it can take a sign-in first), then do it once.
+    const t = setInterval(async () => {
+      if (typeof route === 'undefined' || !route.name || route.name === 'setup' || !Setup.done) return;
+      clearInterval(t);
+      try { sessionStorage.removeItem('reel:pending'); } catch {}
+      if (pending.party) return Party.join(pending.party);
+      if (!pending.type) return;
+      go('detail', { type: pending.type, id: pending.id });
+      if (pending.add) {
+        try {
+          const meta = metaFromDetails(pending.type, await TMDB.details(pending.type, pending.id));
+          const it = Store.item(`${meta.type}:${meta.id}`);
+          if (!(it && it.watchlist)) Store.toggleWatchlist(meta);
+          toast(`Added ${meta.title} to your watchlist`);
+          setTimeout(() => rerender && rerender(), 50);
+        } catch { toast('Couldn’t add it to your watchlist', true); }
+      }
+    }, 300);
+  })();
   function needDebrid() {
     const sheet = h(`<div class="need-debrid">
       <h3>Connect a debrid service to watch</h3>

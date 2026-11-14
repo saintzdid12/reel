@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reel help</title>
+<meta name="description" content="Setting up Reel, connecting a debrid service, installing on Fire TV, and fixing streams that won’t play.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="reelwatch.stream">
+<meta property="og:title" content="Reel help">
+<meta property="og:description" content="Setting up Reel, connecting TorBox, installing on Fire TV, and fixing streams that won’t play.">
+<meta property="og:image" content="https://reelwatch.stream/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="/icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&display=swap" media="print" onload="this.media='all'">
+<style>
+  :root { color-scheme: dark; --text: #f5f5f7; --text-2: rgba(235,235,245,.7); --text-3: rgba(235,235,245,.46); --line: rgba(255,255,255,.1); --gutter: clamp(18px, 5vw, 64px); --spring: cubic-bezier(.2,.9,.25,1.1); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #000; color: var(--text); }
+  body { font: 16px/1.65 Inter, -apple-system, "Segoe UI", system-ui, sans-serif; -webkit-font-smoothing: antialiased; letter-spacing: -.005em; }
+  a { color: var(--text); }
+  :focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 var(--gutter); }
+  .top .wrap { display: flex; align-items: center; justify-content: space-between; height: 68px; gap: 16px; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 700; font-size: 18px; letter-spacing: -.02em; }
+  .brand img { width: 32px; height: 32px; border-radius: 8px; }
+  .top nav { display: flex; gap: 20px; }
+  .top nav a { text-decoration: none; color: var(--text-2); font-weight: 600; font-size: 15px; }
+  .top nav a:hover { color: var(--text); }
+  h1 { margin: clamp(30px, 6vw, 64px) 0 10px; font-size: clamp(40px, 6vw, 68px); line-height: 1; letter-spacing: -.045em; font-weight: 800; }
+  .lead { margin: 0; color: var(--text-2); max-width: 56ch; font-size: 17px; }
+  .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: clamp(28px, 6vw, 80px); margin-top: clamp(36px, 6vw, 64px); align-items: start; }
+  .toc { position: sticky; top: 24px; display: grid; gap: 4px; font-size: 14.5px; }
+  .toc a { color: var(--text-2); text-decoration: none; padding: 4px 0; }
+  .toc a:hover { color: var(--text); }
+  section { padding: 0 0 40px; margin-bottom: 40px; border-bottom: 1px solid var(--line); scroll-margin-top: 20px; }
+  section:last-child { border-bottom: 0; }
+  h2 { margin: 0 0 12px; font-size: 26px; letter-spacing: -.025em; line-height: 1.15; }
+  h3 { margin: 22px 0 6px; font-size: 17px; letter-spacing: -.01em; }
+  p, li { color: var(--text-2); max-width: 66ch; }
+  p { margin: 0 0 12px; }
+  ol, ul { margin: 0 0 12px; padding-left: 22px; display: grid; gap: 6px; }
+  b { color: var(--text); font-weight: 600; }
+  .btn { display: inline-flex; align-items: center; height: 42px; padding: 0 18px; border-radius: 999px; background: rgba(255,255,255,.94); color: #000; font-weight: 600; font-size: 15px; text-decoration: none; margin-top: 4px; transition: transform .3s var(--spring); }
+  .btn:hover { transform: scale(1.04); }
+  footer { margin-top: 40px; padding: 28px 0 44px; border-top: 1px solid var(--line); color: var(--text-3); font-size: 14px; }
+  footer a { color: var(--text-2); text-decoration: none; margin-right: 20px; }
+  @media (max-width: 760px) {
+    .layout { grid-template-columns: 1fr; }
+    .toc { position: static; grid-template-columns: 1fr 1fr; gap: 2px 16px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+    .top nav a.wide { display: none; }
+  }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap"><a class="brand" href="/"><img src="/icon.png" alt="">Reel</a><nav><a class="wide" href="/download/">Download</a><a href="/watch/">Open Reel</a></nav></div></header>
+<main class="wrap">
+  <h1>Help</h1>
+  <p class="lead">Getting set up, connecting a debrid service, installing on your TV, and what to do when something won’t play.</p>
+  <div class="layout">
+    <nav class="toc" aria-label="On this page">
+      <a href="#start">Getting started</a>
+      <a href="#debrid">Connecting TorBox</a>
+      <a href="#windows">Windows</a>
+      <a href="#mac">Mac</a>
+      <a href="#tv">Fire TV and Android TV</a>
+      <a href="#phone">Phone and browser</a>
+      <a href="#play">When something won’t play</a>
+      <a href="#party">Watch parties</a>
+      <a href="#profile">Your profile and privacy</a>
+      <a href="#account">Your account</a>
+    </nav>
+    <div>
+      <section id="start">
+        <h2>Getting started</h2>
+        <p>Reel is free. You need two things: a <b>Reel account</b>, which keeps your library, ratings and friends on every device, and a <b>debrid service</b>, which is where the video actually streams from.</p>
+        <ol>
+          <li>Get Reel on your computer or TV, or open it in your browser.</li>
+          <li>Create an account with Discord or a username.</li>
+          <li>Connect your debrid service once. Every device you sign in on uses it automatically.</li>
+        </ol>
+        <p>Without a debrid service you can still browse, rate, write reviews and keep a watchlist. Only playing needs one.</p>
+      </section>
+
+      <section id="debrid">
+        <h2>Connecting TorBox</h2>
+        <p>A debrid service is a small subscription that streams videos to you directly, fast and privately. We recommend TorBox: about $3 a month, and up to three people can stream on one account at the same time.</p>
+        <ol>
+          <li><a href="https://torbox.app/subscription?referral=d09493b9-7df7-4352-8fbd-907852399904" target="_blank" rel="noopener">Sign up for TorBox</a> and pick a plan.</li>
+          <li>In TorBox, open <b>Settings</b> and copy your <b>API key</b>.</li>
+          <li>In Reel, open <b>Settings</b>. Under <b>Connections</b>, next to <b>Streaming</b>, choose <b>Change</b>, pick TorBox, paste the key and choose <b>Test &amp; save</b>.</li>
+        </ol>
+        <p>Reel also works with Real-Debrid, AllDebrid, Premiumize, Debrid-Link, EasyDebrid and Offcloud. The steps are the same: copy the API key from that service and paste it in Reel.</p>
+        <a class="btn" href="https://torbox.app/subscription?referral=d09493b9-7df7-4352-8fbd-907852399904" target="_blank" rel="noopener">Get TorBox</a>
+      </section>
+
+      <section id="windows">
+        <h2>Windows</h2>
+        <p>If Windows shows <b>“Windows protected your PC”</b> when you open the installer, choose <b>More info</b>, then <b>Run anyway</b>. That message appears for apps that aren’t from big publishers; it only happens the first time.</p>
+        <p>Reel updates itself. When a new version is ready you’ll see a note in the app; restart Reel to finish.</p>
+      </section>
+
+      <section id="mac">
+        <h2>Mac</h2>
+        <p>Pick <b>Apple Silicon</b> for any Mac from late 2020 on, otherwise <b>Intel</b>. Open the download and drag Reel into Applications.</p>
+        <p>The first time, macOS may say it can’t check the app. Open <b>System Settings</b>, then <b>Privacy &amp; Security</b>, scroll down and choose <b>Open Anyway</b>.</p>
+      </section>
+
+      <section id="tv">
+        <h2>Fire TV and Android TV</h2>
+        <ol>
+          <li>On the TV, install <b>Downloader</b> from the Amazon Appstore or Google Play.</li>
+          <li>Open it and enter the address from the <a href="/download/#tv">download page</a>.</li>
+          <li>If the TV asks, allow Downloader to install apps, then choose <b>Install</b>.</li>
+          <li>Open Reel and sign in with a code from Reel on your computer or phone, or with your username.</li>
+        </ol>
+        <h3>Updating</h3>
+        <p>Enter the same address in Downloader again and install over the old version. Your account and your place in every show stay as they are.</p>
+      </section>
+
+      <section id="phone">
+        <h2>Phone and browser</h2>
+        <p>Open <a href="/watch/">reelwatch.stream/watch</a> and sign in. For a full-screen app, add it to your home screen: on iPhone, <b>Share</b> then <b>Add to Home Screen</b>; on Android, the <b>⋮</b> menu then <b>Install app</b>.</p>
+      </section>
+
+      <section id="play">
+        <h2>When something won’t play</h2>
+        <ul>
+          <li><b>Try another source.</b> Open the source list on the title and pick a different one. Some files are slow or missing.</li>
+          <li><b>Check your debrid service.</b> Make sure your subscription is active and the key in Settings is current. If you made a new key, paste it again.</li>
+          <li><b>Very new releases</b> sometimes only have low-quality or fake files for a few days. Wait, or try a different source.</li>
+          <li><b>Picture but wrong colors</b> on a computer: turn on <b>Avoid Dolby Vision–only files</b> in Settings, under Playback.</li>
+          <li><b>Out of sync audio</b>: pick a different source; it’s usually the file.</li>
+        </ul>
+      </section>
+
+      <section id="party">
+        <h2>Watch parties</h2>
+        <p>On a movie or episode, choose <b>Watch together</b>. Send the code or link to friends; they can join from the Reel app, from a TV by entering the code, or right in their browser. Playback stays in sync for everyone, with chat and reactions. Everyone needs a Reel account and a debrid service.</p>
+      </section>
+
+      <section id="profile">
+        <h2>Your profile and privacy</h2>
+        <p>Your profile has a link, like <b>reelwatch.stream/@yourname</b>, that anyone can open, even without Reel. It shows your name, picture, bio, favorites, ratings, reviews and watchlist. Nobody can search for or list profiles; people need your username or link.</p>
+        <ul>
+          <li>To hide your ratings, reviews and watchlist, turn off <b>Friends can see my ratings, reviews and watchlist</b> in Settings. Your name, picture and favorites still show.</li>
+          <li>When writing a review, turn on <b>Contains spoilers</b> and it’s blurred for everyone until they choose to read it.</li>
+          <li>Friends can’t see what you’re watching right now.</li>
+        </ul>
+      </section>
+
+      <section id="account">
+        <h2>Your account</h2>
+        <p>In Settings, under <b>Account</b>, you can download a copy of your data or delete your account. Deleting removes your profile, library, ratings, reviews, friends and saved debrid key for good.</p>
+      </section>
+    </div>
+  </div>
+</main>
+<footer><div class="wrap"><a href="/">Reel</a><a href="/download/">Download</a><a href="/terms/">Terms and privacy</a></div></footer>
+<script src="/count.js" data-page="help"></script>
+</body>
+</html>

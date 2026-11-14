@@ -3925,3 +3925,27 @@ body.mac .tw .show-side { left: 96px; }
 .share-prof .sp-link { display: flex; gap: 8px; }
 .share-prof .sp-link .input { flex: 1; min-width: 0; font-size: 14px; }
 .fp-acts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+/* Spoilers: blurred until you choose to read */
+.spoiler { position: relative; }
+.spoiler .sp-body { filter: blur(7px); opacity: .55; user-select: none; pointer-events: none; transition: filter .35s var(--ease), opacity .35s var(--ease); }
+.spoiler .sp-show { position: absolute; left: 0; top: 50%; transform: translateY(-50%); max-width: 100%; z-index: 1; white-space: nowrap; height: 32px; padding: 0 14px; border-radius: 999px;
+  background: rgba(30,30,34,.85); border: 1px solid rgba(255,255,255,.16); color: var(--text); font-size: 13px; font-weight: 600; box-shadow: 0 6px 20px rgba(0,0,0,.4); }
+.spoiler .sp-show:hover { background: rgba(60,60,66,.9); }
+.spoiler:not(.shown) { min-height: 44px; }
+.spoiler.shown .sp-body { filter: none; opacity: 1; user-select: text; pointer-events: auto; }
+.spoiler.shown .sp-show { display: none; }
+.sp-own { display: inline-block; margin-bottom: 6px; font-size: 12px; font-weight: 600; color: var(--text-2); padding: 2px 9px; border-radius: 999px; background: rgba(255,255,255,.08); }
+.sp-check { margin: 10px 0 0; font-size: 13.5px; gap: 10px; color: var(--text-2); }
+.sp-check input { width: 36px; height: 22px; }
+.sp-check input::after { width: 18px; height: 18px; }
+.sp-check input:checked::after { transform: translateX(14px); }
+.cp-review { flex-wrap: wrap; }
+.cp-review .sp-check { flex-basis: 100%; }
+
+/* Share your year */
+.wr-top { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.wr-top .wr-share { margin-left: auto; }
+.yc-sheet h3 { margin: 0 0 14px; font-size: 22px; letter-spacing: -.02em; }
+.yc-img { display: block; width: auto; max-width: 100%; height: min(62vh, 640px); margin: 0 auto 18px; border-radius: 18px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+.yc-sheet .btns { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }

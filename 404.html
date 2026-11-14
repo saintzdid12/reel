@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reel</title>
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="/icon.png">
+<script>
+  // Short links: reelwatch.stream/@name opens a profile, /p/CODE a watch party invite.
+  (function () {
+    var p = location.pathname.replace(/\/+$/, '');
+    var m = p.match(/^\/@([A-Za-z0-9_.]{2,24})$/);
+    if (m) return location.replace('/u/?' + m[1].toLowerCase());
+    m = p.match(/^\/p\/([A-Za-z0-9]{4,12})$/i);
+    if (m) return location.replace('/join.html?c=' + m[1].toUpperCase());
+  })();
+</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&display=swap" media="print" onload="this.media='all'">
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; background: #000; color: #f5f5f7; }
+  body { font: 16px/1.6 Inter, -apple-system, "Segoe UI", system-ui, sans-serif; -webkit-font-smoothing: antialiased; min-height: 100vh; display: grid; place-items: center; padding: 24px; box-sizing: border-box; }
+  main { max-width: 440px; }
+  img { width: 40px; height: 40px; border-radius: 10px; display: block; }
+  h1 { margin: 22px 0 8px; font-size: 34px; line-height: 1.1; letter-spacing: -.035em; }
+  p { margin: 0 0 24px; color: rgba(235,235,245,.68); }
+  a.btn { display: inline-flex; align-items: center; height: 44px; padding: 0 20px; border-radius: 999px; background: rgba(255,255,255,.94); color: #000; font-weight: 600; font-size: 15px; text-decoration: none; }
+</style>
+</head>
+<body>
+<main>
+  <img src="/icon.png" alt="">
+  <h1>Nothing here</h1>
+  <p>This page doesn’t exist. If someone sent you a link, check it was copied in full.</p>
+  <a class="btn" href="/">Go to Reel</a>
+</main>
+<script src="/count.js" data-page="404"></script>
+</body>
+</html>

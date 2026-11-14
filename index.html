@@ -127,7 +127,7 @@
 <header class="top" id="top">
   <div class="wrap">
     <a class="brand" href="./"><img src="icon.png" alt="">Reel</a>
-    <nav><a class="link wide" href="#need">What you need</a><a class="link" href="watch/">Open Reel</a><a class="btn primary small" href="download/">Get Reel</a></nav>
+    <nav><a class="link wide" href="#need">What you need</a><a class="link wide" href="/help/">Help</a><a class="link" href="watch/">Open Reel</a><a class="btn primary small" href="download/">Get Reel</a></nav>
   </div>
 </header>
 
@@ -193,7 +193,7 @@
       <div class="pick">
         <div class="name"><b>TorBox</b><span class="price">about $3 <small>a month</small></span></div>
         <p>Our pick. Up to three people can stream on one account at the same time, so one subscription can cover a couple of friends or a household.</p>
-        <a class="btn primary" href="https://torbox.app/pricing" target="_blank" rel="noopener">Get TorBox</a>
+        <a class="btn primary" href="https://torbox.app/subscription?referral=d09493b9-7df7-4352-8fbd-907852399904" target="_blank" rel="noopener">Get TorBox</a>
         <p class="also">Reel also works with Real-Debrid, AllDebrid, Premiumize, Debrid-Link, EasyDebrid and Offcloud.</p>
       </div>
     </div>
@@ -209,7 +209,7 @@
 
 <footer>
   <div class="wrap">
-    <nav><a href="download/">Download</a><a href="watch/">Open Reel</a><a href="https://github.com/saintzdid12/reel/releases" target="_blank" rel="noopener">All versions</a></nav>
+    <nav><a href="download/">Download</a><a href="watch/">Open Reel</a><a href="/help/">Help</a><a href="/terms/">Terms and privacy</a></nav>
     <p>Reel doesn’t host or provide any content. It plays from services you have your own account with. Movie info from TMDB; Reel isn’t endorsed or certified by TMDB.</p>
   </div>
 </footer>
@@ -218,5 +218,6 @@
   const onScroll = () => bar.classList.toggle('scrolled', scrollY > 10);
   addEventListener('scroll', onScroll, { passive: true }); onScroll();
 </script>
+<script src="/count.js" data-page="home"></script>
 </body>
 </html>

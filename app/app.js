@@ -300,6 +300,8 @@ function openLink(url) {
   url = String(url || '');
   const m = url.match(/^reel:\/\/(party|join)\/([A-Za-z0-9]{4,12})/i);
   if (m && typeof Party !== 'undefined') { if (!Setup.done) return toast('Finish setting up Reel first, then open the invite again'); return Party.join(m[2]); }
+  const t = url.match(/^reel:\/\/title\/(movie|tv)\/(\d+)/i);
+  if (t) { if (!Setup.done) return toast('Finish setting up Reel first, then open the link again'); return go('detail', { type: t[1].toLowerCase(), id: +t[2] }); }
 }
 if (window.reel.cloud) window.reel.cloud.onDeepLink(openLink);
 // Signed in on a new computer: the debrid key came from the account, so setup is done.

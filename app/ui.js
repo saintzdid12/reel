@@ -450,7 +450,7 @@ function openLog(meta, { afterWatch, onSaved, date, review: reviewMode } = {}) {
       <span class="like-toggle ${liked ? 'on' : ''}" title="Like">${liked ? ICON.heartFill : ICON.heart}</span>
       <span class="rating-text rt" style="margin-left:auto">${rating ? starsText(rating) : 'How was it?'}</span>
     </div>
-    <div class="field"><textarea class="input review" placeholder="Add a review (optional)"></textarea></div>
+    <div class="field"><textarea class="input review" placeholder="Add a review (optional)"></textarea><label class="check sp-check"><input type="checkbox" class="spoil"> Contains spoilers</label></div>
     <div style="display:flex;align-items:center;gap:20px">
       <label class="check" style="margin:0"><input type="checkbox" class="rewatch" ${it.watched && !afterWatch && !reviewMode ? 'checked' : ''}> Rewatch</label>
       <input type="date" class="input date" value="${date || today()}" style="width:170px;padding:9px 12px">
@@ -468,7 +468,7 @@ function openLog(meta, { afterWatch, onSaved, date, review: reviewMode } = {}) {
   if (reviewMode) { const ta = $('.review', wrap); ta.placeholder = 'What did you think?'; ta.style.minHeight = '150px'; setTimeout(() => ta.focus(), 80); }
   if ($('.skip', wrap)) $('.skip', wrap).onclick = m.close;
   $('.save', wrap).onclick = () => {
-    Store.logDiary(meta, { date: $('.date', wrap).value, rating, liked, review: $('.review', wrap).value.trim(), rewatch: $('.rewatch', wrap).checked });
+    Store.logDiary(meta, { date: $('.date', wrap).value, rating, liked, review: markSpoiler($('.review', wrap).value, $('.spoil', wrap).checked), rewatch: $('.rewatch', wrap).checked });
     Recs.cache = null;
     m.close();
     toast(`Logged ${meta.title}${rating ? ' · ' + starsText(rating) : ''}`);
@@ -511,7 +511,7 @@ function openReview(meta, focusId) {
         <div class="rv-when">${r.date ? `<b>${esc(new Date(r.date + 'T12:00').toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' }))}</b>` : '<b>Review</b>'}
           ${r.rating ? `<span class="rating-text">${starsText(r.rating)}</span>` : ''}${r.liked ? `<span class="rv-heart">${ICON.heartFill}</span>` : ''}${r.rewatch ? `<span class="rv-tag">${ICON.rewatch} Rewatch</span>` : ''}
           <span class="rv-acts">${r.e ? `<button class="act rv-edit" title="Edit this entry">${ICON.pencil}</button>` : ''}<button class="act rv-del" title="Delete this review">${ICON.x}</button></span></div>
-        <div class="rv-text">${reviewHtml(r.text)}</div></article>`);
+        <div class="rv-text">${reviewHtml(r.text, 0, true)}</div></article>`);
       if (r.e) $('.rv-edit', el).onclick = () => { m.close(); editEntry(r.e, it, () => openReview(meta, r.e.id)); };
       $('.rv-del', el).onclick = () => {
         const undo = Store.removeReview(key, r.e && r.e.id);
@@ -559,14 +559,14 @@ function openAfterWatch(meta, entryId) {
       <span class="like-toggle ${liked ? 'on' : ''}" title="Like">${liked ? ICON.heartFill : ICON.heart}</span>
       <span class="rating-text rt">${rating ? starsText(rating) : (prevRating ? `Last time ${starsText(prevRating)}` : 'How was it?')}</span>
     </div>
-    <div class="aw-review collapsed"><div><textarea class="input review" placeholder="Write a review (optional)">${esc(e.review || '')}</textarea></div></div>
+    <div class="aw-review collapsed"><div><textarea class="input review" placeholder="Write a review (optional)">${esc(stripSpoiler(e.review || ''))}</textarea><label class="check sp-check"><input type="checkbox" class="spoil"${isSpoiler(e.review) ? ' checked' : ''}> Contains spoilers</label></div></div>
     <div class="aw-foot">
       <button class="btn small ghost aw-undo">${ICON.undo} Remove from diary</button>
       <button class="btn small ghost rv">${ICON.pencil} Review</button>
       <button class="btn primary done" style="margin-left:auto">Done</button>
     </div>
   </div>`);
-  const save = () => Store.updateDiary(entryId, { rating, liked, review: $('.review', wrap).value.trim(), rewatch: e.rewatch });
+  const save = () => Store.updateDiary(entryId, { rating, liked, review: markSpoiler($('.review', wrap).value, $('.spoil', wrap).checked), rewatch: e.rewatch });
   $('.stars-slot', wrap).appendChild(starsInput(rating, v => { rating = v; $('.rt', wrap).textContent = v ? starsText(v) : 'How was it?'; save(); }, 40));
   const heart = $('.like-toggle', wrap);
   heart.onclick = () => { liked = !liked; heart.classList.toggle('on', liked); heart.innerHTML = liked ? ICON.heartFill : ICON.heart; save(); };
@@ -617,7 +617,7 @@ function logBar(meta, onChange) {
       <span class="like-toggle ${liked ? 'on' : ''}" title="Like">${liked ? ICON.heartFill : ICON.heart}</span>
       <button class="act lb-rv" title="Add a review">${ICON.pencil}</button>
       <button class="btn primary small lb-go">${ICON.check} Log</button>
-      <div class="lb-review collapsed"><div><textarea class="input" placeholder="Write a review (optional)"></textarea></div></div>`;
+      <div class="lb-review collapsed"><div><textarea class="input" placeholder="Write a review (optional)"></textarea><label class="check sp-check"><input type="checkbox" class="spoil"> Contains spoilers</label></div></div>`;
     const date = $('.lb-date input', el);
     date.onchange = () => { $('.lb-date span', el).textContent = prettyDay(date.value || today()); };
     $('.lb-date', el).onclick = (e) => { if (e.target !== date) { try { date.showPicker(); } catch {} } };
@@ -627,7 +627,7 @@ function logBar(meta, onChange) {
     heart.onclick = () => { liked = !liked; heart.classList.toggle('on', liked); heart.innerHTML = liked ? ICON.heartFill : ICON.heart; };
     $('.lb-rv', el).onclick = (e) => { const r = $('.lb-review', el); r.classList.toggle('collapsed'); e.currentTarget.classList.toggle('on'); if (!r.classList.contains('collapsed')) setTimeout(() => $('textarea', r).focus(), 200); };
     $('.lb-go', el).onclick = () => {
-      Store.logDiary(meta, { date: date.value || today(), rating, liked, review: $('.lb-review textarea', el).value.trim(), rewatch });
+      Store.logDiary(meta, { date: date.value || today(), rating, liked, review: markSpoiler($('.lb-review textarea', el).value, $('.lb-review .spoil', el).checked), rewatch });
       lastLogged = Store.data.diary[Store.data.diary.length - 1].id;
       Recs.cache = null;
       toast(`Logged ${meta.title}${rating ? ' · ' + starsText(rating) : ''}`);

@@ -16,6 +16,7 @@ Views.review = async (root, { year } = {}) => {
   const ys = $('.wr-years', page);
   years.slice(0, 8).forEach(y => { const b = h(`<button class="${y === year ? 'on' : ''}">${y}</button>`); b.onclick = () => go('review', { year: y }, true); ys.appendChild(b); });
   const body = $('.wr-body', page);
+  if (items.length) { const sb = h('<button class="btn small primary wr-share">Share your year</button>'); $('.wr-top', page).appendChild(sb); sb.onclick = () => shareYearCard({ year, items, films, shows, minutes: 0, avg: 0 }, sb); }
   if (!items.length) { body.appendChild(h(`<section class="wr-card"><h1>Nothing logged in ${year}</h1><p class="muted">Watch and rate things this year and your recap builds itself.</p></section>`)); return; }
 
   const minutes = films.reduce((a, i) => a + (i.runtime || 110), 0) + eps * 45;
@@ -32,6 +33,7 @@ Views.review = async (root, { year } = {}) => {
   const rewatches = entries.filter(e => e.rewatch).length;
   const oldest = films.filter(i => i.year).sort((a, b) => a.year.localeCompare(b.year))[0];
   const hero = top[0];
+  { const sb = $('.wr-share', page); if (sb) sb.onclick = () => shareYearCard({ year, items, films, shows, minutes, avg, top, genre: topG[0] && topG[0][0] }, sb); }
 
   const card = (html, cls = '') => { const c = h(`<section class="wr-card ${cls}">${html}</section>`); body.appendChild(c); return c; };
   card(`${hero && hero.backdrop ? `<div class="wr-bg" style="background-image:url('${TMDB.img(hero.backdrop, 'w1280')}')"></div>` : ''}
@@ -77,3 +79,72 @@ Views.review = async (root, { year } = {}) => {
     <div><b>${entries.filter(e => e.review).length}</b><span>reviews written</span></div>
   </div>`);
 };
+
+// "Share your year": a 1080×1920 image (the size Instagram and TikTok stories use) with your numbers and top five,
+// to save or share. Posters come from TMDB; if one can't load the card is drawn without it.
+async function shareYearCard(d, btn) {
+  if (btn) btn.disabled = true;
+  try {
+    const W = 1080, H = 1920, c = document.createElement('canvas'); c.width = W; c.height = H;
+    const x = c.getContext('2d');
+    const load = (src) => new Promise((res) => { if (!src) return res(null); const im = new Image(); im.crossOrigin = 'anonymous'; im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
+    const top = (d.top || []).slice(0, 5);
+    const [bg, ...posters] = await Promise.all([load(top[0] && top[0].backdrop ? TMDB.img(top[0].backdrop, 'w1280') : null), ...top.map((i) => load(TMDB.img(i.poster, 'w342')))]);
+    try { await document.fonts.ready; } catch {}
+    const F = (w, s) => `${w} ${s}px Inter, "SF Pro Display", -apple-system, "Segoe UI", sans-serif`;
+    x.fillStyle = '#000'; x.fillRect(0, 0, W, H);
+    if (bg) {
+      x.save(); x.filter = 'blur(40px) saturate(1.3) brightness(.55)';
+      const s = Math.max(W / bg.width, 1100 / bg.height); x.drawImage(bg, (W - bg.width * s) / 2, -80, bg.width * s, bg.height * s); x.restore();
+    }
+    const fade = x.createLinearGradient(0, 300, 0, 1150); fade.addColorStop(0, 'rgba(0,0,0,0)'); fade.addColorStop(1, '#000');
+    x.fillStyle = fade; x.fillRect(0, 0, W, 1200);
+    const name = (typeof Cloud !== 'undefined' && Cloud.profile && (Cloud.profile.display_name || Cloud.profile.username)) || '';
+    x.fillStyle = 'rgba(235,235,245,.7)'; x.font = F(600, 40); x.fillText(name ? `${name}’s ${d.year} on Reel` : `My ${d.year} on Reel`, 80, 150);
+    x.fillStyle = '#fff'; x.font = F(800, 300); x.fillText(d.items.length.toLocaleString(), 64, 470);
+    x.font = F(700, 52); x.fillText(`titles watched`, 80, 550);
+    x.fillStyle = 'rgba(235,235,245,.7)'; x.font = F(500, 40);
+    x.fillText([`${d.films.length} film${d.films.length === 1 ? '' : 's'}`, d.shows.length ? `${d.shows.length} show${d.shows.length === 1 ? '' : 's'}` : ''].filter(Boolean).join(' and '), 80, 615);
+    // Numbers
+    const stats = [[Math.round((d.minutes || 0) / 60).toLocaleString(), 'hours'], [d.avg ? d.avg.toFixed(1) : '–', 'average rating'], [d.genre || '–', 'top genre']];
+    stats.forEach(([v, l], i) => {
+      const sx = 80 + i * 320; x.fillStyle = '#fff'; x.font = F(800, String(v).length > 7 ? 46 : 72); x.fillText(String(v), sx, 790);
+      x.fillStyle = 'rgba(235,235,245,.6)'; x.font = F(500, 34); x.fillText(l, sx, 840);
+    });
+    // Top five
+    if (top.length) {
+      x.fillStyle = '#fff'; x.font = F(700, 52); x.fillText('My top ' + top.length, 80, 1010);
+      const pw = 172, ph = 258, gap = (W - 160 - pw * 5) / 4;
+      top.forEach((it, i) => {
+        const px = 80 + i * (pw + gap), py = 1060, im = posters[i];
+        x.save(); x.beginPath(); x.roundRect ? x.roundRect(px, py, pw, ph, 16) : x.rect(px, py, pw, ph); x.clip();
+        x.fillStyle = '#1c1c1e'; x.fillRect(px, py, pw, ph);
+        if (im) x.drawImage(im, px, py, pw, ph);
+        x.restore();
+        x.fillStyle = 'rgba(235,235,245,.85)'; x.font = F(700, 34); x.fillText(String(i + 1), px, py + ph + 48);
+        x.fillStyle = 'rgba(235,235,245,.6)'; x.font = F(500, 26);
+        let t = it.title || ''; while (t.length > 3 && x.measureText(t).width > pw - 34) t = t.slice(0, -2); if (t !== it.title) t = t.trim() + '…';
+        x.fillText(t, px + 32, py + ph + 46);
+      });
+    }
+    // Footer
+    const u = typeof Cloud !== 'undefined' && Cloud.profile && Cloud.profile.username;
+    x.fillStyle = 'rgba(255,255,255,.12)'; x.fillRect(80, 1700, W - 160, 2);
+    x.fillStyle = '#fff'; x.font = F(800, 46); x.fillText('Reel', 80, 1790);
+    x.fillStyle = 'rgba(235,235,245,.7)'; x.font = F(500, 34); x.textAlign = 'right'; x.fillText(u ? `reelwatch.stream/@${u}` : 'reelwatch.stream', W - 80, 1788); x.textAlign = 'left';
+
+    let blob = null;
+    try { blob = await new Promise((r) => c.toBlob(r, 'image/png')); } catch {}
+    if (!blob) { // a poster without permission to be copied: draw again without images
+      throw new Error('tainted');
+    }
+    const url = URL.createObjectURL(blob);
+    const file = typeof File !== 'undefined' ? new File([blob], `reel-${d.year}.png`, { type: 'image/png' }) : null;
+    const sheet = h(`<div class="yc-sheet"><h3>Your ${d.year}</h3><img class="yc-img" src="${url}" alt="Your year on Reel"><div class="btns end"><button class="btn ghost yc-close">Close</button>${file && navigator.canShare && navigator.canShare({ files: [file] }) ? '<button class="btn yc-share">Share</button>' : ''}<a class="btn primary yc-save" href="${url}" download="reel-${d.year}.png">Save image</a></div></div>`);
+    const m = openModal(sheet, { onClose: () => setTimeout(() => URL.revokeObjectURL(url), 60000) });
+    $('.yc-close', sheet).onclick = m.close;
+    const sh = $('.yc-share', sheet); if (sh) sh.onclick = () => navigator.share({ files: [file], title: `My ${d.year} on Reel` }).catch(() => {});
+  } catch (err) {
+    toast('Couldn’t make your card right now', true);
+  } finally { if (btn) btn.disabled = false; }
+}

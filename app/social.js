@@ -19,6 +19,21 @@ const sharedMeta = (r) => ({ type: r.type, id: r.tmdb_id, title: r.title, year: 
 
 // ---------------- Sign in ----------------
 const AccountUI = {
+  // Everything Reel keeps for you, as one JSON file: profile, library (ratings, reviews, diary, watchlist, progress, lists) and friends.
+  downloadData() {
+    const p = Cloud.profile || {};
+    const data = {
+      exportedAt: new Date().toISOString(), app: 'Reel',
+      profile: { username: p.username, name: p.display_name, bio: p.bio, avatar: p.avatar_url, favorites: p.fav4, joined: p.created_at },
+      friends: (typeof Social !== 'undefined' ? Social.friends : []).map(f => f.username),
+      library: Store.data,
+    };
+    const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+    const a = document.createElement('a'); a.href = url; a.download = `reel-${p.username || 'data'}-${today()}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    toast('Your data is downloading');
+  },
   // Sign a Fire TV / Android TV in to this account: type the code the TV shows.
   linkTv() {
     const wrap = h(`<div class="tvl-sheet">
@@ -154,7 +169,7 @@ const AccountUI = {
         <label class="check"><input type="checkbox" class="sh-lib"> Friends can see my ratings, reviews and watchlist</label>
         <label class="check"><input type="checkbox" class="sh-act"> Friends can see what I’m watching and my activity</label>
         <div class="acct-devs"><div class="acct-sub">Devices</div><div class="dev-list"><div class="muted" style="font-size:13px">Loading…</div></div></div>
-        <div class="btns acct-btns"><button class="btn small ghost others">Sign out other devices</button><button class="btn small ghost out">Sign out</button><button class="btn small danger del">Delete account…</button></div>
+        <div class="btns acct-btns"><button class="btn small ghost dl">Download my data</button><button class="btn small ghost others">Sign out other devices</button><button class="btn small ghost out">Sign out</button><button class="btn small danger del">Delete account…</button></div>
       </div>`);
       slot.appendChild(el);
       $('.edit', el).onclick = () => this.editProfile();
@@ -168,6 +183,7 @@ const AccountUI = {
       $('.out', el).onclick = () => Cloud.signOut(false);
       $('.others', el).onclick = async () => { if (!(await confirmSheet('Sign out other devices?', 'Every other PC signed in to your account is signed out. This one stays signed in.', 'Sign out others'))) return; try { await Cloud.signOutOthers(); toast('Other devices signed out'); } catch (e) { toast(cleanErr(e), true); } };
       $('.del', el).onclick = () => this.deleteFlow();
+      $('.dl', el).onclick = () => this.downloadData();
       paintSync();
       Cloud.devices().then(list => {
         const box = $('.dev-list', el); if (!box) return;
@@ -240,20 +256,17 @@ const SocialUI = {
     const el = h(`<div class="fd-item">
       <button class="fd-who">${Cloud.avatar(a.who, 36)}</button>
       <div class="fd-body"><div class="fd-line"><b class="fd-name">${esc(fname(a.who))}</b> ${this.feedLine(a)}</div>
-        ${a.body ? `<p class="fd-rev">${esc(a.body)}</p>` : ''}
-        <div class="fd-time">${timeAgo(a.created_at)}${a.kind === 'party' && a.party && Date.now() - new Date(a.created_at) < 6 * 3600e3 ? ' · <button class="link join">Join the party</button>' : ''}</div></div>
+        ${a.body ? `<p class="fd-rev">${isSpoiler(a.body) ? '<i>Contains spoilers</i>' : esc(a.body)}</p>` : ''}
+        <div class="fd-time">${timeAgo(a.created_at)}</div></div>
       ${a.poster ? `<button class="fd-poster" style="background-image:url('${TMDB.img(a.poster, 'w154')}')"></button>` : ''}
     </div>`);
     $('.fd-who', el).onclick = () => go('friend', { id: a.user_id });
     const po = $('.fd-poster', el); if (po && type && id) po.onclick = () => go('detail', { type, id: +id });
-    const j = $('.join', el); if (j) j.onclick = () => Party.join(a.party);
     return el;
   },
-  friendCard(f, playing) {
-    const pl = playing && playing.playing;
-    const el = h(`<button class="fr-card">${Cloud.avatar(f, 44)}<div class="fr-names"><b>${esc(fname(f))}</b><span>${pl ? `<i class="live-dot"></i>Watching ${esc(pl.title || '')}${pl.season ? ` · S${pl.season}E${pl.episode}` : ''}` : '@' + esc(f.username)}</span></div>
-      ${pl && pl.party ? `<span class="btn small primary join">Join</span>` : ''}</button>`);
-    el.onclick = (e) => { if (e.target.closest('.join')) { e.stopPropagation(); return Party.join(pl.party); } go('friend', { id: f.id }); };
+  friendCard(f) {
+    const el = h(`<button class="fr-card">${Cloud.avatar(f, 44)}<div class="fr-names"><b>${esc(fname(f))}</b><span>@${esc(f.username)}</span></div></button>`);
+    el.onclick = () => go('friend', { id: f.id });
     return el;
   },
 };
@@ -305,11 +318,9 @@ Views.friends = async (root) => {
       });
       side.appendChild(s);
     }
-    const now = await Social.nowPlaying().catch(() => []);
-    const byUser = new Map(now.map(x => [x.user_id, x]));
     const fs = h(`<section class="fr-sec"><h3 class="fr-h">Your friends <span>${Social.friends.length || ''}</span></h3><div class="fr-list"></div></section>`);
     const list = $('.fr-list', fs);
-    [...Social.friends].sort((a, b) => (byUser.has(b.id) ? 1 : 0) - (byUser.has(a.id) ? 1 : 0)).forEach(f => list.appendChild(SocialUI.friendCard(f, byUser.get(f.id))));
+    [...Social.friends].sort((a, b) => fname(a).localeCompare(fname(b))).forEach(f => list.appendChild(SocialUI.friendCard(f)));
     if (!Social.friends.length) list.appendChild(h('<div class="fr-hint">No friends yet. Add someone by their Reel username above — they’ll get a request.</div>'));
     side.appendChild(fs);
     if (Social.outgoing.length) {
@@ -337,12 +348,14 @@ Views.friends = async (root) => {
 // it shows what friends see (name, picture, bio, favorites, ratings, reviews, watchlist) and nothing else.
 function shareProfile() {
   const p = Cloud.profile; if (!p) return;
-  const link = `${(Cloud.cfg && Cloud.cfg.site) || 'https://reelwatch.stream'}/u/?${p.username}`;
+  const link = `${(Cloud.cfg && Cloud.cfg.site) || 'https://reelwatch.stream'}/@${p.username}`;
   const sheet = h(`<div class="share-prof">
     <h3>Your profile link</h3>
     <div class="sp-link"><input class="input" readonly value="${esc(link)}"><button class="btn small primary sp-copy">Copy link</button></div>
   </div>`);
   openModal(sheet);
+  // Sharing once also gets your link a proper preview card (name, picture, favorites) within about half an hour.
+  if (!p.public_profile) Cloud.updateProfile({ public_profile: true }).catch(() => {});
   const input = $('input', sheet), btn = $('.sp-copy', sheet);
   input.onfocus = () => input.select();
   btn.onclick = async () => {
@@ -371,11 +384,10 @@ Views.friend = async (root, { id }) => {
   const avg = rated.length ? rated.reduce((a, r) => a + r.rating, 0) / rated.length : 0;
   const reviews = lib.filter(r => r.review);
   const m = isMe ? { pct: null } : Social.match(lib);
-  const playing = !isMe && isFriend ? (await Social.nowPlaying().catch(() => [])).find(x => x.user_id === id) : null;
   const head = h(`<section class="fp-head">
     ${Cloud.avatar(f, 96)}
     <div class="fp-names"><h1>${esc(fname(f))}</h1><div class="muted">@${esc(f.username)}${isMe ? ' · this is how friends see you' : ''}</div>${f.bio ? `<p class="fp-bio">${esc(f.bio)}</p>` : ''}
-      ${playing ? `<div class="fp-now"><i class="live-dot"></i>Watching <b>${esc(playing.playing.title || '')}</b>${playing.playing.party ? ' <button class="btn small primary join">Join the party</button>' : ''}</div>` : ''}</div>
+      </div>
     <div class="fp-stats">
       <div><b>${films.length.toLocaleString()}</b><span>Films</span></div>
       <div><b>${shows.length.toLocaleString()}</b><span>Shows</span></div>
@@ -386,7 +398,6 @@ Views.friend = async (root, { id }) => {
     <div class="fp-acts">${isMe ? '<button class="btn small primary share">Share</button><button class="btn small ed">Edit profile</button>' : isFriend ? '<button class="btn small ghost rm">Remove friend</button>' : '<button class="btn small primary add">Add friend</button>'}</div>
   </section>`);
   page.appendChild(head);
-  const j = $('.join', head); if (j) j.onclick = () => Party.join(playing.playing.party);
   const shr = $('.share', head); if (shr) shr.onclick = () => shareProfile();
   const ed = $('.ed', head); if (ed) ed.onclick = () => { AccountUI.editProfile(); const off = Cloud.watch(() => { off(); if (page.isConnected) rerender(); }); };
   const rm = $('.rm', head); if (rm) rm.onclick = async () => { if (!(await confirmSheet(`Remove ${fname(f)}?`, 'You’ll stop seeing each other’s ratings and activity.', 'Remove', true))) return; await Social.remove(id); go('friends', {}, true); };
