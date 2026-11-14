@@ -2,8 +2,6 @@
 .share-prof h3 { margin: 0 0 16px; font-size: 22px; letter-spacing: -.02em; }
 .share-prof .sp-link { display: flex; gap: 8px; }
 .share-prof .sp-link .input { flex: 1; min-width: 0; font-size: 14px; }
-.share-prof .sp-note { margin: 12px 0 0; font-size: 13px; line-height: 1.5; }
-.share-prof .sp-stop { background: none; border: 0; padding: 0; color: var(--text-2); font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
 ﻿/* Reel — tvOS-inspired: monochrome, glass, motion. */
 :root {
   --bg: #000;
@@ -3315,10 +3313,10 @@ body:not([data-accent="mono"]) .tp2-ybar.now i { background: var(--acc); }
 .fp-stats b { display: block; font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .fp-stats span { font-size: 12px; color: var(--text-3); }
 .fp-stats .match b { color: #30d158; }
-.fp-acts { align-self: start; }
+.fp-acts { align-self: center; }
 .fp-head { grid-template-columns: auto minmax(0, 1fr) auto auto; }
 .friend-page .rows { padding: 0; }
-@media (max-width: 1150px) { .fp-head { grid-template-columns: auto 1fr; } .fp-stats { grid-column: 1 / -1; } }
+@media (max-width: 1150px) { .fp-head { grid-template-columns: auto 1fr; } .fp-stats, .fp-acts { grid-column: 1 / -1; } }
 .friend-page .rows { margin-top: 18px; }
 .fp-revs { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; }
 .fp-rev { display: flex; gap: 12px; text-align: left; padding: 12px; border-radius: 16px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07); transition: background .15s; }
@@ -3932,4 +3930,4 @@ body.mac .tw .show-side { left: 96px; }
 .share-prof .sp-link { display: flex; gap: 8px; margin-bottom: 18px; }
 .share-prof .sp-link .input { flex: 1; min-width: 0; font-size: 14px; user-select: all; }
 .share-prof .btns { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
-.fp-acts { display: flex; gap: 8px; flex-wrap: wrap; }
+.fp-acts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }

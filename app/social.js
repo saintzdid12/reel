@@ -335,33 +335,20 @@ Views.friends = async (root) => {
 // shows exactly what your friends see.
 // A public profile link (reelwatch.stream/u/?username) anyone can open, even without Reel. Off until you turn it on;
 // it shows what friends see (name, picture, bio, favorites, ratings, reviews, watchlist) and nothing else.
-function shareProfile(after) {
+function shareProfile() {
   const p = Cloud.profile; if (!p) return;
   const link = `${(Cloud.cfg && Cloud.cfg.site) || 'https://reelwatch.stream'}/u/?${p.username}`;
   const sheet = h(`<div class="share-prof">
     <h3>Your profile link</h3>
     <div class="sp-link"><input class="input" readonly value="${esc(link)}"><button class="btn small primary sp-copy">Copy link</button></div>
-    <p class="muted sp-note">Anyone with the link can see your profile, favorites, ratings, reviews and watchlist.${p.public_profile ? ' <button class="sp-stop">Stop sharing</button>' : ''}</p>
   </div>`);
-  const m = openModal(sheet);
-  const input = $('input', sheet);
+  openModal(sheet);
+  const input = $('input', sheet), btn = $('.sp-copy', sheet);
   input.onfocus = () => input.select();
-  // Copying turns the link on (it doesn't work until then).
-  $('.sp-copy', sheet).onclick = async () => {
-    const btn = $('.sp-copy', sheet);
-    btn.disabled = true;
-    try {
-      if (!Cloud.profile.public_profile) { await Cloud.updateProfile({ public_profile: true }); after && after(); }
-      try { await navigator.clipboard.writeText(link); } catch { input.focus(); input.select(); document.execCommand && document.execCommand('copy'); }
-      btn.textContent = 'Copied';
-      setTimeout(() => { if (btn.isConnected) btn.textContent = 'Copy link'; }, 1800);
-    } catch (err) { toast(cleanErr(err), true); }
-    btn.disabled = false;
-  };
-  const stop = $('.sp-stop', sheet);
-  if (stop) stop.onclick = async () => {
-    try { await Cloud.updateProfile({ public_profile: false }); m.close(); toast('Your profile link no longer works'); after && after(); }
-    catch (err) { toast(cleanErr(err), true); }
+  btn.onclick = async () => {
+    try { await navigator.clipboard.writeText(link); } catch { input.focus(); input.select(); try { document.execCommand('copy'); } catch {} }
+    btn.textContent = 'Copied';
+    setTimeout(() => { if (btn.isConnected) btn.textContent = 'Copy link'; }, 1800);
   };
 }
 
@@ -396,11 +383,11 @@ Views.friend = async (root, { id }) => {
       <div><b>${avg ? avg.toFixed(2) : '–'}</b><span>Average rating</span></div>
       ${isMe ? `<div><b>${reviews.length.toLocaleString()}</b><span>Reviews</span></div>` : `<div class="match"><b>${m.pct != null ? m.pct + '%' : '–'}</b><span>${m.pct != null ? `Taste match · ${m.n} in common` : 'Taste match'}</span></div>`}
     </div>
-    <div class="fp-acts">${isMe ? '<button class="btn small primary share">' + 'Share profile' + '</button><button class="btn small ghost ed">Edit profile</button>' : isFriend ? '<button class="btn small ghost rm">Remove friend</button>' : '<button class="btn small primary add">Add friend</button>'}</div>
+    <div class="fp-acts">${isMe ? '<button class="btn small primary share">Share</button><button class="btn small ed">Edit profile</button>' : isFriend ? '<button class="btn small ghost rm">Remove friend</button>' : '<button class="btn small primary add">Add friend</button>'}</div>
   </section>`);
   page.appendChild(head);
   const j = $('.join', head); if (j) j.onclick = () => Party.join(playing.playing.party);
-  const shr = $('.share', head); if (shr) shr.onclick = () => shareProfile(() => { if (page.isConnected) rerender(); });
+  const shr = $('.share', head); if (shr) shr.onclick = () => shareProfile();
   const ed = $('.ed', head); if (ed) ed.onclick = () => { AccountUI.editProfile(); const off = Cloud.watch(() => { off(); if (page.isConnected) rerender(); }); };
   const rm = $('.rm', head); if (rm) rm.onclick = async () => { if (!(await confirmSheet(`Remove ${fname(f)}?`, 'You’ll stop seeing each other’s ratings and activity.', 'Remove', true))) return; await Social.remove(id); go('friends', {}, true); };
   const ad = $('.add', head); if (ad) ad.onclick = async () => { try { await Social.add(f.username); toast('Friend request sent'); ad.remove(); } catch (e) { toast(cleanErr(e), true); } };

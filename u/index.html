@@ -30,6 +30,7 @@
   body { font: 15px/1.55 Inter, -apple-system, "Segoe UI", system-ui, sans-serif; -webkit-font-smoothing: antialiased; letter-spacing: -.005em; min-height: 100vh; }
   a { color: inherit; }
   img { display: block; }
+  [hidden] { display: none !important; }
 
   /* The person's own favorite poster, blurred, is the only color on the page */
   .ambient { position: fixed; inset: -80px; z-index: 0; background: center / cover no-repeat; filter: blur(70px) saturate(1.4) brightness(.5); opacity: 0; transition: opacity 1.2s var(--ease); }
@@ -37,7 +38,7 @@
   .ambient::after { content: ""; position: absolute; inset: 0; background: radial-gradient(120% 90% at 50% 0%, transparent 30%, #000 78%); }
   main { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 22px var(--gutter) 96px; }
 
-  .top { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: clamp(36px, 7vw, 72px); }
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: clamp(22px, 5vw, 56px); }
   .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 700; font-size: 17px; letter-spacing: -.02em; }
   .brand img { width: 30px; height: 30px; border-radius: 8px; }
   .get { display: inline-flex; align-items: center; height: 38px; padding: 0 18px; border-radius: var(--r-ctl); text-decoration: none; font-weight: 600; font-size: 14px;
@@ -53,21 +54,21 @@
   .bio { margin: 14px 0 0; max-width: 60ch; color: var(--text-2); text-wrap: pretty; }
 
   /* Numbers set in type, no boxes */
-  .stats { display: flex; flex-wrap: wrap; gap: clamp(24px, 5vw, 56px); margin: clamp(30px, 5vw, 48px) 0 0; padding-top: 22px; border-top: 1px solid var(--line); }
+  .stats { display: flex; flex-wrap: wrap; gap: clamp(24px, 5vw, 56px); margin: clamp(22px, 4vw, 40px) 0 0; padding-top: 20px; border-top: 1px solid var(--line); }
   .stats div { display: flex; flex-direction: column; }
   .stats b { font-size: clamp(26px, 3.4vw, 36px); font-weight: 700; letter-spacing: -.03em; font-variant-numeric: tabular-nums; line-height: 1.1; }
   .stats span { color: var(--text-3); font-size: 13px; font-weight: 500; }
 
-  section { margin-top: clamp(48px, 8vw, 88px); }
+  section { margin-top: clamp(36px, 6vw, 72px); }
   h2 { margin: 0 0 18px; font-size: 22px; font-weight: 700; letter-spacing: -.02em; }
   h2 small { font-size: 14px; font-weight: 500; color: var(--text-3); letter-spacing: 0; margin-left: 8px; }
 
   /* Favorites: the signature, big */
-  .favs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(10px, 2vw, 22px); }
+  .favs { display: grid; grid-template-columns: repeat(4, minmax(0, 200px)); gap: clamp(10px, 2vw, 22px); }
   .favs.two-groups { grid-template-columns: repeat(auto-fill, minmax(clamp(120px, 20vw, 210px), 1fr)); }
-  .poster { position: relative; aspect-ratio: 2 / 3; border-radius: var(--r-art); overflow: hidden; background: #161618;
+  .poster { display: block; position: relative; aspect-ratio: 2 / 3; border-radius: var(--r-art); overflow: hidden; background: #161618;
             box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), 0 10px 30px rgba(0,0,0,.45); }
-  .poster img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .5s var(--ease); }
+  .poster img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .5s var(--ease); }
   .poster img.in { opacity: 1; }
   a.poster { transition: transform .45s var(--spring), box-shadow .45s var(--ease); }
   a.poster:hover { transform: translateY(-4px) scale(1.03); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1), 0 26px 50px rgba(0,0,0,.6); }
@@ -82,7 +83,7 @@
   .seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: var(--r-ctl); background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); margin-bottom: 18px; }
   .seg button { height: 32px; padding: 0 14px; border: 0; border-radius: var(--r-ctl); background: none; color: var(--text-2); font: 600 13.5px Inter, system-ui, sans-serif; cursor: pointer; transition: background .2s, color .2s; }
   .seg button.on { background: rgba(255,255,255,.94); color: #000; }
-  .more { margin-top: 22px; height: 40px; padding: 0 20px; border-radius: var(--r-ctl); border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); color: var(--text); font: 600 14px Inter, system-ui, sans-serif; cursor: pointer; }
+  .more { display: block; margin-top: 22px; height: 40px; padding: 0 20px; border-radius: var(--r-ctl); border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); color: var(--text); font: 600 14px Inter, system-ui, sans-serif; cursor: pointer; }
 
   /* Reviews: a typographic list */
   .reviews { display: flex; flex-direction: column; }
@@ -94,7 +95,7 @@
   .rev .stars { display: block; margin: 4px 0 8px; }
   .rev p { margin: 0; color: var(--text-2); white-space: pre-line; max-width: 70ch; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
   .rev p.open { -webkit-line-clamp: unset; display: block; }
-  .rev .read { margin-top: 6px; background: none; border: 0; padding: 0; color: var(--text); font: 600 13.5px Inter, system-ui, sans-serif; cursor: pointer; }
+  .rev .read { display: block; margin-top: 6px; background: none; border: 0; padding: 0; color: var(--text); font: 600 13.5px Inter, system-ui, sans-serif; cursor: pointer; }
 
   .foot { margin-top: clamp(64px, 10vw, 120px); padding-top: 26px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 16px 28px; align-items: center; justify-content: space-between; color: var(--text-2); }
   .foot b { color: var(--text); }
@@ -107,9 +108,29 @@
   .missing p { color: var(--text-2); margin: 12px 0 26px; }
 
   @media (max-width: 600px) {
-    .favs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .who { grid-template-columns: 1fr; }
+    main { padding-top: 14px; }
+    .top { margin-bottom: 22px; }
+    .brand img { width: 28px; height: 28px; }
+    .get { height: 36px; padding: 0 16px; }
+    .who { gap: 16px; }
+    .avatar { width: 72px; }
+    h1 { font-size: 30px; }
+    .handle { font-size: 14px; margin-top: 4px; }
+    .bio { margin-top: 10px; font-size: 14.5px; }
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .stats b { font-size: 22px; }
+    .stats span { font-size: 12px; line-height: 1.3; }
+    section { margin-top: 34px; }
+    h2 { font-size: 20px; margin-bottom: 14px; }
+    .favs { gap: 8px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .favs .poster { border-radius: 8px; }
+    .favs .cap { font-size: 12px; margin-top: 6px; }
+    .favs .sub { font-size: 12px; }
+    .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 10px; }
+    .cap { font-size: 13px; }
+    .rev { grid-template-columns: 52px minmax(0, 1fr); gap: 14px; padding: 18px 0; }
+    .rev h3 { font-size: 16px; }
+    .foot { flex-direction: column; align-items: flex-start; }
   }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
   :focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
@@ -154,7 +175,7 @@
   fetch(`${SB}/rest/v1/rpc/public_profile`, { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_username: name }) })
     .then((r) => r.json().then((j) => ({ ok: r.ok, j })))
     .then(({ ok, j }) => {
-      if (!ok || !j || !j.username) return missing('This profile isn’t shared', `@${esc(name)} hasn’t made their profile public, or the name is spelled differently. In Reel they can turn it on from their profile with Share profile.`);
+      if (!ok || !j || !j.username) return missing('No profile here', `There’s no Reel profile called @${esc(name)}. Check the spelling, or ask for their link again.`);
       render(j);
     })
     .catch(() => missing('Couldn’t load this profile', 'Check your connection and try again in a moment.'));
@@ -179,9 +200,9 @@
     let html = `<div class="who">${avatar}<div><h1>${esc(display)}</h1><div class="handle">@${esc(p.username)}${since ? `, on Reel since ${esc(since)}` : ''}</div>${p.bio ? `<p class="bio">${esc(p.bio)}</p>` : ''}</div></div>`;
     if (p.library) {
       html += `<div class="stats">
-        <div><b>${films.length.toLocaleString()}</b><span>Films watched</span></div>
-        <div><b>${shows.length.toLocaleString()}</b><span>Shows watched</span></div>
-        <div><b>${avg ? avg.toFixed(1) : '–'}</b><span>Average rating</span></div>
+        <div><b>${films.length.toLocaleString()}</b><span>Films</span></div>
+        <div><b>${shows.length.toLocaleString()}</b><span>Shows</span></div>
+        <div><b>${avg ? avg.toFixed(1) : '–'}</b><span>Avg rating</span></div>
         <div><b>${reviews.length.toLocaleString()}</b><span>Reviews</span></div></div>`;
     }
 
@@ -195,12 +216,12 @@
         <div class="grid" id="ratedGrid"></div><button class="more" id="ratedMore" hidden>Show more</button></section>`;
     }
     if (p.library && reviews.length) {
-      html += `<section><h2>Reviews <small>${reviews.length.toLocaleString()}</small></h2><div class="reviews">${reviews.slice(0, 12).map((x) => `
-        <article class="rev">${poster(x, 'w185')}<div><h3>${esc(x.title)} <span>${esc(x.year || '')}</span></h3>${x.rating ? `<span class="stars">${stars(x.rating)}</span>` : ''}<p>${esc(x.review)}</p></div></article>`).join('')}</div></section>`;
+      html += `<section><h2>Reviews <small>${reviews.length.toLocaleString()}</small></h2><div class="reviews">${reviews.map((x, i) => `
+        <article class="rev"${i >= 4 ? ' hidden' : ''}>${poster(x, 'w185')}<div><h3>${esc(x.title)} <span>${esc(x.year || '')}</span></h3>${x.rating ? `<span class="stars">${stars(x.rating)}</span>` : ''}<p>${esc(x.review)}</p></div></article>`).join('')}</div>${reviews.length > 4 ? '<button class="more" id="revMore">Show more</button>' : ''}</section>`;
     }
     const want = items.filter((x) => x.watchlist && !x.watched && x.poster);
     if (p.library && want.length) {
-      html += `<section><h2>Wants to watch <small>${want.length.toLocaleString()}</small></h2><div class="grid">${want.slice(0, 18).map((x) => `<div>${poster(x, 'w342')}<div class="cap">${esc(x.title)}</div></div>`).join('')}</div></section>`;
+      html += `<section><h2>Wants to watch <small>${want.length.toLocaleString()}</small></h2><div class="grid" id="wantGrid">${want.map((x, i) => `<div${i >= 12 ? ' hidden' : ''}>${poster(x, 'w342')}<div class="cap">${esc(x.title)}</div></div>`).join('')}</div>${want.length > 12 ? '<button class="more" id="wantMore">Show more</button>' : ''}</section>`;
     }
     if (!fav.length && !(p.library && items.length)) html += `<section><p style="color:var(--text-2)">Nothing here yet. ${esc(display)} hasn’t rated anything on Reel so far.</p></section>`;
     html += `<footer class="foot"><span><b>Reel</b> keeps track of what you watch and what you thought of it, and lets you watch together with friends.</span><a class="get" href="../">Make your own</a></footer>`;
@@ -209,25 +230,39 @@
     // Ratings: recent or highest first, 24 at a time
     const grid = document.getElementById('ratedGrid');
     if (grid) {
-      let sort = 'recent', shown = 24;
+      let sort = 'recent', shown = 18;
       const more = document.getElementById('ratedMore');
       const paint = () => {
         const list = rated.slice().sort(sort === 'top' ? (a, b) => b.rating - a.rating : () => 0);
         grid.innerHTML = list.slice(0, shown).map((x) => `<div>${poster(x, 'w342')}<div class="cap">${esc(x.title)}</div><div class="sub"><span class="stars">${stars(x.rating)}</span>${x.liked ? '<svg class="heart" viewBox="0 0 24 24" aria-label="Liked" role="img"><path fill="currentColor" d="M12 20.3 10.6 19C5.4 14.4 2 11.3 2 7.5 2 4.4 4.4 2 7.5 2c1.7 0 3.4.8 4.5 2.1A6 6 0 0 1 16.5 2C19.6 2 22 4.4 22 7.5c0 3.8-3.4 6.9-8.6 11.5L12 20.3z"/></svg>' : ''}</div></div>`).join('');
         more.hidden = shown >= list.length;
       };
-      document.querySelectorAll('#rated .seg button').forEach((b) => b.onclick = () => { sort = b.dataset.s; shown = 24; document.querySelectorAll('#rated .seg button').forEach((x) => x.classList.toggle('on', x === b)); paint(); });
+      document.querySelectorAll('#rated .seg button').forEach((b) => b.onclick = () => { sort = b.dataset.s; shown = 18; document.querySelectorAll('#rated .seg button').forEach((x) => x.classList.toggle('on', x === b)); paint(); });
       more.onclick = () => { shown += 24; paint(); };
       paint();
     }
+    const reveal = (btnId, sel, step) => {
+      const b = document.getElementById(btnId); if (!b) return;
+      b.onclick = () => {
+        const hiddenOnes = [...document.querySelectorAll(sel)].filter((el) => el.hidden);
+        hiddenOnes.slice(0, step).forEach((el) => { el.hidden = false; clampCheck(el); });
+        if (hiddenOnes.length <= step) b.remove();
+      };
+    };
+    reveal('revMore', '.rev', 6);
+    reveal('wantMore', '#wantGrid > div', 12);
     // Long reviews: Read more
-    document.querySelectorAll('.rev p').forEach((pEl) => {
+    function clampCheck(root) {
+      root.querySelectorAll('p').forEach((pEl) => {
+      if (pEl.nextElementSibling && pEl.nextElementSibling.classList.contains('read')) return;
       if (pEl.scrollHeight > pEl.clientHeight + 4) {
         const b = document.createElement('button'); b.className = 'read'; b.textContent = 'Read more';
         b.onclick = () => { pEl.classList.toggle('open'); b.textContent = pEl.classList.contains('open') ? 'Show less' : 'Read more'; };
         pEl.after(b);
       }
-    });
+      });
+    }
+    document.querySelectorAll('.rev:not([hidden])').forEach(clampCheck);
   }
 })();
 </script>
