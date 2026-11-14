@@ -33,11 +33,27 @@ const Cloud = {
     this.sb.auth.onAuthStateChange((_ev, session) => { setTimeout(() => this.onSession(session), 0); });
     try { const { data } = await this.sb.auth.getSession(); await this.onSession(data.session); } catch (e) { console.error('[cloud]', e); }
   },
+  // Whose library is on this device? It belongs to whoever last synced it here (or was marked as its owner). If a
+  // different account signs in, the device is cleared first, debrid key included: nothing of the previous account
+  // may show, or be uploaded into this one. (The very first sign-in on a device still brings its library along.)
+  async claimDevice(uid) {
+    let st = null;
+    try { st = await window.reel.cloud.syncLoad(); } catch {}
+    const owner = Store.data.owner || (st && st.uid) || null;
+    if (owner && owner !== uid) {
+      Store.clearForAccount(uid);
+      try { await window.reel.setSecrets({ rdKey: null, debrid: null }); } catch {}
+      if (typeof Setup !== 'undefined') Setup.streaming = false;
+      if (typeof Playback !== 'undefined' && Playback.cache) Playback.cache.clear();
+      if (typeof go === 'function') go(typeof Setup !== 'undefined' && Setup.done ? 'home' : 'setup', {}, true);
+    } else if (Store.data.owner !== uid) { Store.data.owner = uid; Store.save(); }
+  },
   async onSession(session) {
     const u = session ? session.user : null;
     if ((u && u.id) === (this.user && this.user.id)) { this.user = u; return; }
     this.user = u;
     if (u) {
+      await this.claimDevice(u.id);   // first: another account's library and key leave this device
       await this.loadProfile();
       Sync.start(u.id);
       Social.start();
@@ -218,6 +234,8 @@ const Sync = {
     this.stopped = false;
     this.uid = uid;
     let st = await window.reel.cloud.syncLoad();
+    if (this.stopped || this.uid !== uid) return;
+    // A different account's sync state never applies here (claimDevice already cleared that account's library).
     if (!st || st.uid !== uid) st = { uid, cursor: 0, base: {} };
     this.st = st;
     this.setStatus('syncing');

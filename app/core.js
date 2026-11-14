@@ -89,7 +89,17 @@ const Store = {
   data: null,
   _t: null,
   async init() {
-    const d = (await window.reel.loadData()) || {};
+    this.setup((await window.reel.loadData()) || {});
+  },
+  // Another account signed in on this device: start from an empty library (nothing of the previous account's may
+  // show, or be uploaded into the new one). Only this device's display preferences stay until the account's arrive.
+  clearForAccount(uid) {
+    this.setup({ settings: { ...((this.data && this.data.settings) || {}) }, owner: uid });
+    try { ['reel:recs', 'reel:lastTab'].forEach((k) => localStorage.removeItem(k)); } catch {}
+    if (typeof Recs !== 'undefined') Recs.cache = null;
+    this.save();
+  },
+  setup(d) {
     this.data = Object.assign({
       settings: { maxQuality: 1080, avoidDV: true, autoPlay: true, subLang: 'eng', subsOn: false },
       items: {},       // "movie:603" -> { type, id, title, year, poster, backdrop, genres, runtime, rating, liked, watched, watchedAt, watchlist, watchlistAt, notSeen, review }
