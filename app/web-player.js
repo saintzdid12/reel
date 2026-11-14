@@ -117,3 +117,33 @@
   // Stop the computer's click-to-seek from firing again after a drag.
   document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('.player .scrub') && isPhone()) { e.stopPropagation(); } }, true);
 })();
+
+// ---- phones: turning sideways during a video goes full screen ----
+// Android allows it as the phone turns; iPhone only on a tap, so there a "Tap for full screen" button appears
+// (it opens the iPhone's own video player, which also turns with the phone).
+(() => {
+  if (typeof Player === 'undefined') return;
+  const land = window.matchMedia('(orientation: landscape)');
+  const isPhone = () => document.body.classList.contains('phone') || window.matchMedia('(pointer: coarse)').matches;
+  const isFs = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+  const hint = () => {
+    const s = Player.cur; if (!s) return null;
+    let el = s.root.querySelector('.web-fs-hint');
+    if (!el) {
+      el = h(`<button class="web-fs-hint">${ICON.full.replace('<svg', '<svg class="ic"')}<span>Tap for full screen</span></button>`);
+      el.onclick = (e) => { e.stopPropagation(); el.classList.remove('show'); window.reel.fullscreen(); };
+      s.root.appendChild(el);
+    }
+    return el;
+  };
+  const onTurn = async () => {
+    if (!Player.cur || !isPhone()) return;
+    const el = Player.cur.root.querySelector('.web-fs-hint');
+    if (!land.matches) { if (el) el.classList.remove('show'); return; }
+    if (isFs()) return;
+    let ok = false;
+    if (document.documentElement.requestFullscreen) { try { await document.documentElement.requestFullscreen({ navigationUI: 'hide' }); ok = true; } catch {} }
+    if (!ok) { const b = hint(); if (b) { b.classList.add('show'); clearTimeout(b._t); b._t = setTimeout(() => b.classList.remove('show'), 7000); } }
+  };
+  if (land.addEventListener) land.addEventListener('change', onTurn); else land.addListener(onTurn);
+})();

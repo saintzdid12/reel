@@ -133,7 +133,7 @@ body.web.phone .grid { grid-template-columns: repeat(3, 1fr) !important; gap: 10
 body.web.phone .grid .card.poster .art, body.web.phone .grid .card.poster .cap, body.web.phone .grid .card.poster .sub { width: 100%; }
 body.web.phone .page { padding-left: var(--gutter); padding-right: var(--gutter); }
 body.web.phone .page.flush { padding-left: 0; padding-right: 0; }
-body.web.phone .page-title { font-size: 30px; margin-top: calc(56px + var(--safe-t)); }
+body.web.phone .page-title { font-size: 30px; margin-top: 4px; }
 body.web.phone .hero-dots { display: none !important; }
 body.web.phone #tabs { width: 100% !important; max-width: none !important; justify-self: stretch !important; box-sizing: border-box; }
 
@@ -269,3 +269,33 @@ body.web.phone[data-route="search"] #nav::before { opacity: 0 !important; }
 body.web.phone .ph-filters-btn:not(.on) { width: 38px; padding: 0; justify-content: center; }
 body.web.phone .ph-filters-btn:not(.on) span { display: none; }
 body.web.phone .search-filters .seg button { padding: 7px 10px !important; }
+
+/* ===================== Phone: tidier screens ===================== */
+/* Hover labels ("Fullscreen (F)") are for a mouse: a tap would leave them stuck on screen */
+@media (hover: none) { #tip { display: none !important; } }
+body.web.phone #tip { display: none !important; }
+/* Pages start just under the round buttons, not halfway down the screen */
+body.web.phone .page:not(.flush) { padding-top: calc(64px + var(--safe-t)) !important; }
+body.web.phone .page-head { margin-bottom: 14px; }
+/* "Complete your profile" belongs to the computer app */
+body.web .profile-nudge, body.web .nudge-slot { display: none !important; }
+/* Library tabs: every tab visible at once (two rows of chips), no sideways scrolling */
+body.web.phone .lib-tabs { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; background: none; border: 0; box-shadow: none; width: auto; overflow: visible; }
+body.web.phone .lib-tabs .indicator { display: none !important; }
+body.web.phone .lib-tabs button { flex: none; padding: 8px 15px; border-radius: 999px; font-size: 14px; background: var(--glass); border: 1px solid var(--glass-border); }
+body.web.phone .lib-tabs button.on { background: rgba(255,255,255,.94); color: #000; border-color: transparent; }
+/* For You: the six modes as a 3 × 2 grid of small tiles */
+body.web.phone .disc { display: block; height: auto; padding: calc(64px + var(--safe-t)) var(--gutter) calc(90px + var(--safe-b)); }
+body.web.phone .disc-side { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 0; margin: 0 0 18px; background: none !important; border: 0 !important; box-shadow: none !important; overflow: visible !important; width: auto !important; }
+body.web.phone .disc-side .side-item { flex-direction: column; justify-content: center; gap: 6px; padding: 12px 6px; min-height: 66px; text-align: center; font-size: 12.5px; font-weight: 600; border-radius: 16px;
+  background: var(--glass); border: 1px solid var(--glass-border); white-space: normal; line-height: 1.2; }
+body.web.phone .disc-side .side-item .ic { width: 20px; height: 20px; opacity: 1; }
+body.web.phone .disc-side .side-item.on { background: rgba(255,255,255,.94); color: #000; box-shadow: none; }
+body.web.phone .disc-side > :not(.side-item) { display: none !important; }
+/* Turned sideways during a video: a one-tap way into full screen */
+.web-fs-hint { position: absolute; left: 50%; top: 18px; transform: translate(-50%, -10px); z-index: 9; opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
+  display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 999px; font-size: 14px; font-weight: 600; color: #fff;
+  background: rgba(28,28,32,.82); border: 1px solid rgba(255,255,255,.14); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+.web-fs-hint.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.web-fs-hint .ic { width: 16px; height: 16px; }
+body.web.phone .lib-tabs::before, body.web.phone .lib-tabs::after, body.web.phone .lib-tabs > :not(button) { display: none !important; }
