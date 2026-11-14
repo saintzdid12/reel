@@ -87,7 +87,7 @@ async function shareYearCard(d, btn) {
   try {
     const W = 1080, H = 1920, c = document.createElement('canvas'); c.width = W; c.height = H;
     const x = c.getContext('2d');
-    const load = (src) => new Promise((res) => { if (!src) return res(null); const im = new Image(); im.crossOrigin = 'anonymous'; im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
+    const load = (src) => new Promise((res) => { if (!src) return res(null); const im = new Image(); im.crossOrigin = 'anonymous'; im.onload = () => res(im); im.onerror = () => res(null); im.src = src + (src.includes('?') ? '&' : '?') + 'card=1'; }); // its own address, so a cached copy that can't go in an image isn't reused
     const top = (d.top || []).slice(0, 5);
     const [bg, ...posters] = await Promise.all([load(top[0] && top[0].backdrop ? TMDB.img(top[0].backdrop, 'w1280') : null), ...top.map((i) => load(TMDB.img(i.poster, 'w342')))]);
     try { await document.fonts.ready; } catch {}

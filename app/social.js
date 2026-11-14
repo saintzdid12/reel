@@ -352,8 +352,10 @@ function shareProfile() {
   const sheet = h(`<div class="share-prof">
     <h3>Your profile link</h3>
     <div class="sp-link"><input class="input" readonly value="${esc(link)}"><button class="btn small primary sp-copy">Copy link</button></div>
+    <button class="btn sp-image">${ICON.image || ''}Share as image</button>
   </div>`);
-  openModal(sheet);
+  const shareModal = openModal(sheet);
+  $('.sp-image', sheet).onclick = (ev) => { shareModal.close(); shareProfileImage(ev.currentTarget); };
   // Sharing once also gets your link a proper preview card (name, picture, favorites) within about half an hour.
   if (!p.public_profile) Cloud.updateProfile({ public_profile: true }).catch(() => {});
   const input = $('input', sheet), btn = $('.sp-copy', sheet);
@@ -363,6 +365,103 @@ function shareProfile() {
     btn.textContent = 'Copied';
     setTimeout(() => { if (btn.isConnected) btn.textContent = 'Copy link'; }, 1800);
   };
+}
+
+// "Share as image": a 1080×1350 picture of your profile (the shape that fits chats and Instagram posts) with your
+// picture, name, numbers and favorites, to send instead of the link. Pictures that can't be loaded are left out.
+async function shareProfileImage(btn) {
+  const p = Cloud.profile; if (!p) return;
+  if (btn) btn.disabled = true;
+  try {
+    const items = Store.values();
+    const films = items.filter((i) => i.type === 'movie' && i.watched).length;
+    const shows = items.filter((i) => i.type === 'tv' && i.watched).length;
+    const rated = items.filter((i) => i.rating > 0);
+    const avg = rated.length ? rated.reduce((a, i) => a + i.rating, 0) / rated.length : 0;
+    const reviews = items.filter((i) => i.review && String(i.review).trim()).length;
+    const favAll = (p.fav4 || []).filter((f) => f && f.poster);
+    const favFilms = favAll.filter((f) => !String(f.key || '').startsWith('tv:'));
+    const favs = (favFilms.length >= 4 ? favFilms : favFilms.concat(favAll.filter((f) => String(f.key || '').startsWith('tv:')))).slice(0, 4);
+    const top = favs.length ? favs : rated.filter((i) => i.poster).sort((a, b) => b.rating - a.rating).slice(0, 4);
+    const name = p.display_name || p.username;
+
+    const load = (src) => new Promise((res) => { if (!src) return res(null); const im = new Image(); im.crossOrigin = 'anonymous'; im.onload = () => res(im); im.onerror = () => res(null); im.src = src + (src.includes('?') ? '&' : '?') + 'card=1'; }); // its own address, so a cached copy that can't go in an image isn't reused
+    const posters = await Promise.all(top.map((f) => load(TMDB.img(f.poster, 'w342'))));
+    const avatar = await load(p.avatar_url);
+    try { await document.fonts.ready; } catch {}
+
+    const draw = (withAvatar, withPosters) => {
+      const W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H;
+      const x = c.getContext('2d');
+      const F = (w, s) => `${w} ${s}px Inter, "SF Pro Display", -apple-system, "Segoe UI", sans-serif`;
+      const fit = (t, max) => { t = String(t || ''); if (x.measureText(t).width <= max) return t; while (t.length > 1 && x.measureText(t + '…').width > max) t = t.slice(0, -1); return t.trim() + '…'; };
+      x.fillStyle = '#000'; x.fillRect(0, 0, W, H);
+      // Their first favorite, blurred, is the only color
+      const lead = withPosters && posters.find(Boolean);
+      if (lead) {
+        x.save(); x.filter = 'blur(60px) saturate(1.4) brightness(.5)'; x.globalAlpha = .9;
+        const s = Math.max(W / lead.width, 900 / lead.height); x.drawImage(lead, (W - lead.width * s) / 2, -160, lead.width * s, lead.height * s); x.restore();
+        const fade = x.createLinearGradient(0, 200, 0, 760); fade.addColorStop(0, 'rgba(0,0,0,0)'); fade.addColorStop(1, '#000');
+        x.fillStyle = fade; x.fillRect(0, 0, W, 760);
+        x.fillStyle = '#000'; x.fillRect(0, 758, W, H);
+      }
+      // Picture, name, handle
+      const ax = 80, ay = 96, ar = 92;
+      x.save(); x.beginPath(); x.arc(ax + ar, ay + ar, ar, 0, Math.PI * 2); x.closePath(); x.clip();
+      if (withAvatar && avatar) x.drawImage(avatar, ax, ay, ar * 2, ar * 2);
+      else { x.fillStyle = '#2c2c30'; x.fillRect(ax, ay, ar * 2, ar * 2); x.fillStyle = 'rgba(235,235,245,.8)'; x.font = F(700, 84); x.textAlign = 'center'; x.fillText(name.slice(0, 1).toUpperCase(), ax + ar, ay + ar + 30); x.textAlign = 'left'; }
+      x.restore();
+      x.strokeStyle = 'rgba(255,255,255,.14)'; x.lineWidth = 3; x.beginPath(); x.arc(ax + ar, ay + ar, ar, 0, Math.PI * 2); x.stroke();
+      x.fillStyle = '#fff'; x.font = F(800, 76); x.fillText(fit(name, W - 330 - 80), 310, 190);
+      x.fillStyle = 'rgba(235,235,245,.68)'; x.font = F(500, 38); x.fillText(fit('@' + p.username, W - 390), 312, 248);
+      // Numbers
+      const stats = [[films.toLocaleString(), 'films'], [shows.toLocaleString(), 'shows'], [avg ? avg.toFixed(1) : '–', 'avg rating'], [reviews.toLocaleString(), 'reviews']];
+      x.fillStyle = 'rgba(255,255,255,.12)'; x.fillRect(80, 360, W - 160, 2);
+      stats.forEach(([v, l], i) => {
+        const sx = 80 + i * 232;
+        x.fillStyle = '#fff'; x.font = F(800, 72); x.fillText(v, sx, 470);
+        x.fillStyle = 'rgba(235,235,245,.6)'; x.font = F(500, 32); x.fillText(l, sx, 515);
+      });
+      // Favorites
+      if (top.length) {
+        x.fillStyle = '#fff'; x.font = F(700, 46); x.fillText(favs.length ? 'Favorites' : 'Top rated', 80, 640);
+        const gap = 24, pw = (W - 160 - gap * 3) / 4, ph = pw * 1.5;
+        top.forEach((f, i) => {
+          const px = 80 + i * (pw + gap), py = 676, im = withPosters && posters[i];
+          x.save(); x.beginPath(); x.roundRect ? x.roundRect(px, py, pw, ph, 18) : x.rect(px, py, pw, ph); x.clip();
+          x.fillStyle = '#1c1c1e'; x.fillRect(px, py, pw, ph);
+          if (im) x.drawImage(im, px, py, pw, ph);
+          else { x.fillStyle = 'rgba(235,235,245,.6)'; x.font = F(600, 26); x.fillText(fit(f.title, pw - 28), px + 14, py + ph / 2); }
+          x.restore();
+          x.fillStyle = 'rgba(235,235,245,.85)'; x.font = F(600, 28); x.fillText(fit(f.title, pw), px, py + ph + 44);
+        });
+      }
+      // Footer
+      x.fillStyle = 'rgba(255,255,255,.12)'; x.fillRect(80, H - 140, W - 160, 2);
+      x.fillStyle = '#fff'; x.font = F(800, 44); x.fillText('Reel', 80, H - 64);
+      x.fillStyle = 'rgba(235,235,245,.7)'; x.font = F(500, 34); x.textAlign = 'right'; x.fillText(`reelwatch.stream/@${p.username}`, W - 80, H - 66); x.textAlign = 'left';
+      return new Promise((res) => { try { c.toBlob((b) => res(b), 'image/png'); } catch { res(null); } });
+    };
+    // If a picture refuses to be copied into the image, try again without it.
+    const blob = (await draw(true, true)) || (await draw(false, true)) || (await draw(false, false));
+    if (!blob) throw new Error('no image');
+
+    const url = URL.createObjectURL(blob);
+    const file = typeof File !== 'undefined' ? new File([blob], `reel-${p.username}.png`, { type: 'image/png' }) : null;
+    const canShare = file && navigator.canShare && navigator.canShare({ files: [file] });
+    const sheet = h(`<div class="yc-sheet pc-sheet"><h3>Your profile</h3><img class="yc-img pc-img" src="${url}" alt="Your Reel profile">
+      <div class="btns end"><button class="btn ghost yc-close">Close</button>${typeof ClipboardItem !== 'undefined' ? '<button class="btn pc-copy">Copy image</button>' : ''}${canShare ? '<button class="btn pc-share">Share</button>' : ''}<a class="btn primary" href="${url}" download="reel-${esc(p.username)}.png">Save image</a></div></div>`);
+    const m = openModal(sheet, { onClose: () => setTimeout(() => URL.revokeObjectURL(url), 60000) });
+    $('.yc-close', sheet).onclick = m.close;
+    const cp = $('.pc-copy', sheet);
+    if (cp) cp.onclick = async () => {
+      try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); cp.textContent = 'Copied'; setTimeout(() => { if (cp.isConnected) cp.textContent = 'Copy image'; }, 1800); }
+      catch { toast('Couldn’t copy the image. Save it instead.', true); }
+    };
+    const sh = $('.pc-share', sheet); if (sh) sh.onclick = () => navigator.share({ files: [file], title: `${name} on Reel` }).catch(() => {});
+  } catch {
+    toast('Couldn’t make your profile image right now', true);
+  } finally { if (btn) btn.disabled = false; }
 }
 
 Views.friend = async (root, { id }) => {

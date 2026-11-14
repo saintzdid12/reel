@@ -3950,3 +3950,7 @@ body.mac .tw .show-side { left: 96px; }
 /* TorBox suggestion under the debrid key */
 .stream-form .sf-get { margin-top: 14px; font-size: 13px; line-height: 1.5; color: var(--text-2); font-weight: 500; }
 .stream-form .sf-get a { color: var(--text); font-weight: 600; }
+
+/* Share your profile as an image */
+.share-prof .sp-image { margin-top: 12px; width: 100%; }
+.pc-img { height: min(60vh, 560px); }
