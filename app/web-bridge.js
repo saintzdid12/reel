@@ -61,7 +61,7 @@
     const sizeM = title.match(/💾\s*([\d.]+)\s*(TB|GB|MB)/i);
     const sizeGB = sizeM ? parseFloat(sizeM[1]) * ({ TB: 1024, GB: 1, MB: 1 / 1024 }[sizeM[2].toUpperCase()]) : 0;
     const flags = [];
-    if (/\bDV\b|dolby.?vision/i.test(all)) flags.push('DV');
+    if (/\bDV\b|\bDoVi\b|dolby.?vision/i.test(all)) flags.push('DV');
     if (/HDR10\+/i.test(all)) flags.push('HDR10+'); else if (/HDR/i.test(all)) flags.push('HDR');
     if (/remux/i.test(all)) flags.push('REMUX');
     if (/atmos/i.test(all)) flags.push('Atmos');

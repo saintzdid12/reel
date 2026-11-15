@@ -198,6 +198,7 @@ const Party = {
           await ch.track({ uid: me.uid, name: me.name, avatar: me.avatar, joinedAt: me.joinedAt });
           this.updateStatus(true);
           ch.send({ type: 'broadcast', event: 'hello', payload: { name: me.name, again: !first } });
+          if (!first) this.catchUpAfterLag();
           first = false;
         } else if (status === 'CLOSED') {
           // Errors and timeouts rejoin on their own; only a closed channel needs a fresh one.
@@ -205,6 +206,14 @@ const Party = {
           cur.reT = setTimeout(() => { if (this.cur === cur && cur.ch === ch) this.connect(cur, false); }, 2500);
         }
       });
+  },
+  // After a lag-out (connection back, or back to the window after a while): get the party's spot right away and jump
+  // to it, instead of drifting along out of sync.
+  catchUpAfterLag() {
+    const c = this.cur; if (!c || !c.ch || c.lobby) return;
+    c.forceJump = Date.now();
+    if (this.leader()) return;   // the leader is the reference
+    try { c.ch.send({ type: 'broadcast', event: 'resync', payload: { from: c.me.uid } }); } catch {}
   },
   leave(silent) {
     const c = this.cur; if (!c) return;
@@ -780,3 +789,14 @@ document.addEventListener('reel:stop', (e) => {
   Party.onStop(e.detail);
   setTimeout(() => { if (!Player.cur) { window.reel.discord(null); if (Cloud.on) Social.setPlaying(null).catch(() => {}); } }, 300);
 });
+
+// Lag-outs: the network coming back, or coming back to Reel after it was in the background for a while.
+window.addEventListener('online', () => setTimeout(() => Party.catchUpAfterLag(), 1500));
+(() => {
+  let hiddenAt = 0;
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { hiddenAt = Date.now(); return; }
+    if (hiddenAt && Date.now() - hiddenAt > 8000) Party.catchUpAfterLag();
+    hiddenAt = 0;
+  });
+})();

@@ -35,7 +35,7 @@ function landCard(m, opts = {}) {
       <div class="title-on">${esc(opts.overlay || m.title)}</div>
     </div>
     <div class="sub">${esc(opts.sub || [m.year, m.type === 'tv' ? 'TV' : '', Store.settings.showRatings && starsText(it.rating)].filter(Boolean).join(' · '))}</div>
-    ${m.why ? `<div class="why">${esc(m.why)}</div>` : ''}
+    ${m.why && m.why !== opts.sub ? `<div class="why">${esc(m.why)}</div>` : ''}
   </div>`);
   el.onclick = opts.onClick || (() => go('detail', { type: m.type, id: m.id }));
   el._meta = m;

@@ -125,7 +125,9 @@ function rankStreams(list, runtimeMin, memKey) {
     if (x.seeders < 3) v -= 10;
     return v;
   };
-  return list.map(x => ({ ...x, score: score(x) })).sort((a, b) => b.score - a.score);
+  // Dolby Vision files freeze or fail on most PCs and phones: they're left out of the list entirely, unless they're all there is.
+  const playable = list.filter(x => !(x.flags || []).includes('DV'));
+  return (playable.length ? playable : list).map(x => ({ ...x, score: score(x) })).sort((a, b) => b.score - a.score);
 }
 
 // Pick the audio track in your language (or the one you chose for this show before); otherwise the file's default.
@@ -225,6 +227,22 @@ const Playback = {
     }
   },
 };
+
+// What a converted ("remux") stream contains, in the form the video engine asks for. Mirrors main.js: picture copied
+// when it's H.264/HEVC/VP9/AV1 (10-bit H.264 and anything else is converted to H.264), sound copied when it's
+// AAC/MP3/Opus/FLAC, otherwise converted to AAC.
+function mseMime(info, tx, audioIdx) {
+  const ten = /10|12/.test(info.pixFmt || ''), vc = info.videoCodec;
+  const v = tx || vc === 'h264' || !['hevc', 'vp9', 'av1'].includes(vc) ? 'avc1.640033'
+    : vc === 'hevc' ? (ten ? 'hvc1.2.4.L153.B0' : 'hvc1.1.6.L153.B0')
+    : vc === 'vp9' ? (ten ? 'vp09.02.51.10' : 'vp09.00.51.08')
+    : (ten ? 'av01.0.13M.10' : 'av01.0.13M.08');
+  const tracks = info.audioTracks || [];
+  const a = tracks.find(t => t.index === audioIdx) || tracks.find(t => t.default) || tracks[0];
+  const ac = !a ? null : { aac: 'mp4a.40.2', mp3: 'mp4a.6B', opus: 'opus', flac: 'flac' }[a.codec] || 'mp4a.40.2';
+  return `video/mp4; codecs="${[v, ac].filter(Boolean).join(',')}"`;
+}
+const sbIdle = (sb) => new Promise(r => (sb.updating ? sb.addEventListener('updateend', r, { once: true }) : r()));
 
 function cleanErr(e) { return String((e && e.message) || e).replace(/^Error invoking remote method '[^']+': (Error: )?/, ''); }
 
@@ -398,6 +416,7 @@ const Player = {
     s.root.classList.add('buffering');
     // HEVC on a PC without HEVC decoding (common on laptops) would play as sound over a black screen: convert it.
     if (s.needTx == null) s.needTx = s.info.videoCodec === 'hevc' && !CAN_HEVC;
+    if ((s.info.mode === 'remux' || s.needTx) && this.mseUsable()) { this.mseLoad(t, play); return; }
     if (s.info.mode === 'direct' && !s.needTx) {
       v.removeAttribute('crossorigin');
       v.src = s.info.directUrl;
@@ -424,16 +443,166 @@ const Player = {
     v.playbackRate = rate;
     this.subsFollow(t);
   },
+  // ---------- Converted streams, the seekable way ----------
+  // The converted stream keeps the file's real timestamps and is fed into the video engine piece by piece. Everything
+  // received stays playable: rewinding or skipping within it is instant (no reload), a jump elsewhere starts a new
+  // piece that slots in next to the others, and picture, sound and captions all line up by those timestamps.
+  mseUsable() {
+    const s = this.cur;
+    if (s.mseOff || typeof MediaSource === 'undefined') return false;
+    try { return MediaSource.isTypeSupported(mseMime(s.info, s.needTx, s.audio)); } catch { return false; }
+  },
+  mseHas(t) {
+    const s = this.cur, m = s && s.mse; if (!m || !m.sb) return false;
+    try { const b = m.sb.buffered; for (let i = 0; i < b.length; i++) if (b.start(i) <= t + 0.05 && b.end(i) >= t + 0.5) return true; } catch {}
+    return false;
+  },
+  mseAhead(t) {
+    const m = this.cur && this.cur.mse; if (!m || !m.sb) return 0;
+    try { const b = m.sb.buffered; for (let i = 0; i < b.length; i++) if (b.start(i) <= t + 0.05 && b.end(i) > t) return b.end(i) - t; } catch {}
+    return 0;
+  },
+  mseClose(s) {
+    const m = s && s.mse; if (!m) return;
+    m.gen++; if (m.ctl) m.ctl.abort();
+    try { URL.revokeObjectURL(m.url); } catch {}
+    s.mse = null;
+  },
+  async mseOpen(mime) {
+    const s = this.cur, v = s.video;
+    this.mseClose(s);
+    const ms = new MediaSource(), url = URL.createObjectURL(ms);
+    const m = s.mse = { ms, url, sb: null, infoId: s.info.id, mime, key: '', gen: 0, ctl: null };
+    v.removeAttribute('crossorigin');
+    v.src = url;
+    await new Promise(r => ms.addEventListener('sourceopen', r, { once: true }));
+    if (s.mse !== m) return null;
+    try { if (s.info.duration) ms.duration = s.info.duration; } catch {}
+    m.sb = ms.addSourceBuffer(mime);
+    m.sb.mode = 'segments';
+    return m;
+  },
+  async mseLoad(t, play) {
+    const s = this.cur, v = s.video;
+    const mime = mseMime(s.info, s.needTx, s.audio), key = `${s.audio}|${s.needTx ? 1 : 0}`;
+    let m = s.mse;
+    try {
+      if (!m || m.infoId !== s.info.id) m = await this.mseOpen(mime);
+      else if (m.key && m.key !== key) {
+        // Different sound track or a converted picture: what's buffered is the old one, so start over.
+        m.gen++; if (m.ctl) m.ctl.abort();
+        await sbIdle(m.sb);
+        if (mime !== m.mime) { if (m.sb.changeType) { m.sb.changeType(mime); m.mime = mime; } else m = await this.mseOpen(mime); }
+        if (m && m.sb.buffered.length) { m.sb.remove(0, Infinity); await sbIdle(m.sb); }
+      }
+    } catch (err) {
+      console.error('[mse]', err);
+      s.mseOff = true; this.mseClose(s); return this.load(t, play);   // fall back to the old way for this title
+    }
+    if (!m || this.cur !== s) return;
+    m.key = key;
+    s.offset = 0;
+    this.subsFollow(t);
+    if (this.mseHas(t)) {                       // already here: just go there
+      v.currentTime = t;
+      if (play) v.play().catch(() => {});
+      s.root.classList.remove('buffering');
+      return;
+    }
+    this.mseFeed(t, play);
+  },
+  mseFeed(t, play) {
+    const s = this.cur, v = s.video, m = s.mse;
+    const gen = ++m.gen;
+    if (m.ctl) m.ctl.abort();
+    const ctl = m.ctl = new AbortController();
+    s.root.classList.add('buffering');
+    // Captions inside the file come out of the same stream (your language first).
+    const lang = (Store.settings.subLang || 'eng').slice(0, 2);
+    const subs = (s.info.subTracks || []).slice().sort((a, b) => ((b.lang || '').slice(0, 2) === lang) - ((a.lang || '').slice(0, 2) === lang)).slice(0, 8);
+    s.mseSubs = subs.map(x => x.index);
+    const url = `${s.info.streamBase}?t=${t.toFixed(3)}&a=${s.audio ?? ''}${s.needTx ? '&tx=1' : ''}&abs=1${subs.length ? '&subs=' + s.mseSubs.join(',') : ''}`;
+    (async () => {
+      let placed = false;
+      const place = () => { placed = true; v.currentTime = t; if (play) v.play().catch(() => {}); this.paint(); };
+      try {
+        await sbIdle(m.sb); if (gen !== m.gen) return;
+        try { m.sb.abort(); } catch {}            // a fresh piece brings its own header
+        const res = await fetch(url, { signal: ctl.signal });
+        const rd = res.body.getReader();
+        for (;;) {
+          // Stay about two minutes ahead; no need to pull the whole file at once.
+          while (placed && gen === m.gen && this.mseAhead(v.currentTime) > 120) await sleep(1000);
+          if (gen !== m.gen) { rd.cancel().catch(() => {}); return; }
+          const { done, value } = await rd.read();
+          if (done) break;
+          await this.mseAppend(m, value, gen);
+          if (gen !== m.gen) { rd.cancel().catch(() => {}); return; }
+          if (!placed && this.mseHas(t)) place();
+        }
+        if (gen !== m.gen) return;
+        if (!placed) place();
+        // The end of the file arrived: let the video engine know, so the episode can finish.
+        const b = m.sb.buffered, end = b.length ? b.end(b.length - 1) : 0;
+        if (s.info.duration && end >= s.info.duration - 2 && m.ms.readyState === 'open') { await sbIdle(m.sb); try { m.ms.endOfStream(); } catch {} }
+      } catch (err) {
+        if (err && err.name !== 'AbortError') console.error('[mse]', err);
+      }
+    })();
+  },
+  // Add a piece; if the video engine's memory is full, let go of what's furthest behind (keeping the last 30 seconds
+  // for quick rewinds) and of earlier pieces you've moved away from, then try again.
+  async mseAppend(m, chunk, gen) {
+    const v = this.cur.video;
+    for (let tries = 0; tries < 30; tries++) {
+      if (gen !== m.gen) return;
+      await sbIdle(m.sb);
+      try { m.sb.appendBuffer(chunk); await sbIdle(m.sb); return; }
+      catch (err) {
+        if (!err || err.name !== 'QuotaExceededError') throw err;
+        const now = v.currentTime, b = m.sb.buffered;
+        let freed = false;
+        for (let i = 0; i < b.length; i++) {
+          const a0 = b.start(i), a1 = b.end(i);
+          if (a1 < now - 30 || a0 > now + 180) { m.sb.remove(a0, a1); await sbIdle(m.sb); freed = true; break; }
+          if (a0 < now - 30) { m.sb.remove(a0, now - 30); await sbIdle(m.sb); freed = true; break; }
+        }
+        if (!freed) await sleep(1500);   // full of what's just ahead: wait for playback to use some
+      }
+    }
+  },
+
+  // A stream that was playing but has been stuck loading for 15 seconds (the connection dropped, or the server
+  // stopped sending) reconnects at the same spot by itself, up to three times in a row.
+  stallWatch() {
+    const s = this.cur;
+    if (!s || s.stallT || !s.root.classList.contains('started')) return;
+    let since = Date.now(), last = this.time();
+    s.stallT = setInterval(() => {
+      if (this.cur !== s || s.closed) { clearInterval(s.stallT); s.stallT = null; return; }
+      const now = this.time();
+      if (!s.root.classList.contains('buffering') || Math.abs(now - last) > 0.5) { clearInterval(s.stallT); s.stallT = null; s.stallTries = 0; return; }
+      if (s.pendingSeek != null || Date.now() - since < 15000) return;
+      s.stallTries = (s.stallTries || 0) + 1;
+      if (s.stallTries > 3) { clearInterval(s.stallT); s.stallT = null; return; }
+      since = Date.now(); last = now;
+      toast('Reconnecting the stream…');
+      if (s.info.mode === 'direct' && !s.needTx) { const t = s.video.currentTime, src = s.video.src; s.video.src = src; s.video.addEventListener('loadedmetadata', () => (s.video.currentTime = t), { once: true }); s.video.play().catch(() => {}); }
+      else this.load(now, true);
+    }, 2000);
+  },
   seek(t) {
     const s = this.cur; if (!s || !s.info) return;
     t = Math.max(0, Math.min(this.duration() - 2, t));
     s.cueIdx = 0;
     if (s.info.mode === 'direct' && !s.needTx) { s.video.currentTime = t; this.subsFollow(t); }
+    else if (s.mse && s.pendingSeek == null && this.mseHas(t)) { s.video.currentTime = t; }   // already received: instant
     else {
       // Remux mode restarts the stream at the new spot; batch rapid presses into one restart.
       if (s.pendingSeek == null) s.seekPlay = !s.video.paused;
       s.pendingSeek = t;
-      s.offset = t; s.video.pause();
+      if (!s.mse) s.offset = t;
+      s.video.pause();
       clearTimeout(s.seekT);
       s.seekT = setTimeout(() => { this.load(s.pendingSeek, s.seekPlay !== false); s.pendingSeek = null; }, 350);
     }
@@ -462,7 +631,7 @@ const Player = {
     video.ondblclick = () => window.reel.fullscreen();
     video.onplay = () => (pp.innerHTML = ICON.pause);
     video.onpause = () => (pp.innerHTML = ICON.play);
-    video.onwaiting = () => root.classList.add('buffering');
+    video.onwaiting = () => { root.classList.add('buffering'); this.stallWatch(); };
     video.onplaying = () => {
       root.classList.remove('buffering'); root.classList.add('started');
       // Safety net: if time is moving but no picture ever shows up, switch to the converted video (once).
@@ -653,7 +822,7 @@ const Player = {
     }
   },
   saveSubPref(v) { const s = this.cur; Store.data.trackPrefs[s.prefKey] = Object.assign(Store.data.trackPrefs[s.prefKey] || {}, { sub: v }); Store.save(); },
-  stopEmbedded() { const s = this.cur; if (s && s.subAbort) { s.subAbort.abort(); s.subAbort = null; } },
+  stopEmbedded() { const s = this.cur; if (s && s.subAbort) { s.subAbort.abort(); s.subAbort = null; } if (s) clearTimeout(s.subPollT); },
   async setSub(sub) {
     const s = this.cur;
     this.stopEmbedded();
@@ -667,9 +836,41 @@ const Player = {
     this.stopEmbedded();
     if (from == null) s.cues = [];
     s.embedded = track; s.subId = `emb:${track.index}`;
+    // Seekable playback: the captions come out of the same stream as the picture; pick them up as they arrive.
+    if (s.mse && (s.mseSubs || []).includes(track.index)) {
+      let pos = 0, buf = '';
+      const poll = async () => {
+        if (this.cur !== s || s.embedded !== track) return;
+        try {
+          const r = await fetch(`${s.info.subsBase}?s=${track.index}&pos=${pos}`);
+          pos = parseInt(r.headers.get('X-Next'), 10) || pos;
+          buf += (await r.text()).replace(/\r/g, '');
+          const cut = buf.lastIndexOf('\n\n');
+          if (cut >= 0) {
+            const fresh = parseSubs(buf.slice(0, cut)); buf = buf.slice(cut + 2);
+            if (fresh.length) { const seen = new Set(s.cues.map(c => c.s)); s.cues.push(...fresh.filter(c => !seen.has(c.s))); s.cues.sort((a, b) => a.s - b.s); }
+          }
+        } catch {}
+        if (this.cur === s && s.embedded === track) s.subPollT = setTimeout(poll, 1500);
+      };
+      poll();
+      return;
+    }
     const start = Math.max(0, (from ?? this.time()) - 15);
     s.subRange = { start, end: start };
     const ctl = new AbortController(); s.subAbort = ctl;
+    // If nothing comes out of the file after 20 seconds of playing, use downloaded captions in the same language.
+    clearTimeout(s.embCheck);
+    const t0 = this.time();
+    const check = () => {
+      if (this.cur !== s || s.closed || s.embedded !== track || s.cues.length) return;
+      if (Math.abs(this.time() - t0) < 15) { s.embCheck = setTimeout(check, 10000); return; }   // not really playing yet
+      const same = (x) => (x.lang || '').slice(0, 2) === (track.lang || '').slice(0, 2);
+      const alt = (s.subsAvail || []).find(same);
+      if (alt) { this.setSub(alt); toast('Captions from the file didn’t load, so downloaded ones are on instead'); }
+      else toast('The captions in this file didn’t load. Try another stream or caption.', true);
+    };
+    s.embCheck = setTimeout(check, 20000);
     (async () => {
       try {
         const res = await fetch(`${s.info.subsBase}?s=${track.index}&t=${start.toFixed(1)}`, { signal: ctl.signal });
@@ -695,7 +896,7 @@ const Player = {
   // After a seek, restart extraction if the new spot isn't covered yet.
   subsFollow(t) {
     const s = this.cur;
-    if (!s || !s.embedded || !s.subRange) return;
+    if (!s || !s.embedded || !s.subRange || s.mse) return;   // seekable playback carries its captions along
     if (t < s.subRange.start || t > s.subRange.end + 30) this.setEmbedded(s.embedded, t);
   },
 
@@ -813,6 +1014,7 @@ const Player = {
     s.info = info; s.stream = x; s.audio = pickAudio(info.audioTracks, s.prefKey); s.subsAvail = null;
     Playback.remember(s.meta, x);
     this.badges();
+    this.mseClose(s); s.mseOff = false;
     s.video.removeAttribute('src');
     this.load(t, wasPlaying);
     setTimeout(() => (s.switching = false), 1500);
@@ -914,6 +1116,7 @@ const Player = {
     if (s.pipPill) s.pipPill.remove();
     if (s.ac) s.ac.close().catch(() => {});
     document.removeEventListener('keydown', s.onKey, true);
+    this.mseClose(s); clearTimeout(s.subPollT);
     s.video.pause(); s.video.removeAttribute('src'); s.video.load();
     if (s.info) window.reel.endPlayback(s.info.id);
     s.root.classList.add('closing');

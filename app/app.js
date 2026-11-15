@@ -14,11 +14,33 @@ const OWN_ART = new Set(['home', 'movies', 'tv', 'detail']);
 // Main tabs. Opening a title or category from a tab keeps that tab highlighted, and Back returns to the same spot.
 const TABS = ['home', 'movies', 'tv', 'discover', 'library'];
 
+// The main tabs stay as you left them: leaving one keeps the page (rows, what's loaded, how far you scrolled), and
+// coming back with Back or its tab button puts it back exactly, instead of drawing it again. Kept for 30 minutes;
+// a deliberate refresh (rerender) always draws it fresh.
+const PageCache = new Map();
+const PAGE_KEEP_MS = 30 * 60e3;
+
 async function go(name, params = {}, replace = false, keepScroll = false, restoreScroll = null) {
   if (!Setup.done && name !== 'setup') { name = 'setup'; params = {}; replace = true; }
   if (name === 'swipe') name = 'discover';
   const view0 = $('#view');
-  if (TABS.includes(name) && !replace) {                             // a tab click starts fresh
+  const leavingName = view0.dataset.view, leavingNode = view0.firstElementChild;
+  const pkey = JSON.stringify(params || {});
+  const refresh = replace && keepScroll;                              // rerender(): the page asked to be drawn again
+  // Clicking the tab you're already on: back to the top, nothing redrawn.
+  if (TABS.includes(name) && !replace && leavingName === name && leavingNode && (leavingNode.dataset.params || '{}') === pkey) {
+    view0.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  if (name === 'setup') PageCache.clear();                       // signed out or switching accounts: nothing kept
+  const keepPages = !window.REEL_TV;                                 // the TV redraws pages so the remote's focus lands right
+  const kept = keepPages && !refresh && TABS.includes(name) ? PageCache.get(name) : null;
+  // Home and Library show your own things: if anything changed since (a rating, a watch, a list), draw them again,
+  // still at the same spot. Movies, TV Shows and For You come back exactly as they were.
+  const sameLib = !kept || !['home', 'library'].includes(name) || kept.rev === Store.data.rev;
+  const useKept = !!(kept && kept.params === pkey && Date.now() - kept.at < PAGE_KEEP_MS && Setup.done && sameLib);
+  if (kept && !useKept && kept.params === pkey && restoreScroll == null && Date.now() - kept.at < PAGE_KEEP_MS) restoreScroll = kept.scroll;
+  if (TABS.includes(name) && !replace && !useKept) {                 // a tab click starts fresh (when there's nothing kept)
     backStack.length = 0;
     if (name === 'library') Fresh.reset('library');
     if (name === 'discover') { Fresh.reset('mood', 'seen', 'rank', 'taste'); if (!params.mode) discState.mode = 'foryou'; }
@@ -34,11 +56,18 @@ async function go(name, params = {}, replace = false, keepScroll = false, restor
   document.body.classList.toggle('setup-mode', name === 'setup');
   const view = $('#view');
   const scroll = view.scrollTop;
+  // Keep the tab page you're leaving (unless it's being redrawn on purpose).
+  if (keepPages && name !== 'setup' && leavingNode && TABS.includes(leavingName) && !(refresh && leavingName === name)) {
+    PageCache.set(leavingName, { node: leavingNode, scroll, params: leavingNode.dataset.params || '{}', at: Date.now(), rev: Store.data.rev });
+  }
+  if (refresh) PageCache.delete(name);
   view.dataset.view = name;
   view.innerHTML = '';
-  const root = document.createElement('div');
+  const root = useKept ? kept.node : document.createElement('div');
+  if (useKept) PageCache.delete(name);
+  root.dataset.params = pkey;
   view.appendChild(root);
-  view.scrollTop = 0;
+  view.scrollTop = useKept ? kept.scroll : 0;
   ScrollKeeper.watch(root);
   $$('[data-go]').forEach(b => b.classList.toggle('active', b.dataset.go === (tab || name)));
   moveIndicator();
@@ -53,6 +82,7 @@ async function go(name, params = {}, replace = false, keepScroll = false, restor
   bb.title = prev ? `Back to ${prevName}` : 'Back';
   Ambient.show(!OWN_ART.has(name));
   try {
+    if (useKept) { view.scrollTop = kept.scroll; return; }
     await Views[name](root, params);
     if (keepScroll) view.scrollTop = scroll;
     if (restoreScroll != null) {
