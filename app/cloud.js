@@ -87,8 +87,12 @@ const Cloud = {
   },
   redirect() { return `http://localhost:${this.cfg.port}/auth/callback`; },
   async signInDiscord() {
-    const { data, error } = await this.sb.auth.signInWithOAuth({ provider: 'discord', options: { redirectTo: this.redirect(), skipBrowserRedirect: true } });
+    // On the website: off to Discord in this tab, and back to this same page to finish.
+    const web = !!window.REEL_WEB;
+    const redirectTo = web ? location.origin + location.pathname : this.redirect();
+    const { data, error } = await this.sb.auth.signInWithOAuth({ provider: 'discord', options: { redirectTo, skipBrowserRedirect: true } });
     if (error) throw error;
+    if (web) { location.href = data.url; return; }
     await window.reel.cloud.openAuth(data.url);
   },
   // Username + password accounts (for people without Discord). There's no email involved: the username is turned

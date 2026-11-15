@@ -34,9 +34,9 @@
   // Which debrid service the account uses (the key itself stays on the server).
   const acct = () => { try { return JSON.parse(lget('reel:debrid') || 'null'); } catch { return null; } };
   // Signed in = a saved session. Without one, nothing from a previous person is shown (shared phones, borrowed laptops).
-  const signedIn = () => { try { return Object.keys(localStorage).some((k) => k.startsWith('reel:auth:')); } catch { return false; } };
+  const signedIn = () => !!lget('reel:auth:reel-auth');
   async function wipe() {
-    try { for (const k of Object.keys(localStorage)) if (k.startsWith('reel:') && k !== 'reel:device') localStorage.removeItem(k); } catch {}
+    try { for (const k of Object.keys(localStorage)) if (k.startsWith('reel:') && k !== 'reel:device' && !k.endsWith('code-verifier')) localStorage.removeItem(k); } catch {}
     await kvSet('reel-data', null); await kvSet('reel-sync', null);
   }
 
@@ -207,6 +207,8 @@
     const q = new URLSearchParams(location.search);
     const code = q.get('code'), error = q.get('error_description') || q.get('error');
     if (code || error) {
+      // Marks "finishing a Discord sign-in" for a few seconds, so nothing sends you back to the sign-in screen meanwhile.
+      if (code) { try { sessionStorage.setItem('reel:oauth', String(Date.now())); } catch {} }
       history.replaceState(null, '', location.pathname);
       let n = 0;
       const t = setInterval(() => {

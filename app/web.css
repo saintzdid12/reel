@@ -337,3 +337,18 @@ body.web.phone .disc-side { backdrop-filter: none !important; -webkit-backdrop-f
 .need-debrid .btns { display: flex; gap: 10px; flex-wrap: wrap; }
 .need-debrid .btns .btn { text-decoration: none; }
 body.web.phone .need-debrid .btns .btn { flex: 1 1 auto; justify-content: center; }
+
+/* Same phone layout for the sign-in sheet, by screen width (doesn't depend on any script having run) */
+@media (max-width: 760px) {
+  .modal-back.tv-auth-back .sheet { width: calc(100vw - 24px); padding: 24px 18px 20px; border-radius: 24px; max-height: calc(100dvh - 40px); overflow-y: auto; }
+  .tv-auth .ta-cols { grid-template-columns: 1fr; gap: 14px; margin-top: 20px; }
+  .tv-auth .ta-or { flex-direction: row; }
+  .tv-auth .ta-or::before, .tv-auth .ta-or::after { width: auto; height: 1px; flex: 1; }
+  .tv-auth .ta-head h2 { font-size: 24px; }
+  .tv-auth .ta-head img { width: 46px; height: 46px; }
+  .tv-auth .ta-card { padding: 20px; }
+  .tv-auth .ta-code { font-size: 40px; min-height: 76px; }
+  .tv-auth .ta-pass { order: -1; }
+  .tv-auth .ta-or { order: 0; }
+  .tv-auth .ta-link { order: 1; }
+}

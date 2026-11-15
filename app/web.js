@@ -74,7 +74,26 @@
   }
   // The app may pick its first screen before this loads: once it's up, a signed-in visitor lands on Home, not setup.
   (() => { let n = 0; const t = setInterval(() => { if (++n > 50) return clearInterval(t); if (typeof route === 'undefined' || !route.name) return; clearInterval(t); if (route.name === 'setup' && Setup.done) go('home', {}, true); else if (route.name !== 'setup' && !Setup.done) go('setup', {}, true); }, 100); })();
-  window.REEL_TORBOX = TORBOX_SIGNUP;
+  // No account, no app: once Reel has checked the saved sign-in, an expired or missing one goes back to the sign-in
+  // screen (and is cleared), and so does signing out or being signed out anywhere later.
+  if (typeof Cloud !== 'undefined') {
+    const finishing = () => { try { return Date.now() - Number(sessionStorage.getItem('reel:oauth') || 0) < 15000; } catch { return false; } };
+    const toSignIn = async () => {
+      if (Cloud.on || finishing() || !Cloud.sb) return;
+      try { const { data } = await Cloud.sb.auth.getSession(); if (data && data.session) return; } catch { return; }
+      if (Cloud.on) return;
+      try { localStorage.removeItem('reel:auth:reel-auth'); } catch {}
+      if (typeof route !== 'undefined' && route.name && route.name !== 'setup') go('setup', {}, true);
+    };
+    (async () => {
+      for (let i = 0; i < 100 && !Cloud.sb; i++) await new Promise((r) => setTimeout(r, 100));
+      if (!Cloud.sb) return;
+      // Coming back from Discord, wait for the sign-in to finish before deciding.
+      setTimeout(toSignIn, finishing() ? 16000 : 600);
+    })();
+    Cloud.watch(() => setTimeout(toSignIn, 0));
+  }
+  window.REEL_TORBOX = typeof TORBOX_SIGNUP !== 'undefined' ? TORBOX_SIGNUP : 'https://torbox.app/subscription?referral=d09493b9-7df7-4352-8fbd-907852399904';
   (() => {
     let pending = null;
     try {
