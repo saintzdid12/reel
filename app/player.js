@@ -811,8 +811,12 @@ const Player = {
     const on = pref ? pref !== 'off' : Store.settings.subsOn;
     const lang = pref && pref !== 'off' ? pref.split(':')[1] : Store.settings.subLang;
     const same = (a) => (a || '').slice(0, 2) === (lang || '').slice(0, 2);
-    if (on && (!pref || pref.startsWith('emb:'))) {
-      const emb = i.subTracks.filter(t => same(t.lang) && !t.forced)[0];
+    // The file's own captions in your language always win. SDH first: on some releases the plain track is the one
+    // that's out of step (it's often added from elsewhere), while SDH comes with the video. Forced (foreign lines
+    // only) is never picked on its own.
+    if (on) {
+      const sdh = (t) => /sdh|hearing|\bcc\b/i.test(t.title || '');
+      const emb = i.subTracks.filter(t => same(t.lang) && !t.forced).sort((a, b) => sdh(b) - sdh(a))[0];
       if (emb) this.setEmbedded(emb);
     }
     s.subsAvail = await window.reel.subsList(s.ids.stype, s.ids.sid, i.id, s.stream.filename);
@@ -905,9 +909,14 @@ const Player = {
     if ($('.popover', root)) return this.closePanel();
     this.closePanel();
     const pop = h('<div class="popover"></div>');
-    if (s.info && s.info.audioTracks.length > 1) {
+    // Audio: only tracks in your language (plus whatever is playing now). A file with none in your language shows all.
+    const aWant = (Store.settings.audioLang || 'eng').slice(0, 2);
+    const allAudio = (s.info && s.info.audioTracks) || [];
+    let audios = allAudio.filter(a => (a.lang || '').slice(0, 2) === aWant || a.index === s.audio);
+    if (!allAudio.some(a => (a.lang || '').slice(0, 2) === aWant)) audios = allAudio;
+    if (audios.length > 1) {
       pop.appendChild(h('<h5>Audio</h5>'));
-      s.info.audioTracks.forEach(a => {
+      audios.forEach(a => {
         const ch = a.channels >= 8 ? '7.1' : a.channels >= 6 ? '5.1' : a.channels === 2 ? 'Stereo' : a.channels === 1 ? 'Mono' : '';
         const b = h(`<button class="${a.index === s.audio ? 'on' : ''}">${esc(langName(a.lang))} <span class="dim">· ${esc([ch, (a.codec || '').toUpperCase().replace('EAC3', 'Dolby Digital+').replace('AC3', 'Dolby Digital').replace('TRUEHD', 'Dolby TrueHD'), a.title].filter(Boolean).join(' · '))}</span></button>`);
         b.onclick = () => {
@@ -922,19 +931,21 @@ const Player = {
     const off = h(`<button class="${!s.subId ? 'on' : ''}">Off</button>`);
     off.onclick = () => { this.setSub(null); this.saveSubPref('off'); this.closePanel(); };
     pop.appendChild(off);
-    const emb = (s.info && s.info.subTracks) || [];
+    const sWant = (Store.settings.subLang || 'eng').slice(0, 2);
+    const mine = (x) => (x.lang || '').slice(0, 2) === sWant;
+    const emb = ((s.info && s.info.subTracks) || []).filter(t => mine(t) || s.subId === `emb:${t.index}`);
     emb.forEach(t => {
       const b = h(`<button class="${s.subId === `emb:${t.index}` ? 'on' : ''}">${esc(langName(t.lang))} <span class="dim">· ${esc([t.forced ? 'Forced' : '', t.title, 'In the file · always in sync'].filter(Boolean).join(' · '))}</span></button>`);
       b.onclick = () => { this.setEmbedded(t); this.saveSubPref(`emb:${t.lang || 'und'}`); this.closePanel(); };
       pop.appendChild(b);
     });
-    const avail = s.subsAvail || [];
-    if (!avail.length && !emb.length) pop.appendChild(h(`<div class="dim" style="padding:8px 12px;font-size:13px">${s.subsAvail ? 'No subtitles found' : 'Searching…'}</div>`));
-    const pref = Store.settings.subLang;
-    const sorted = [...avail].sort((a, b) => (b.lang === pref) - (a.lang === pref) || langName(a.lang).localeCompare(langName(b.lang)));
-    const counts = {};
-    // Up to 4 options for your language (best matches first), 1 for every other language.
-    sorted.filter(x => (counts[x.lang] = (counts[x.lang] || 0) + 1) <= (x.lang === pref ? 4 : 1)).forEach(x => {
+    // Downloaded captions can be timed for a different release, so they're only offered when the file has none in
+    // your language: two at most (plus the one that's on, if it's one of those).
+    const fileHas = emb.some(mine);
+    const avail = (s.subsAvail || []).filter(x => (mine(x) && !fileHas) || x.id === s.subId);
+    if (!avail.length && !emb.length) pop.appendChild(h(`<div class="dim" style="padding:8px 12px;font-size:13px">${s.subsAvail ? 'No captions in your language' : 'Searching…'}</div>`));
+    const sorted = avail;
+    sorted.filter((x, i) => i < 2 || x.id === s.subId).forEach(x => {
       const n = sorted.filter(y => y.lang === x.lang).indexOf(x) + 1;
       const note = x.matched && n === 1 ? 'Best match for this file' : n > 1 ? `Option ${n}` : '';
       const b = h(`<button class="${x.id === s.subId ? 'on' : ''}">${esc(langName(x.lang))}${note ? ` <span class="dim">· ${note}</span>` : ''}</button>`);
