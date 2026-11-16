@@ -3963,3 +3963,11 @@ body.mac .tw .show-side { left: 96px; }
 .share-prof .sp-copyimg:hover { background: rgba(50,50,56,.85); transform: scale(1.05); }
 .share-prof .sp-copyimg:active { transform: scale(.95); }
 .share-prof .sp-copyimg .ic { width: 15px; height: 15px; }
+
+/* The error screen keeps the Back arrow (top left) usable and hides the playback controls behind it. */
+.player.failed .loading { display: grid !important; pointer-events: none; z-index: 4; }
+.player.failed .loading .load-card .btns { pointer-events: auto; }
+.player.failed .chrome { z-index: 5; opacity: 1 !important; pointer-events: none; }
+.player.failed .chrome .p-top { pointer-events: auto; }
+.player.failed .p-center, .player.failed .p-bottom, .player.failed .p-vol { display: none; }
+.player.failed { cursor: auto; }

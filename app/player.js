@@ -66,7 +66,7 @@ const SIZE_GB = { 2160: [12, 60], 1080: [3, 20], 720: [1, 5], 480: [0.5, 2] };
 // Where a release came from, read from its name. Proper sources first; theatre recordings (cam, telesync,
 // telecine, screener) are treated as cams even when they claim 1080p.
 const CAMLIKE = /\b(cam|hdcam|camrip|hqcam|hdts|ts|telesync|tele?cine|hdtc|tc|scr|screener|dvdscr|predvd|hdtcrip)\b/i;
-const SOURCE = [[/remux/i, 40], [/blu-?ray|bdrip|brrip|\bbd\b/i, 30], [/web-?dl|\b(amzn|nf|dsnp|atvp|hmax|pcok|pmtp|hulu|itunes)\b/i, 25],
+const SOURCE = [[/remux/i, 12], [/blu-?ray|bdrip|brrip|\bbd\b/i, 30], [/web-?dl|\b(amzn|nf|dsnp|atvp|hmax|pcok|pmtp|hulu|itunes)\b/i, 30],
   [/web-?rip|\bweb\b/i, 18], [/hdtv/i, 5], [/hdrip/i, -15]];
 // Release groups known for clean encodes: a small nudge, never more than a better picture.
 const GOOD_GROUPS = /\b(framestor|ntb|flux|cmrg|sparks|amiable|geckos|tepes|blutonium|hone|playweb|edith|bhdstudio|ctrlhd|epsilon|hallowed|rarbg|yts|yify|psa|tigole|qxr|silence)\b/i;
@@ -118,7 +118,11 @@ function rankStreams(list, runtimeMin, memKey) {
       if (val >= lo && val <= hi) v += 25;
       else if (val < lo) v -= ((lo - val) / lo) * 30 + (val < lo / 3 ? 30 : 0);
       else v -= Math.min(30, ((val - hi) / hi) * 25);
+      // Very heavy files (disc copies at 40+ Mbps) load slowly or stall on most connections: a smaller copy wins.
+      if (runtimeMin && val > 40) v -= 90 + Math.min(60, (val - 40) * 2);
     }
+    // 4K HEVC on a PC that can't decode HEVC has to be converted live, which is slow to start and can stutter.
+    if (x.quality === 2160 && !CAN_HEVC) v -= 600;
     // Popularity counts for a lot: a release lots of people share is almost always a real, clean copy (and a
     // big file with few sharers is often a bad one). Log scale: 10 -> 19, 100 -> 36, 1000+ -> 45.
     v += Math.min(45, Math.log10(1 + x.seeders) * 18);
@@ -218,7 +222,7 @@ const Playback = {
       const body = $('.body', sheet);
       body.style.display = 'block';
       body.innerHTML = `<div class="dim" style="font-size:13px;margin-bottom:14px">${list.filter(x => x.cached).length} instant · ${list.length} total · sorted by picture quality, then popularity</div><div class="stream-list"></div>`;
-      this.renderList($('.stream-list', body), meta, list, best, null, (x) => { m.close(); Player.open(meta, ep, x, list, { stype, sid }, { resumeAt }); });
+      this.renderList($('.stream-list', body), meta, list, best, null, (x) => { m.close(); Player.open(meta, ep, x, list, { stype, sid }, { resumeAt, picked: true }); });
     } catch (e) {
       clearTimeout(showT);
       if (!m) { m = openModal(sheet, { wide: true }); $('.close', sheet).onclick = m.close; }
@@ -272,7 +276,40 @@ function langName(code) {
 const Player = {
   cur: null,
 
-  async open(meta, ep, stream, list, ids, { resumeAt } = {}) {
+  prepareFirst(cands, meta, ep, st, setMsg, picked) {
+    return new Promise((resolve) => {
+      let i = 0, live = 0, done = false, offLen = null, lastErr = null, skipped = 0, timer = null;
+      const finish = (r) => { if (done) return; done = true; clearTimeout(timer); resolve({ skipped, ...r }); };
+      const launch = () => {
+        if (done) return;
+        if (st.closed) return finish({});
+        if (i >= cands.length) { if (!live) finish(offLen ? { ...offLen, offLen: true } : { err: lastErr }); return; }
+        const cand = cands[i++]; live++;
+        clearTimeout(timer);
+        if (!picked) timer = setTimeout(() => { if (!done && i < cands.length) { setMsg('Still waiting on the stream, trying another one at the same time…'); launch(); } }, 15000);
+        window.reel.prepare(cand.url).then((info) => {
+          live--;
+          if (done) return;
+          if (Playback.wrongLength(meta, ep, info)) {
+            Playback.markWrong(meta, cand); skipped++;
+            if (!offLen) offLen = { info, cand };
+            setMsg('That was a different film, trying the next one…');
+            return launch();
+          }
+          finish({ info, cand });
+        }, (e) => {
+          live--; lastErr = e;
+          console.warn('[player] prepare failed:', cand.filename, cleanErr(e));
+          if (done) return;
+          if (!live) setMsg('Trying another stream…');
+          launch();
+        });
+      };
+      launch();
+    });
+  },
+
+  async open(meta, ep, stream, list, ids, { resumeAt, picked } = {}) {
     const wasOpen = !!this.cur;
     this.close(true, true);
     const pkey = meta.type === 'movie' ? `movie:${meta.id}` : `tv:${meta.id}:${ep.season}:${ep.episode}`;
@@ -335,27 +372,17 @@ const Player = {
     this.wire();
     if (!wasOpen) window.reel.fullscreen(true);
 
-    // Prepare, falling back to the next cached stream if a link fails.
-    const candidates = [stream, ...list.filter(x => x !== stream && x.cached && !x.flags.includes('CAM'))].slice(0, 4);
-    let offLen = null, skipped = 0;
-    for (const cand of candidates) {
-      try {
-        $('.loading .msg', root).textContent = cand === stream ? 'Preparing stream…' : skipped ? 'That was a different film, trying the next one…' : 'That link failed, trying the next one…';
-        const info = await window.reel.prepare(cand.url);
-        if (Playback.wrongLength(meta, ep, info)) {
-          Playback.markWrong(meta, cand); skipped++;
-          if (!offLen) offLen = { info, cand };
-          if (st.closed) return;
-          continue;
-        }
-        st.info = info;
-        st.stream = cand;
-        break;
-      } catch (e) { st.lastErr = e; }
-      if (st.closed) return;
-    }
-    if (!st.info && offLen) { st.info = offLen.info; st.stream = offLen.cand; }   // nothing matched: play what we have
-    else if (skipped) toast(`Skipped ${skipped === 1 ? 'a version' : skipped + ' versions'} that turned out to be a different film`);
+    // Prepare the chosen stream. If it errors, the next cached one is tried; if it's just slow (some debrid
+    // services take a while on the first request), the next one starts alongside it after 15 seconds and
+    // whichever is ready first plays. A stream you picked yourself is never swapped just for being slow.
+    const candidates = [stream, ...list.filter(x => x !== stream && x.cached && !x.flags.includes('CAM'))].slice(0, 5);
+    const setMsg = (t) => { const m = $('.loading .msg', root); if (m && !st.failed) m.textContent = t; };
+    setMsg('Preparing stream…');
+    const got = await this.prepareFirst(candidates, meta, ep, st, setMsg, !!picked);
+    if (st.closed) return;
+    if (got.info) { st.info = got.info; st.stream = got.cand; }
+    else st.lastErr = got.err;
+    if (got.info && got.skipped && !got.offLen) toast(`Skipped ${got.skipped === 1 ? 'a version' : got.skipped + ' versions'} that turned out to be a different film`);
     if (st.closed) return;
     if (!st.info) return this.fail(cleanErr(st.lastErr || 'No playable stream.'));
     const i = st.info;
@@ -414,6 +441,12 @@ const Player = {
   load(t, play = true) {
     const s = this.cur, v = s.video;
     s.root.classList.add('buffering');
+    // Nothing on screen 40 seconds after starting (a stream the video engine silently chokes on): recover.
+    if (!s.root.classList.contains('started')) {
+      s.startAt = t;
+      clearTimeout(s.startT);
+      s.startT = setTimeout(() => { if (this.cur === s && !s.closed && !s.root.classList.contains('started')) this.recover(s, 'no start'); }, 40000);
+    }
     // HEVC on a PC without HEVC decoding (common on laptops) would play as sound over a black screen: convert it.
     if (s.needTx == null) s.needTx = s.info.videoCodec === 'hevc' && !CAN_HEVC;
     if ((s.info.mode === 'remux' || s.needTx) && this.mseUsable()) { this.mseLoad(t, play); return; }
@@ -546,7 +579,10 @@ const Player = {
         const b = m.sb.buffered, end = b.length ? b.end(b.length - 1) : 0;
         if (s.info.duration && end >= s.info.duration - 2 && m.ms.readyState === 'open') { await sbIdle(m.sb); try { m.ms.endOfStream(); } catch {} }
       } catch (err) {
-        if (err && err.name !== 'AbortError') console.error('[mse]', err);
+        if (err && err.name !== 'AbortError') {
+          console.error('[mse]', err);
+          if (gen === m.gen && !s.switching) this.recover(s, 'mse ' + err.name);
+        }
       }
     })();
   },
@@ -633,7 +669,7 @@ const Player = {
     video.onpause = () => (pp.innerHTML = ICON.play);
     video.onwaiting = () => { root.classList.add('buffering'); this.stallWatch(); };
     video.onplaying = () => {
-      root.classList.remove('buffering'); root.classList.add('started');
+      root.classList.remove('buffering'); root.classList.add('started'); clearTimeout(s.startT);
       // Safety net: if time is moving but no picture ever shows up, switch to the converted video (once).
       clearTimeout(s.blackT);
       if (!s.needTx) s.blackT = setTimeout(() => {
@@ -645,8 +681,8 @@ const Player = {
     video.ontimeupdate = () => this.paint();
     video.onended = () => this.ended();
     video.onerror = () => {
-      if (!s.info || s.switching) return;
-      this.fail(s.info.mode === 'direct' ? 'This file wouldn’t play. Try another stream.' : 'This video format isn’t supported on your PC (often Dolby Vision–only or an unusual codec). Try another stream.');
+      if (!s.info || s.switching || s.closed) return;
+      this.recover(s, 'error ' + ((video.error && (video.error.code + ' ' + video.error.message)) || ''));
     };
     // An open panel swallows the first outside click: it just closes the panel.
     root.addEventListener('pointerdown', (e) => {
@@ -1004,21 +1040,24 @@ const Player = {
     const panel = h(`<div class="p-panel"><div class="pp-head"><div><div class="eyebrow">Streams</div><b>${esc(s.meta.title)}</b></div><button class="pbtn pp-close">${ICON.close}</button></div><div class="stream-list"></div></div>`);
     $('.pp-close', panel).onclick = () => this.closePanel();
     const best = s.list.find(x => x.cached && !x.flags.includes('CAM'));
-    Playback.renderList($('.stream-list', panel), s.meta, s.list, best, s.stream, (x) => { this.closePanel(); if (x.url !== s.stream.url) this.switchStream(x); });
+    Playback.renderList($('.stream-list', panel), s.meta, s.list, best, s.stream, (x) => { this.closePanel(); if (x.url !== s.stream.url || s.failed) { s.tried = null; this.switchStream(x, { at: s.failed ? (s.startAt || 0) : undefined }); } });
     root.appendChild(panel);
   },
-  async switchStream(x) {
-    const s = this.cur, t = this.time(), wasPlaying = !s.video.paused;
-    toast('Switching stream…');
+  async switchStream(x, { auto, at } = {}) {
+    const s = this.cur, t = at != null ? at : this.time(), wasPlaying = auto || !s.video.paused;
+    if (!auto) toast('Switching stream…');
     let info;
-    try { info = await window.reel.prepare(x.url); } catch (e) { toast(`That stream didn’t work — still playing the current one.`, true); return; }
-    if (s.closed || this.cur !== s) return;
+    try { info = await window.reel.prepare(x.url); } catch (e) { if (!auto) toast(`That stream didn’t work — still playing the current one.`, true); return false; }
+    if (s.closed || this.cur !== s) return false;
     if (Playback.wrongLength(s.meta, s.ep, info)) {
       Playback.markWrong(s.meta, x); window.reel.endPlayback(info.id);
-      toast(`That version is a different film (${Math.round(info.duration / 60)} min) — still playing the current one.`, true);
-      return;
+      if (!auto) toast(`That version is a different film (${Math.round(info.duration / 60)} min) — still playing the current one.`, true);
+      return false;
     }
+    if (s.failed) { s.failed = false; s.root.classList.remove('failed'); if (s.loadHtml) $('.loading', s.root).innerHTML = s.loadHtml; }
     s.switching = true;
+    s.needTx = null; s.recAt = 0;
+    if (auto) toast('Switched to another stream that plays on this computer');
     if (s.info) window.reel.endPlayback(s.info.id);
     this.stopEmbedded();
     if (s.ac) info.mode = 'remux'; // keep audio boost working on the new file
@@ -1029,6 +1068,11 @@ const Player = {
     s.video.removeAttribute('src');
     this.load(t, wasPlaying);
     setTimeout(() => (s.switching = false), 1500);
+    if (auto) Promise.resolve().then(() => this.subsAfterSwitch(s, x, info));
+    else await this.subsAfterSwitch(s, x, info);
+    return true;
+  },
+  async subsAfterSwitch(s, x, info) {
     const prevSub = s.subId;
     s.cues = []; s.subId = null;
     s.subsAvail = await window.reel.subsList(s.ids.stype, s.ids.sid, info.id, x.filename);
@@ -1105,12 +1149,51 @@ const Player = {
     $('.stop', card).onclick = () => { clearInterval(tick); this.close(); };
   },
 
+  // Something went wrong with the video. In order: play the file through Reel instead of directly, the older
+  // (non-seekable) converted stream, converting the picture (plays any codec, Dolby Vision included), and finally
+  // the next cached stream, on its own. The error screen only shows when all of that failed.
+  recover(s, why) {
+    if (this.cur !== s || s.closed || s.failed || !s.info) return;
+    const now = Date.now();
+    if (s.recAt && now - s.recAt < 2000) return;
+    s.recAt = now;
+    clearTimeout(s.startT); clearTimeout(s.blackT);
+    console.warn('[player] recovering:', why, s.info.videoCodec, s.info.pixFmt, s.info.hdr);
+    const started = s.root.classList.contains('started');
+    const t = started ? this.time() : (s.startAt || 0);
+    if (s.info.mode === 'direct' && !s.needTx) { s.info.mode = 'remux'; this.load(t, true); return; }
+    if (s.mse && !s.mseOff) { s.mseOff = true; this.mseClose(s); this.load(t, true); return; }
+    if (!s.needTx) { s.needTx = true; toast('Converting the picture for this PC…'); this.load(t, true); return; }
+    this.nextStream(t);
+  },
+  async nextStream(t) {
+    const s = this.cur; if (!s || s.closed || s.hunting) return;
+    s.hunting = true;
+    const tried = s.tried || (s.tried = new Set());
+    tried.add(s.stream.url);
+    const pool = s.list.filter(x => x.cached && !x.flags.includes('CAM') && !tried.has(x.url));
+    const order = [...pool.filter(x => !x.flags.includes('DV')), ...pool.filter(x => x.flags.includes('DV'))].slice(0, 6);
+    const l = $('.loading', s.root);
+    s.root.classList.remove('started'); s.root.classList.add('buffering');
+    for (const x of order) {
+      if (this.cur !== s || s.closed) return;
+      tried.add(x.url);
+      const msg = $('.msg', l); if (msg) msg.textContent = 'That stream wouldn’t play here, trying another one…';
+      if (await this.switchStream(x, { auto: true, at: t })) { s.hunting = false; return; }
+    }
+    s.hunting = false;
+    if (this.cur === s && !s.closed) this.fail('None of the instant streams for this one would play on this computer. Try one from the list, or try again later.');
+  },
+
   fail(msg) {
     const s = this.cur; if (!s) return;
+    s.failed = true;
+    clearTimeout(s.startT);
+    s.root.classList.add('failed');
     const l = $('.loading', s.root);
-    l.style.display = 'grid'; l.style.pointerEvents = 'auto';
+    const before = s.loadHtml || (s.loadHtml = l.innerHTML);
     l.innerHTML = `<div class="load-card"><div style="font-size:22px;font-weight:700;margin-bottom:8px">Playback problem</div><div class="msg" style="margin-bottom:20px">${esc(msg)}</div><div class="btns"><button class="btn primary other">Choose another stream</button><button class="btn closep">Back</button></div></div>`;
-    $('.other', l).onclick = () => { l.style.display = ''; l.style.pointerEvents = ''; this.streamPanel(); };
+    $('.other', l).onclick = () => { s.failed = false; s.root.classList.remove('failed'); l.innerHTML = before; this.streamPanel(); };
     $('.closep', l).onclick = () => this.close();
   },
 
@@ -1121,7 +1204,7 @@ const Player = {
     s.silentClose = !!silent;   // quiet close = switching to another episode/stream
     document.dispatchEvent(new CustomEvent('reel:stop', { detail: s }));
     this.cur = null;
-    clearInterval(s.saveT); clearTimeout(s.idleT); clearTimeout(s.seekT); clearTimeout(s.pinfoT); clearTimeout(s.blackT);
+    clearInterval(s.saveT); clearTimeout(s.idleT); clearTimeout(s.seekT); clearTimeout(s.pinfoT); clearTimeout(s.blackT); clearTimeout(s.startT);
     if (s.subAbort) s.subAbort.abort();
     if (s.pip && document.pictureInPictureElement) document.exitPictureInPicture().catch(() => {});
     if (s.pipPill) s.pipPill.remove();
