@@ -1960,6 +1960,7 @@ body:not([data-accent="mono"]) .sw-btn.yes span { background: var(--acc); color:
 .sw-card-slot { min-height: 0; }
 .sw-info h2 { font-size: 30px; }
 .sw-actions { margin-top: 16px; }
+.sw-actions[hidden] { display: none; }
 .sw-foot { margin: 14px 0 30px; }
 
 /* Seen It shelf: category menu + search + compact jump chips (one category at a time) */

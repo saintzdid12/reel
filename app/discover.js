@@ -31,6 +31,7 @@ Views.discover = async (root, params = {}) => {
     document.querySelectorAll('.ctx-menu, .rate-pop').forEach(p => (p.close ? p.close() : p.remove()));
     $$('.side-item', side).forEach(x => x.classList.toggle('on', x.dataset.mode === discState.mode));
     main.innerHTML = '';
+    main.scrollTop = 0;
     main.classList.remove('swap'); void main.offsetWidth; main.classList.add('swap');
     $('#view').scrollTop = 0;
     await DMODES[discState.mode](main);

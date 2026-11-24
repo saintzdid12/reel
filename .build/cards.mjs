@@ -16,9 +16,21 @@ const token = process.env.REEL_CARDS_TOKEN;
 if (!token) { console.log('No REEL_CARDS_TOKEN: built without profile previews.'); process.exit(0); }
 
 const SB = 'https://tsuyeypohzfcjikuuknh.supabase.co', KEY = 'sb_publishable_mc8VFdYKE_sMALLgRGsZhw_QqkJPlTm';
-const res = await fetch(`${SB}/rest/v1/rpc/profile_cards`, { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_token: token }) });
-if (!res.ok) { console.log(`Profile cards unavailable (${res.status}): built without previews.`); process.exit(0); }
-const cards = await res.json();
+// Profile previews are optional: a temporary network outage must not block the website.
+let cards = [];
+for (let attempt = 0; attempt < 3; attempt++) {
+  try {
+    const res = await fetch(`${SB}/rest/v1/rpc/profile_cards`, { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_token: token }), signal: AbortSignal.timeout(12000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const fetched = await res.json();
+    if (!Array.isArray(fetched)) throw new Error('Unexpected profile response');
+    cards = fetched;
+    break;
+  } catch {
+    if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+    else console.warn('Profile cards unavailable after retries: built the website without previews.');
+  }
+}
 
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const list = (a) => (a.length < 2 ? a.join('') : `${a.slice(0, -1).join(', ')} and ${a[a.length - 1]}`);

@@ -1084,12 +1084,11 @@ const Player = {
     const t = this.time(), d = this.duration();
     if (t < 30) return;
     const m = s.meta;
-    Store.data.progress[s.pkey] = {
+    Store.setProgress(s.pkey, {
       key: `${m.type}:${m.id}`, type: m.type, id: m.id, title: m.title, poster: m.poster, backdrop: m.backdrop, year: m.year, imdb: m.imdb,
       pos: t, dur: d, updatedAt: Date.now(),
       season: s.ep && s.ep.season, episode: s.ep && s.ep.episode, epName: s.ep && s.ep.name, still: s.ep && s.ep.still,
-    };
-    Store.save();
+    });
   },
 
   markFinished() {
@@ -1099,9 +1098,10 @@ const Player = {
     const m = s.meta;
     if (m.type === 'tv') {
       const k = `tv:${m.id}`;
+      for (const [pk, p] of Object.entries(Store.data.progress)) if (p.key === k) delete Store.data.progress[pk];
       Store.data.episodes[k] = Store.data.episodes[k] || {};
       Store.data.episodes[k][`${s.ep.season}:${s.ep.episode}`] = Object.assign(Store.data.episodes[k][`${s.ep.season}:${s.ep.episode}`] || {}, { watched: true, at: today() });
-      Store.upsert(m, { lastEp: `${s.ep.season}:${s.ep.episode}`, watched: true, watchedAt: (Store.item(`tv:${m.id}`) || {}).watchedAt || today() });
+      Store.upsert(m, { lastEp: `${s.ep.season}:${s.ep.episode}`, lastEpAt: Date.now(), watched: true, watchedAt: (Store.item(`tv:${m.id}`) || {}).watchedAt || today() });
     } else if (Store.settings.autoLog) {
       // Auto-log: the diary entry is written for you (today, rewatch detected); you only add stars.
       const key = `movie:${m.id}`;

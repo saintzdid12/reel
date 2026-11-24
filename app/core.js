@@ -159,6 +159,32 @@ const Store = {
   },
   get settings() { return this.data.settings; },
   item(key) { return this.data.items[key]; },
+  // One active episode per show. Keep the other episodes' watched history, but don't let an
+  // abandoned resume point take over Continue Watching after a newer episode finishes.
+  setProgress(pkey, progress) {
+    if (progress.type === 'tv') {
+      const it = this.item(progress.key);
+      if (it && it.lastEp && !it.lastEpAt) it.lastEpAt = progress.updatedAt - 1;
+      for (const [k, p] of Object.entries(this.data.progress)) {
+        if (k !== pkey && p.key === progress.key && (p.updatedAt || 0) <= progress.updatedAt) delete this.data.progress[k];
+      }
+    }
+    this.data.progress[pkey] = progress;
+    this.data.rev = (this.data.rev || 0) + 1;
+    this.save();
+  },
+  continueProgress() {
+    return Object.values(this.data.progress).filter(p => {
+      if (p.type !== 'tv') return true;
+      const it = this.item(p.key) || {};
+      if (!it.lastEp) return true;
+      if (it.lastEpAt) return p.updatedAt > it.lastEpAt;
+      // Older libraries did not record when the last episode finished. Ignore leftover points
+      // behind that episode; a new playback records its own timestamp before saving progress.
+      const [s, e] = it.lastEp.split(':').map(Number);
+      return p.season > s || (p.season === s && p.episode > e);
+    });
+  },
   // Merge basic metadata + user fields into an item record.
   upsert(meta, patch = {}) {
     this.data.rev = (this.data.rev || 0) + 1; // any change to your library invalidates saved recommendations

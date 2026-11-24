@@ -66,7 +66,7 @@ const seasonShown = {};
 
 function continueRow(container, filterType) {
   const latest = new Map();
-  Object.values(Store.data.progress)
+  Store.continueProgress()
     .filter(p => !filterType || p.type === filterType)
     .forEach(p => { const cur = latest.get(p.key); if (!cur || p.updatedAt > cur.updatedAt) latest.set(p.key, p); });
   const items = [...latest.values()].sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 15);
@@ -97,7 +97,7 @@ function continueRow(container, filterType) {
   });
   if (filterType === 'movie') return;
   // Next episodes: shows you've watched part of, with nothing in progress right now.
-  const inProgress = new Set(Object.values(Store.data.progress).map(p => p.key));
+  const inProgress = new Set(Store.continueProgress().map(p => p.key));
   const shows = Store.values().filter(i => i.type === 'tv' && i.lastEp && !i.cwHiddenAt && !inProgress.has(`tv:${i.id}`)).slice(0, 12);
   if (!shows.length) return;
   (async () => {
@@ -430,7 +430,7 @@ Views.detail = async (root, { type, id, season }) => {
       const p = Store.data.progress[key];
       return { label: p ? `Resume · ${fmtTime(p.dur - p.pos)} left` : 'Play', ep: null };
     }
-    const ps = Object.values(Store.data.progress).filter(p => p.key === key).sort((a, b) => b.updatedAt - a.updatedAt)[0];
+    const ps = Store.continueProgress().filter(p => p.key === key).sort((a, b) => b.updatedAt - a.updatedAt)[0];
     if (ps) return { label: `Resume S${ps.season}, E${ps.episode}`, ep: { season: ps.season, episode: ps.episode, name: ps.epName, still: ps.still } };
     const last = it().lastEp;
     if (last) {
@@ -462,7 +462,10 @@ Views.detail = async (root, { type, id, season }) => {
     const playTrailer = trailer ? () => window.reel.openExternal(`https://www.youtube.com/watch?v=${trailer.key}`) : null;
     const streams = h(`<button class="btn" title="Choose a specific version / quality">${ICON.streams.replace('<svg', '<svg class="ic"')} Versions</button>`);
     streams.onclick = pickVersion;
-    if (!compact) box.appendChild(streams);
+    if (!compact || window.REEL_TV) {
+      if (window.REEL_TV) { streams.classList.add('tv-version'); streams.setAttribute('aria-label', 'Choose a version'); }
+      box.appendChild(streams);
+    }
     if (typeof Party !== 'undefined') box.appendChild(Party.button(meta, tgt.ep));
     if (typeof OnePace !== 'undefined' && type === 'tv' && meta.id === OnePace.ONE_PIECE) box.appendChild(OnePace.button(meta));
     if (trailer && !compact) { const t = h(`<button class="btn" title="Watch the trailer on YouTube">${ICON.film} Trailer</button>`); t.onclick = playTrailer; box.appendChild(t); }
@@ -556,7 +559,7 @@ Views.detail = async (root, { type, id, season }) => {
       ms.onclick = () => {
         Store.data.episodes[key] = Store.data.episodes[key] || {};
         aired.forEach(e => { const k2 = `${n}:${e.episode_number}`; Store.data.episodes[key][k2] = Object.assign(Store.data.episodes[key][k2] || {}, { watched: !allSeen, at: today() }); });
-        if (!allSeen) Store.upsert(meta, { lastEp: `${n}:${aired[aired.length - 1].episode_number}`, watched: true, watchedAt: it().watchedAt || today() }); else Store.save();
+        if (!allSeen) Store.upsert(meta, { lastEp: `${n}:${aired[aired.length - 1].episode_number}`, lastEpAt: Date.now(), watched: true, watchedAt: it().watchedAt || today() }); else Store.save();
         showSeason(n); paintActions();
       };
       for (const e of sd.episodes) {
@@ -592,7 +595,7 @@ Views.detail = async (root, { type, id, season }) => {
           Store.data.episodes[key] = Store.data.episodes[key] || {};
           const c = Store.data.episodes[key][ek] || {};
           c.watched = !c.watched; c.at = today(); Store.data.episodes[key][ek] = c;
-          if (c.watched) Store.upsert(meta, { lastEp: ek, watched: true, watchedAt: it().watchedAt || today() }); else Store.save();
+          if (c.watched) Store.upsert(meta, { lastEp: ek, lastEpAt: Date.now(), watched: true, watchedAt: it().watchedAt || today() }); else Store.save();
           showSeason(n); paintActions();
         };
         shelf.appendChild(el);
@@ -621,7 +624,7 @@ Views.detail = async (root, { type, id, season }) => {
     };
     // Coming back to a show keeps the season you were on; otherwise the one you're partway through or last watched.
     const lastS = it().lastEp ? +it().lastEp.split(':')[0] : null;
-    const prog = Object.values(Store.data.progress).filter(p => p.key === `tv:${meta.id}`).sort((a, b) => b.updatedAt - a.updatedAt)[0];
+    const prog = Store.continueProgress().filter(p => p.key === `tv:${meta.id}`).sort((a, b) => b.updatedAt - a.updatedAt)[0];
     const has = (n) => n && seasons.some(x => x.season_number === n);
     showSeason([season, seasonShown[meta.id], prog && prog.season, lastS].find(has) || (seasons[0] && seasons[0].season_number) || 1);
   }

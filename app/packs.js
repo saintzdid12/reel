@@ -309,6 +309,7 @@ function packGrid(body, p, list, paintProg, tools) {
 function swipeDeck(body, p, list, paintProg) {
   const deck = list.filter(m => seenStateOf(m) === 'none');
   let i = 0;
+  let deciding = false, renderTimer = 0;
   const done = [];
   const stage = h(`<div class="sw">
     <div class="sw-card-slot"></div>
@@ -318,13 +319,16 @@ function swipeDeck(body, p, list, paintProg) {
       <button class="sw-btn love" title="Loved it (↑)"><span>${ICON.heartFill}</span><b>Loved it</b><kbd>↑</kbd></button>
       <button class="sw-btn want" title="Haven’t seen it — want to (↓)"><span>${ICON.bookmark}</span><b>Watchlist</b><kbd>↓</kbd></button>
     </div>
-    <div class="sw-foot"><button class="btn small ghost undo">${ICON.undo} Undo <kbd>Ctrl+Z</kbd></button><span class="dim sw-left"></span><span class="dim">1–5 to rate with stars</span></div></div>`);
+    <div class="sw-foot"><button class="btn small ghost undo">${ICON.undo} Undo <kbd>Ctrl+Z</kbd></button><span class="dim sw-left"></span><span class="dim sw-rating-hint">1–5 to rate with stars</span></div></div>`);
   body.appendChild(stage);
   const slot = $('.sw-card-slot', stage);
   const render = () => {
+    const hadActionFocus = !!document.activeElement.closest?.('.sw-actions');
     $('.sw-left', stage).textContent = deck.length ? `${Math.min(i, deck.length)} of ${deck.length} in this deck` : '';
     slot.innerHTML = '';
     const m = deck[i];
+    $('.sw-actions', stage).hidden = !m;
+    $('.undo', stage).disabled = !done.length;
     if (!m) {
       slot.appendChild(h(`<div class="sw-done"><div class="sw-done-ico">${ICON.checkCircleFill}</div><h2>${deck.length ? 'Pack sorted' : 'Nothing left to sort here'}</h2><p class="muted">Pick another pack — or switch to Grid to fine-tune.</p>
         <div class="btns" style="justify-content:center"><button class="btn primary nextpk">${ICON.layers} Next pack</button><button class="btn allpk">All packs</button></div></div>`));
@@ -333,6 +337,7 @@ function swipeDeck(body, p, list, paintProg) {
       $('.nextpk', slot).innerHTML = `${ICON.layers} Next: ${esc(next.title)}`;
       $('.nextpk', slot).onclick = () => { packState.open = next.id; discGo(); };
       $('.allpk', slot).onclick = () => { packState.open = null; discGo(); };
+      if (window.REEL_TV && hadActionFocus && window.tvFocus) tvFocus.focus($('.nextpk', slot));
       return;
     }
     const card = h(`<div class="sw-card">
@@ -346,7 +351,8 @@ function swipeDeck(body, p, list, paintProg) {
     if (deck[i + 1]) { const im = new Image(); im.src = TMDB.img(deck[i + 1].poster, 'w500'); }
   };
   const decide = (state, dir, stamp) => {
-    const m = deck[i]; if (!m) return;
+    const m = deck[i]; if (!m || deciding) return;
+    deciding = true;
     if (state) seenSet(m, state);
     done.push({ i, state });
     const card = $('.sw-card', slot);
@@ -356,11 +362,12 @@ function swipeDeck(body, p, list, paintProg) {
     }
     paintProg();
     i++;
-    setTimeout(render, 230);
+    clearTimeout(renderTimer);
+    renderTimer = setTimeout(() => { deciding = false; render(); }, 230);
   };
   const act = { no: () => decide('notseen', 'left', 'Not seen'), yes: () => decide('seen', 'right', 'Seen'), love: () => decide('loved', 'up', 'Loved'), want: () => decide('want', 'down', 'Watchlist') };
   $$('.sw-btn', stage).forEach(b => { const k = [...b.classList].find(c => act[c]); b.onclick = () => act[k](); });
-  const undo = () => { const last = done.pop(); if (!last) return; if (last.state) packUndo(); i = last.i; paintProg(); render(); };
+  const undo = () => { const last = done.pop(); if (!last) return; clearTimeout(renderTimer); deciding = false; if (last.state) packUndo(); i = last.i; paintProg(); render(); };
   $('.undo', stage).onclick = undo;
   keyHandler((e) => {
     if (typing(e)) return;

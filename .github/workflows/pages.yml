@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 
@@ -18,22 +19,39 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
       - name: Build the site with profile previews
         run: node .build/cards.mjs
         env:
           REEL_CARDS_TOKEN: ${{ secrets.REEL_CARDS_TOKEN }}
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: _site
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Wait for the uploaded site to be available
+        uses: actions/github-script@v8
+        with:
+          script: |
+            for (let attempt = 0; attempt < 8; attempt++) {
+              const result = await github.rest.actions.listWorkflowRunArtifacts({
+                ...context.repo, run_id: context.runId, per_page: 100
+              });
+              if (result.data.artifacts.some(a => a.name === 'github-pages' && !a.expired)) return;
+              core.info('Waiting for GitHub to index the site artifact...');
+              await new Promise(resolve => setTimeout(resolve, 5000));
+            }
+            core.setFailed('The site uploaded, but GitHub did not make the artifact available. Re-run this deployment.');
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

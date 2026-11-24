@@ -33,7 +33,8 @@ async function go(name, params = {}, replace = false, keepScroll = false, restor
     return;
   }
   if (name === 'setup') PageCache.clear();                       // signed out or switching accounts: nothing kept
-  const keepPages = !window.REEL_TV;                                 // the TV redraws pages so the remote's focus lands right
+  window.dispatchEvent(new CustomEvent('reel:leaving'));
+  const keepPages = true;                                           // preserve the actual rows and their scroll offsets on TV too
   const kept = keepPages && !refresh && TABS.includes(name) ? PageCache.get(name) : null;
   // Home and Library show your own things: if anything changed since (a rating, a watch, a list), draw them again,
   // still at the same spot. Movies, TV Shows and For You come back exactly as they were.
@@ -58,7 +59,8 @@ async function go(name, params = {}, replace = false, keepScroll = false, restor
   const scroll = view.scrollTop;
   // Keep the tab page you're leaving (unless it's being redrawn on purpose).
   if (keepPages && name !== 'setup' && leavingNode && TABS.includes(leavingName) && !(refresh && leavingName === name)) {
-    PageCache.set(leavingName, { node: leavingNode, scroll, params: leavingNode.dataset.params || '{}', at: Date.now(), rev: Store.data.rev });
+    const scrolls = [...leavingNode.querySelectorAll('*')].filter(el => el.scrollLeft || el.scrollTop).map(el => ({ el, x: el.scrollLeft, y: el.scrollTop }));
+    PageCache.set(leavingName, { node: leavingNode, scroll, scrolls, params: leavingNode.dataset.params || '{}', at: Date.now(), rev: Store.data.rev });
   }
   if (refresh) PageCache.delete(name);
   view.dataset.view = name;
@@ -67,6 +69,7 @@ async function go(name, params = {}, replace = false, keepScroll = false, restor
   if (useKept) PageCache.delete(name);
   root.dataset.params = pkey;
   view.appendChild(root);
+  if (useKept) for (const s of kept.scrolls || []) { s.el.scrollLeft = s.x; s.el.scrollTop = s.y; }
   view.scrollTop = useKept ? kept.scroll : 0;
   ScrollKeeper.watch(root);
   $$('[data-go]').forEach(b => b.classList.toggle('active', b.dataset.go === (tab || name)));
@@ -97,6 +100,8 @@ async function go(name, params = {}, replace = false, keepScroll = false, restor
     if (String(e.message) === 'NO_TMDB') { Setup.tmdb = false; return go('setup', {}, true); }
     if (/OFFLINE|TMDB_DOWN/.test(String(e.message))) return offlineScreen(root, String(e.message));
     root.innerHTML = `<div class="page"><div class="center-empty glass-empty"><div class="empty-ico">${ICON.x}</div><h3>Something went wrong</h3>${esc(cleanErr(e))}<br><br><button class="btn" onclick="rerender()">Try again</button></div></div>`;
+  } finally {
+    if (view.firstElementChild === root) window.dispatchEvent(new CustomEvent('reel:ready', { detail: { restore: restoreScroll != null || useKept, refresh } }));
   }
 }
 // Offline / TMDB-down page: clean, explains what still works, and retries by itself.
@@ -142,7 +147,7 @@ function back() {
   if (!r) return;
   window.__shelfRestore = r.shelves || {};
   route = { name: r.name, params: r.params, tab: r.tab };
-  go(r.name, r.params, true, false, r.scroll || 0);
+  return go(r.name, r.params, true, false, r.scroll || 0);
 }
 function rerender() { if (route.name === 'discover' || route.name === 'setup') return; go(route.name, route.params, true, true); }
 
