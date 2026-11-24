@@ -5,7 +5,7 @@
 <h1 align="center">Reel</h1>
 
 <p align="center">
-  <b>Track, rate and watch movies and shows — with recommendations that learn your taste, a clean macOS-style app, and your friends. On Windows, Mac, Fire TV, your phone and any browser.</b>
+  <b>Track, rate and watch movies and TV shows — with personalized movie recommendations, a clean macOS-style app, and your friends. On Windows, Mac, Fire TV, Android TV, your phone and any browser.</b>
 </p>
 
 <p align="center">
@@ -29,8 +29,8 @@
   <img src="screenshots/for-you.webp" alt="For You" width="960">
 </p>
 
-## Keep track, like Letterboxd
-- Ratings, likes, a watch diary, reviews, lists and a watchlist
+## Track and rate movies, like Letterboxd
+- Movie ratings, likes, a film diary, reviews, lists and a watchlist for movies and TV shows
 - Import your whole Letterboxd history in one go, and **Re-sync from Letterboxd** any time: export your data there, pick the file, and Reel adds only what's new
 - Careful title matching (it checks the title, not just the year), and **Wrong movie?** on any title moves your rating, diary and review to the right one
 - **Taste Profile** — your ratings spread, where you differ from the crowd, your five-star club and watching habits
